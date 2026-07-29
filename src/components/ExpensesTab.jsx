@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Trash2, Plus } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
+import { getMonthOptions } from '../utils/dates';
 
 export default function ExpensesTab({
   transactions = [],
@@ -71,10 +72,9 @@ export default function ExpensesTab({
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
-          <option value="all">📅 All Months</option>
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
+          {getMonthOptions(transactions).map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
 
         <select

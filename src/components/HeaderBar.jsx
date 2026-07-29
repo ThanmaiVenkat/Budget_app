@@ -1,17 +1,20 @@
 import React from 'react';
-import { Download, FileSpreadsheet, Layers, Wallet } from 'lucide-react';
+import { Download, FileSpreadsheet, Layers, Wallet, RotateCcw } from 'lucide-react';
 import { exportTransactionsToCSV } from '../utils/storage';
+import { getMonthOptions, getCurrentMonth } from '../utils/dates';
 
 export default function HeaderBar({
   transactions = [],
   members = [],
   categories = [],
-  selectedMonth = '2026-07',
+  onReset,
+  selectedMonth = getCurrentMonth(),
   setSelectedMonth,
   onOpenExcelModal,
   activeDirection = '2b',
   setActiveDirection
 }) {
+  const monthOptions = getMonthOptions(transactions);
   const handleExport = () => {
     exportTransactionsToCSV(transactions || [], members || [], categories || []);
   };
@@ -75,10 +78,9 @@ export default function HeaderBar({
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
-          <option value="all">All Months</option>
+          {monthOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
 
         {/* Upload Excel Button */}
@@ -97,6 +99,16 @@ export default function HeaderBar({
         >
           <Download size={15} />
         </button>
+
+        {typeof onReset === 'function' && (
+          <button
+            onClick={onReset}
+            style={{ background: 'none', border: 'none', color: '#8a7d6d', cursor: 'pointer', padding: '4px' }}
+            title="Reset all data to sample dataset"
+          >
+            <RotateCcw size={15} />
+          </button>
+        )}
       </div>
     </header>
   );

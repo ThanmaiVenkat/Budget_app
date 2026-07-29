@@ -14,6 +14,7 @@ import PersonalSavingsTracker from './components/PersonalSavingsTracker';
 import AddExpenseSheet from './components/AddExpenseSheet';
 import ExcelImportModal from './components/ExcelImportModal';
 import { loadState, saveState, resetToDefaultState } from './utils/storage';
+import { getCurrentMonth } from './utils/dates';
 
 export default function App() {
   const [initialData] = useState(() => loadState());
@@ -26,7 +27,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState('home');
   const [activeMemberId, setActiveMemberId] = useState('all');
-  const [selectedMonth, setSelectedMonth] = useState('2026-07');
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [activeDirection, setActiveDirection] = useState('2b'); // Default to 2b (Bold Hero), 2a removed
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);

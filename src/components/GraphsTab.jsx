@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { BarChart3, PieChart as PieIcon, Users, Calendar } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
+import { getMonthOptions } from '../utils/dates';
 
 export default function GraphsTab({
   transactions = [],
@@ -108,10 +109,9 @@ export default function GraphsTab({
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
-          <option value="all">📅 All Time</option>
+          {getMonthOptions(transactions).map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
       </div>
 
