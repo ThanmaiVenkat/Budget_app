@@ -18,6 +18,19 @@ export const formatMonthLabel = (ym) => {
   return new Date(y, m - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
 };
 
+// The last `count` months as 'YYYY-MM', newest first, ending at `anchor`
+// ('YYYY-MM', defaults to the current month). Used for the trend chart.
+export const getRecentMonths = (count = 4, anchor = getCurrentMonth()) => {
+  const [y, m] = anchor.split('-').map(Number);
+  const base = new Date(y, (m || 1) - 1, 1);
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    const d = new Date(base.getFullYear(), base.getMonth() - i, 1);
+    out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  return out;
+};
+
 // Build the month dropdown from the transactions that exist, newest first.
 // Always includes the current month (so a fresh, empty app still has a valid
 // selection) and an "All Months" entry. Returns [{ value, label }].

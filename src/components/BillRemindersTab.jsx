@@ -7,7 +7,8 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [daysUntilDue, setDaysUntilDue] = useState('5');
-  const [payer] = useState(members[1]?.id || 'mom');
+  const realMembers = (members || []).filter(m => m.id !== 'all');
+  const [payer, setPayer] = useState(realMembers[0]?.id || '');
 
   // Bill Split Calculator
   const [splitAmount, setSplitAmount] = useState('2400');
@@ -72,6 +73,15 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                 <label className="form-label">Due in (Days)</label>
                 <input type="number" className="form-input" placeholder="e.g. 5" value={daysUntilDue} onChange={(e) => setDaysUntilDue(e.target.value)} />
               </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Paid By</label>
+              <select className="form-select" value={payer} onChange={(e) => setPayer(e.target.value)}>
+                {realMembers.map((m) => (
+                  <option key={m.id} value={m.id}>{m.avatar} {m.name}</option>
+                ))}
+              </select>
             </div>
 
             <button type="submit" className="btn-primary" style={{ padding: '8px', fontSize: '0.85rem' }}>

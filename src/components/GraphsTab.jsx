@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { BarChart3, PieChart as PieIcon, Users, Calendar } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
-import { getMonthOptions } from '../utils/dates';
+import { getMonthOptions, getRecentMonths, getCurrentMonth } from '../utils/dates';
 
 export default function GraphsTab({
   transactions = [],
@@ -64,7 +64,8 @@ export default function GraphsTab({
   }).sort((a, b) => b.spent - a.spent);
 
   // 3. RECHARTS MONTHLY TREND DATA (Income vs Expense over past 4 months)
-  const monthTrendKeys = ['2026-07', '2026-06', '2026-05', '2026-04'];
+  const trendAnchor = selectedMonth && selectedMonth !== 'all' ? selectedMonth : getCurrentMonth();
+  const monthTrendKeys = getRecentMonths(4, trendAnchor);
   const monthlyTrendData = monthTrendKeys.map(mKey => {
     const txs = safeTxs.filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.date && t.date.startsWith(mKey));
     const income = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);

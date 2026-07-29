@@ -2,22 +2,26 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave }) {
+  // Derive family defaults from the actual member list instead of hardcoding
+  // 'mom' / 'dad', so the app works for any household. 'all' is the pooled
+  // pseudo-member and never a real payer/earner.
+  const realMembers = (members || []).filter(m => m.id !== 'all');
+  const earner = realMembers.find(m => m.isEarner) || realMembers[0] || { id: '', name: 'Household' };
+  const defaultSpender = realMembers.find(m => !m.isEarner) || realMembers[0] || earner;
+
   const [type, setType] = useState('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(categories[0]?.id || 'groceries');
-  // For expense, default to Mom or Mom/Dad. For Income, auto-set to Dad (Rajesh)
-  const [memberId, setMemberId] = useState('mom');
+  const [memberId, setMemberId] = useState(defaultSpender.id);
   const [title, setTitle] = useState('');
   const [showMore, setShowMore] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [notes, setNotes] = useState('');
 
-  const dadMember = members.find(m => m.id === 'dad') || { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻' };
-
   const handleTypeChange = (newType) => {
     setType(newType);
     if (newType === 'income') {
-      setMemberId('dad'); // Dad is the sole earner for household income
+      setMemberId(earner.id); // income defaults to the household earner
     }
   };
 
@@ -27,7 +31,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
     if (isNaN(parsedAmount) || parsedAmount <= 0) return;
 
     const catObj = categories.find(c => c.id === category);
-    const defaultTitle = type === 'income' ? 'Dad Salary / Earnings' : (catObj ? catObj.name : 'Expense');
+    const defaultTitle = type === 'income' ? `${earner.name} Salary / Earnings` : (catObj ? catObj.name : 'Expense');
 
     onSave({
       id: 'tx-' + Date.now(),
@@ -35,7 +39,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
       title: title.trim() || defaultTitle,
       amount: parsedAmount,
       category: type === 'income' ? 'income' : category,
-      memberId: type === 'income' ? 'dad' : memberId,
+      memberId: type === 'income' ? earner.id : memberId,
       date: new Date().toISOString().split('T')[0],
       paymentMethod,
       notes
@@ -116,15 +120,15 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           {/* FIELD 2: WHO SPENT OR EARNED */}
           <div className="form-group" style={{ marginBottom: '4px' }}>
             <label className="form-label" style={{ fontSize: '0.72rem' }}>
-              {type === 'income' ? '2. EARNER (SOLE HOUSEHOLD EARNER)' : '2. WHO SPENT THIS MONEY?'}
+              {type === 'income' ? '2. EARNER' : '2. WHO SPENT THIS MONEY?'}
             </label>
 
             {type === 'income' ? (
               <div style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{dadMember.avatar}</span>
+                <span style={{ fontSize: '1.3rem' }}>{earner.avatar || '💼'}</span>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#34d399' }}>{dadMember.name}</div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Dad earns the primary household income</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#34d399' }}>{earner.name}</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Primary household earner</div>
                 </div>
               </div>
             ) : (

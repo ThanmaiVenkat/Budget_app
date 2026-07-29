@@ -11,6 +11,7 @@ export default function HomeTab({
   activeDirection = '2b',
   onNavigateToExpenses,
   onNavigateToBudgets,
+  onNavigateToGraphs,
   onOpenAddModal
 }) {
   const safeTxs = Array.isArray(transactions) ? transactions : [];
@@ -164,7 +165,7 @@ export default function HomeTab({
 
         {/* 2 Metric Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }}>
+          <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }} onClick={onNavigateToGraphs} className="cursor-pointer">
             <div style={{ font: '600 11px Manrope', color: '#8a7d6d' }}>Daily average</div>
             <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>₹3,100</div>
             <div style={{ font: '700 11px Manrope', color: '#5ec39d', marginTop: '2px' }}>↓ 8% vs June</div>
