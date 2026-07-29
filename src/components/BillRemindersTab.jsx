@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, CheckCircle2, Circle, Calculator, Users } from 'lucide-react';
+import { CheckCircle2, Circle, Calculator, Users } from 'lucide-react';
 import { formatRupees, getBillBadgeStatus } from '../utils/mockData';
 
 export default function BillRemindersTab({ bills, members, onToggleBillPaid, onAddBill }) {
@@ -7,7 +7,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [daysUntilDue, setDaysUntilDue] = useState('5');
-  const [payer, setPayer] = useState(members[1]?.id || 'mom');
+  const [payer] = useState(members[1]?.id || 'mom');
 
   // Bill Split Calculator
   const [splitAmount, setSplitAmount] = useState('2400');

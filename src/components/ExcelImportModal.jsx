@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileSpreadsheet, Upload, CheckCircle, Sparkles, Download, AlertCircle } from 'lucide-react';
+import { X, FileSpreadsheet, Upload, CheckCircle, Download, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { parseExcelSpreadsheet, downloadSampleExcelTemplate } from '../utils/excelParser';
 import { formatRupees } from '../utils/mockData';

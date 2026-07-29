@@ -9,37 +9,43 @@ const KEYS = {
   PERSONAL_SAVINGS: 'personal_savings_tracker_v4'
 };
 
+// Persist to localStorage so data survives page reloads and browser sessions.
+// A private-mode / disabled-storage browser can throw on access, so every call
+// is guarded and falls back to an in-memory Map (data then lasts only for the
+// current tab, but the app keeps working instead of crashing).
+const memoryFallback = new Map();
+
+const hasLocalStorage = () => {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return false;
+    const probe = '__fb_probe__';
+    window.localStorage.setItem(probe, '1');
+    window.localStorage.removeItem(probe);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const canUseLocalStorage = hasLocalStorage();
+
 const getStorageItem = (key) => {
   try {
-    if (typeof window !== 'undefined') {
-      if (window.storage && typeof window.storage.getItem === 'function') {
-        return window.storage.getItem(key);
-      }
-      if (window.storage && window.storage[key]) {
-        return window.storage[key];
-      }
-      if (window._storageStore && window._storageStore[key]) {
-        return window._storageStore[key];
-      }
-    }
+    if (canUseLocalStorage) return window.localStorage.getItem(key);
+    return memoryFallback.has(key) ? memoryFallback.get(key) : null;
   } catch (e) {
     console.error('getStorageItem error:', e);
+    return null;
   }
-  return null;
 };
 
 const setStorageItem = (key, value) => {
   try {
-    if (typeof window !== 'undefined') {
-      if (window.storage && typeof window.storage.setItem === 'function') {
-        window.storage.setItem(key, value);
-        return;
-      }
-      if (!window.storage) window.storage = {};
-      window.storage[key] = value;
-      if (!window._storageStore) window._storageStore = {};
-      window._storageStore[key] = value;
+    if (canUseLocalStorage) {
+      window.localStorage.setItem(key, value);
+      return;
     }
+    memoryFallback.set(key, value);
   } catch (e) {
     console.error('setStorageItem error:', e);
   }
@@ -47,17 +53,11 @@ const setStorageItem = (key, value) => {
 
 const removeStorageItem = (key) => {
   try {
-    if (typeof window !== 'undefined') {
-      if (window.storage && typeof window.storage.removeItem === 'function') {
-        window.storage.removeItem(key);
-      }
-      if (window.storage && window.storage[key]) {
-        delete window.storage[key];
-      }
-      if (window._storageStore && window._storageStore[key]) {
-        delete window._storageStore[key];
-      }
+    if (canUseLocalStorage) {
+      window.localStorage.removeItem(key);
+      return;
     }
+    memoryFallback.delete(key);
   } catch (e) {
     console.error('removeStorageItem error:', e);
   }
@@ -86,7 +86,7 @@ const parseOrFallback = (val, fallback) => {
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
     }
     return parsed || fallback;
-  } catch (e) {
+  } catch {
     return fallback;
   }
 };

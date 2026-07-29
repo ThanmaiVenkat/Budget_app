@@ -10,10 +10,8 @@ export default function HomeTab({
   selectedMonth = '2026-07',
   activeDirection = '2b',
   onNavigateToExpenses,
-  onNavigateToGraphs,
   onNavigateToBudgets,
-  onOpenAddModal,
-  onToggleBillPaid
+  onOpenAddModal
 }) {
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];

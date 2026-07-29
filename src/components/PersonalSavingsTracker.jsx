@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { PiggyBank, Target, Sparkles, Trash2, Sliders, Calculator, CheckCircle2, TrendingUp } from 'lucide-react';
+import { PiggyBank, Target, Sparkles, Trash2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { formatRupees } from '../utils/mockData';
 
 export default function PersonalSavingsTracker({ personalState, setPersonalState }) {
-  const { salary = 145000, expenses = 32000, goals = [], transactions = [] } = personalState || {};
+  const { salary = 145000, goals = [], transactions = [] } = personalState || {};
 
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [showAddTxModal, setShowAddTxModal] = useState(false);
