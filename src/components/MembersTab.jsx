@@ -9,7 +9,9 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
   const [allowance, setAllowance] = useState('5000');
 
   const avatarOptions = ['👩‍💼', '👨‍💻', '👦', '👧', '👵', '👴', '🧒', '🐶'];
-  const colorOptions = ['#ec4899', '#3b82f6', '#f59e0b', '#8b5cf6', '#10b981', '#06b6d4', '#f43f5e'];
+  // Drawn from the app's own token palette (index.css :root) so new members
+  // never clash with the orange brand accent.
+  const colorOptions = ['#f26a1b', '#e0785a', '#d99a3a', '#5ec39d', '#3e9e7e', '#4a8f8a', '#b85c7a'];
 
   const handleCreateMember = (e) => {
     e.preventDefault();
@@ -31,8 +33,6 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
     setShowAdd(false);
   };
 
-  const dadMember = members.find(m => m.id === 'dad') || { name: 'Dad (Rajesh)', avatar: '👨‍💻' };
-
   // Calculate Dad's total earnings
   const dadTotalEarnings = transactions
     .filter(t => t.type === 'income')
@@ -40,26 +40,6 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      
-      {/* SOLE HOUSEHOLD EARNER BANNER (DAD) */}
-      <div className="glass-card" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(52, 211, 153, 0.15) 100%)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.2)', border: '2px solid #3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-            <span>{dadMember.avatar}</span>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: '800' }}>{dadMember.name}</h3>
-              <span style={{ fontSize: '0.65rem', background: '#3b82f6', color: '#ffffff', padding: '2px 8px', borderRadius: '999px', fontWeight: '700' }}>
-                Primary Sole Earner
-              </span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Dad earns the household salary ({formatRupees(dadTotalEarnings)} credited)
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Header Banner */}
       <div className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -71,7 +51,7 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
-          style={{ background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399', padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+          style={{ background: 'rgba(242,106,27,0.15)', border: '1px solid rgba(242,106,27,0.3)', color: 'var(--orange-primary)', padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
         >
           {showAdd ? 'Close' : '+ Add Member'}
         </button>
@@ -151,9 +131,11 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <h4 style={{ fontSize: '0.9rem', fontWeight: '700' }}>{m.name}</h4>
-                      {isDad && <span style={{ fontSize: '0.6rem', background: 'rgba(59,130,246,0.2)', color: '#3b82f6', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>Earner</span>}
+                      {isDad && <span style={{ fontSize: '0.6rem', background: 'rgba(242,106,27,0.18)', color: 'var(--orange-primary)', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>Sole Earner</span>}
                     </div>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{isDad ? 'Primary Earner & Head' : 'Spending Member'}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                      {isDad ? `Earns ${formatRupees(dadTotalEarnings)} · household salary` : 'Spending Member'}
+                    </span>
                   </div>
                 </div>
 

@@ -143,6 +143,14 @@ export default function App() {
           <div className="mobile-notch" />
         )}
 
+        {/* Status bar — only meaningful inside the mobile phone frame */}
+        {isFrameMode && (
+          <div className="sbar">
+            <span>9:41</span>
+            <span className="sbar-battery" />
+          </div>
+        )}
+
         {/* Header Bar */}
         <HeaderBar
           transactions={transactions}
@@ -153,14 +161,6 @@ export default function App() {
           setSelectedMonth={setSelectedMonth}
           onOpenExcelModal={() => setShowExcelModal(true)}
         />
-
-        {/* Status bar */}
-        <div className="sbar">
-          <span>9:41</span>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <span style={{ width: '16px', height: '10px', border: '1.5px solid #f3ece0', borderRadius: '3px', display: 'inline-block' }} />
-          </div>
-        </div>
 
         {/* Family Member Quick Filter Bar (Visible in family modes) */}
         {activeTab !== 'personal' && (

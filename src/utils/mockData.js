@@ -1,35 +1,38 @@
+// Colors below are the app's own token palette (index.css :root), not raw
+// Tailwind swatches — keeps every avatar/tile in the same warm-dark family
+// instead of clashing with the orange brand accent.
 export const DEFAULT_MEMBERS = [
-  { id: 'all', name: 'All Family', avatar: '👨‍👩‍👧‍👦', color: '#34d399', role: 'Household Pool' },
-  { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻', color: '#3b82f6', role: 'Primary Earner & Head', allowance: 145000, isEarner: true },
-  { id: 'mom', name: 'Mom (Priya)', avatar: '👩‍💼', color: '#ec4899', role: 'Household Manager', allowance: 40000, isEarner: false },
-  { id: 'alex', name: 'Alex (Rohan)', avatar: '👦', color: '#f59e0b', role: 'Child', allowance: 5000, isEarner: false },
-  { id: 'emma', name: 'Emma (Ananya)', avatar: '👧', color: '#8b5cf6', role: 'Child', allowance: 4000, isEarner: false }
+  { id: 'all', name: 'All Family', avatar: '👪', color: '#5ec39d', role: 'Household Pool' }, // green-accent
+  { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻', color: '#f26a1b', role: 'Primary Earner & Head', allowance: 145000, isEarner: true }, // orange-primary
+  { id: 'mom', name: 'Mom (Priya)', avatar: '👩‍💼', color: '#e0785a', role: 'Household Manager', allowance: 40000, isEarner: false }, // coral-accent
+  { id: 'alex', name: 'Alex (Rohan)', avatar: '👦', color: '#d99a3a', role: 'Child', allowance: 5000, isEarner: false }, // gold-accent
+  { id: 'emma', name: 'Emma (Ananya)', avatar: '👧', color: '#4a8f8a', role: 'Child', allowance: 4000, isEarner: false } // teal-accent
 ];
 
 // Categories for the personal (single-user) expense tracker — separate from
 // the household DEFAULT_CATEGORIES since personal spending has its own shape
 // (no rent/groceries split by family member).
 export const PERSONAL_CATEGORIES = [
-  { id: 'food', name: 'Food & Dining', icon: '🍽️', color: '#ec4899' },
-  { id: 'transport', name: 'Transport', icon: '🚗', color: '#14b8a6' },
-  { id: 'shopping', name: 'Shopping', icon: '🛍️', color: '#f43f5e' },
-  { id: 'bills', name: 'Bills & Utilities', icon: '⚡', color: '#f59e0b' },
-  { id: 'entertainment', name: 'Entertainment', icon: '🎮', color: '#8b5cf6' },
-  { id: 'health', name: 'Health', icon: '🏥', color: '#06b6d4' },
-  { id: 'investment', name: 'Investment / SIP', icon: '📈', color: '#3b82f6' },
-  { id: 'other', name: 'Other', icon: '📦', color: '#8a7d6d' }
+  { id: 'food', name: 'Food & Dining', icon: '🍽️', color: '#e0785a' }, // coral-accent
+  { id: 'transport', name: 'Transport', icon: '🚗', color: '#e8590c' }, // orange-dark
+  { id: 'shopping', name: 'Shopping', icon: '🛍️', color: '#f9812f' }, // orange-bright
+  { id: 'bills', name: 'Bills & Utilities', icon: '⚡', color: '#d99a3a' }, // gold-accent
+  { id: 'entertainment', name: 'Entertainment', icon: '🎮', color: '#3e9e7e' }, // green-dark
+  { id: 'health', name: 'Health', icon: '🏥', color: '#4a8f8a' }, // teal-accent
+  { id: 'investment', name: 'Investment / SIP', icon: '📈', color: '#b85c7a' }, // berry-accent
+  { id: 'other', name: 'Other', icon: '📦', color: '#8a7d6d' } // text-muted (neutral catch-all)
 ];
 
 export const DEFAULT_CATEGORIES = [
-  { id: 'groceries', name: 'Groceries & Provisions', icon: '🛒', limit: 25000, color: '#34d399' },
-  { id: 'housing', name: 'Rent & Maintenance', icon: '🏠', limit: 45000, color: '#3b82f6' },
-  { id: 'utilities', name: 'Electricity & Bills', icon: '⚡', limit: 12000, color: '#f59e0b' },
-  { id: 'dining', name: 'Dining Out & Swiggy', icon: '🍽️', limit: 15000, color: '#ec4899' },
-  { id: 'entertainment', name: 'Movies & Outings', icon: '🎮', limit: 8000, color: '#8b5cf6' },
-  { id: 'health', name: 'Health & Pharmacy', icon: '🏥', limit: 10000, color: '#06b6d4' },
-  { id: 'education', name: 'School & Tuition', icon: '📚', limit: 15000, color: '#6366f1' },
-  { id: 'transport', name: 'Fuel & Cab Fare', icon: '🚗', limit: 10000, color: '#14b8a6' },
-  { id: 'shopping', name: 'Shopping & Clothes', icon: '🛍️', limit: 12000, color: '#f43f5e' }
+  { id: 'groceries', name: 'Groceries & Provisions', icon: '🛒', limit: 25000, color: '#f26a1b' }, // orange-primary
+  { id: 'housing', name: 'Rent & Maintenance', icon: '🏠', limit: 45000, color: '#e0785a' }, // coral-accent
+  { id: 'utilities', name: 'Electricity & Bills', icon: '⚡', limit: 12000, color: '#d99a3a' }, // gold-accent
+  { id: 'dining', name: 'Dining Out & Swiggy', icon: '🍽️', limit: 15000, color: '#5ec39d' }, // green-accent
+  { id: 'entertainment', name: 'Movies & Outings', icon: '🎮', limit: 8000, color: '#3e9e7e' }, // green-dark
+  { id: 'health', name: 'Health & Pharmacy', icon: '🏥', limit: 10000, color: '#4a8f8a' }, // teal-accent
+  { id: 'education', name: 'School & Tuition', icon: '📚', limit: 15000, color: '#b85c7a' }, // berry-accent
+  { id: 'transport', name: 'Fuel & Cab Fare', icon: '🚗', limit: 10000, color: '#e8590c' }, // orange-dark
+  { id: 'shopping', name: 'Shopping & Clothes', icon: '🛍️', limit: 12000, color: '#f9812f' } // orange-bright
 ];
 
 export const INITIAL_TRANSACTIONS = [

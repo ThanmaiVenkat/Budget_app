@@ -42,7 +42,7 @@ export default function HeaderBar({
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {/* Month Selector Dropdown */}
         <select
           className="form-select"
@@ -55,33 +55,48 @@ export default function HeaderBar({
           ))}
         </select>
 
-        {/* Upload Excel Button */}
+        {/* Upload Excel Button (primary — matches the month pill's orange accent) */}
         <button
           onClick={onOpenExcelModal}
-          style={{ background: 'rgba(242,106,27,0.15)', border: '1px solid rgba(242,106,27,0.3)', borderRadius: '50%', width: '30px', height: '30px', color: '#f9812f', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={iconBtnStyle('rgba(242,106,27,0.15)', 'rgba(242,106,27,0.3)', '#f9812f')}
           title="Upload Excel / CSV Sheet"
         >
           <FileSpreadsheet size={14} />
         </button>
 
+        {/* Secondary utilities — same shape/size as the upload button, muted so they don't compete */}
         <button
           onClick={handleExport}
-          style={{ background: 'none', border: 'none', color: '#8a7d6d', cursor: 'pointer', padding: '4px' }}
+          style={iconBtnStyle('#211c15', '#2f281f', '#8a7d6d')}
           title="Export CSV Data"
         >
-          <Download size={15} />
+          <Download size={14} />
         </button>
 
         {typeof onReset === 'function' && (
           <button
             onClick={onReset}
-            style={{ background: 'none', border: 'none', color: '#8a7d6d', cursor: 'pointer', padding: '4px' }}
+            style={iconBtnStyle('#211c15', '#2f281f', '#8a7d6d')}
             title="Reset all data to sample dataset"
           >
-            <RotateCcw size={15} />
+            <RotateCcw size={14} />
           </button>
         )}
       </div>
     </header>
   );
 }
+
+const iconBtnStyle = (background, border, color) => ({
+  background,
+  border: `1px solid ${border}`,
+  borderRadius: '50%',
+  width: '30px',
+  height: '30px',
+  color,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flex: 'none'
+});

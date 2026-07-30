@@ -17,6 +17,8 @@
 
   --coral-accent: #e0785a;
   --gold-accent: #d99a3a;
+  --teal-accent: #4a8f8a;
+  --berry-accent: #b85c7a;
 
   --text-main: #f3ece0;
   --text-muted: #8a7d6d;
@@ -93,16 +95,24 @@ body {
   z-index: 100;
 }
 
-/* Status Bar */
+/* Status Bar (mimics the phone OS chrome above the app's own header) */
 .sbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 26px 4px;
+  padding: 14px 26px 0;
   font: 700 14px Manrope;
   flex: none;
   color: var(--text-main);
   z-index: 50;
+}
+
+.sbar-battery {
+  width: 16px;
+  height: 10px;
+  border: 1.5px solid var(--text-main);
+  border-radius: 3px;
+  display: inline-block;
 }
 
 /* Header Bar */
@@ -228,6 +238,24 @@ body {
   font-weight: 500;
   text-align: center;
   white-space: nowrap;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Member allowance progress bar (MembersTab) */
+.progress-bar-bg {
+  height: 7px;
+  border-radius: 6px;
+  background: #2a251d;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease;
 }
 
 /* Bottom Navigation Bar matching design doc */

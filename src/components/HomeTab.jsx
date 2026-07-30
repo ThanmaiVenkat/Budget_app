@@ -34,20 +34,7 @@ export default function HomeTab({
   const remainingBudget = Math.max(0, totalBudgetLimit - totalExpense);
   const budgetUtilization = totalBudgetLimit > 0 ? Math.min(100, Math.round((totalExpense / totalBudgetLimit) * 100)) : 0;
 
-  const activeMember = safeMembers.find(m => m.id === activeMemberId) || { name: 'Our Family', avatar: '👨‍👩‍👧‍👦' };
-
-  // Category Colors matching design doc
-  const categoryColors = {
-    groceries: '#f26a1b',
-    education: '#e0785a',
-    housing: '#d99a3a',
-    utilities: '#d99a3a',
-    dining: '#3e9e7e',
-    entertainment: '#3e9e7e',
-    health: '#06b6d4',
-    transport: '#14b8a6',
-    shopping: '#f43f5e'
-  };
+  const activeMember = safeMembers.find(m => m.id === activeMemberId) || { name: 'Our Family', avatar: '👪' };
 
   const recentTxs = [...filteredTxs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
   const upcomingBills = safeBills.filter(b => !b.paid && (b.daysUntilDue || 0) <= 7);
@@ -64,7 +51,7 @@ export default function HomeTab({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ font: '700 14px Manrope', color: '#fff' }}>Hi, {activeMember.name} 👋</div>
           <div className="avat" style={{ background: 'rgba(0,0,0,0.22)', width: '38px', height: '38px', fontSize: '18px' }}>
-            {activeMember.avatar || '👨‍👩‍👧‍👦'}
+            {activeMember.avatar || '👪'}
           </div>
         </div>
 
@@ -118,8 +105,8 @@ export default function HomeTab({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {recentTxs.map((tx) => {
-              const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '📦', name: tx.category };
-              const bg = categoryColors[tx.category] || '#f26a1b';
+              const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '📦', name: tx.category, color: '#f26a1b' };
+              const bg = catObj.color || '#f26a1b';
 
               return (
                 <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
