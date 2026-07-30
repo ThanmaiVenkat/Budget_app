@@ -28,7 +28,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [activeMemberId, setActiveMemberId] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
-  const [activeDirection, setActiveDirection] = useState('2b'); // Default to 2b (Bold Hero), 2a removed
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);
   const [isFrameMode, setIsFrameMode] = useState(true);
@@ -153,8 +152,6 @@ export default function App() {
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
           onOpenExcelModal={() => setShowExcelModal(true)}
-          activeDirection={activeDirection}
-          setActiveDirection={setActiveDirection}
         />
 
         {/* Status bar */}
@@ -186,7 +183,6 @@ export default function App() {
               bills={bills}
               activeMemberId={activeMemberId}
               selectedMonth={selectedMonth}
-              activeDirection={activeDirection}
               onNavigateToExpenses={() => setActiveTab('expenses')}
               onNavigateToGraphs={handleNavigateToGraphs}
               onNavigateToBudgets={() => setActiveTab('budgets')}

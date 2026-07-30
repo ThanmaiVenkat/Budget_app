@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, FileSpreadsheet, Layers, Wallet, RotateCcw } from 'lucide-react';
+import { Download, FileSpreadsheet, Wallet, RotateCcw } from 'lucide-react';
 import { exportTransactionsToCSV } from '../utils/storage';
 import { getMonthOptions, getCurrentMonth } from '../utils/dates';
 
@@ -10,19 +10,11 @@ export default function HeaderBar({
   onReset,
   selectedMonth = getCurrentMonth(),
   setSelectedMonth,
-  onOpenExcelModal,
-  activeDirection = '2b',
-  setActiveDirection
+  onOpenExcelModal
 }) {
   const monthOptions = getMonthOptions(transactions);
   const handleExport = () => {
     exportTransactionsToCSV(transactions || [], members || [], categories || []);
-  };
-
-  const toggleDirection = () => {
-    if (typeof setActiveDirection === 'function') {
-      setActiveDirection(prev => (prev === '2b' ? '2c' : '2b'));
-    }
   };
 
   return (
@@ -51,26 +43,6 @@ export default function HeaderBar({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        {/* Toggle View Mode Button (Hero vs Tiles) */}
-        <button
-          onClick={toggleDirection}
-          style={{
-            background: 'rgba(242, 106, 27, 0.15)',
-            border: '1px solid rgba(242, 106, 27, 0.3)',
-            color: '#f9812f',
-            padding: '4px 8px',
-            borderRadius: '999px',
-            font: '700 11px Manrope',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-          title="Toggle view mode"
-        >
-          <Layers size={12} /> {activeDirection === '2b' ? 'Hero' : 'Tiles'}
-        </button>
-
         {/* Month Selector Dropdown */}
         <select
           className="form-select"

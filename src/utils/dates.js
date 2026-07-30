@@ -31,6 +31,21 @@ export const getRecentMonths = (count = 4, anchor = getCurrentMonth()) => {
   return out;
 };
 
+// Days elapsed and days remaining in a given 'YYYY-MM' month, relative to
+// today when the month is the current one, or the full month otherwise.
+export const getMonthProgress = (ym) => {
+  const [y, m] = (ym || '').split('-').map(Number);
+  if (!y || !m) return { daysElapsed: 1, daysRemaining: 0, daysInMonth: 1 };
+
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const today = new Date();
+  const isCurrentMonth = ym === getCurrentMonth();
+  const daysElapsed = isCurrentMonth ? today.getDate() : daysInMonth;
+  const daysRemaining = isCurrentMonth ? Math.max(0, daysInMonth - today.getDate()) : 0;
+
+  return { daysElapsed, daysRemaining, daysInMonth };
+};
+
 // Build the month dropdown from the transactions that exist, newest first.
 // Always includes the current month (so a fresh, empty app still has a valid
 // selection) and an "All Months" entry. Returns [{ value, label }].

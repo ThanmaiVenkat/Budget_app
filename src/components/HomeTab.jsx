@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatRupees } from '../utils/mockData';
+import { getMonthProgress, getCurrentMonth } from '../utils/dates';
 
 export default function HomeTab({
   transactions = [],
@@ -7,8 +8,7 @@ export default function HomeTab({
   members = [],
   bills = [],
   activeMemberId = 'all',
-  selectedMonth = '2026-07',
-  activeDirection = '2b',
+  selectedMonth = getCurrentMonth(),
   onNavigateToExpenses,
   onNavigateToBudgets,
   onNavigateToGraphs,
@@ -28,11 +28,11 @@ export default function HomeTab({
 
   const totalExpense = filteredTxs
     .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + (t.amount || 0), 0) || 62000;
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const totalBudgetLimit = safeCategories.reduce((sum, c) => sum + (c.limit || 0), 0) || 90000;
+  const totalBudgetLimit = safeCategories.reduce((sum, c) => sum + (c.limit || 0), 0);
   const remainingBudget = Math.max(0, totalBudgetLimit - totalExpense);
-  const budgetUtilization = Math.min(100, Math.round((totalExpense / totalBudgetLimit) * 100));
+  const budgetUtilization = totalBudgetLimit > 0 ? Math.min(100, Math.round((totalExpense / totalBudgetLimit) * 100)) : 0;
 
   const activeMember = safeMembers.find(m => m.id === activeMemberId) || { name: 'Our Family', avatar: '👨‍👩‍👧‍👦' };
 
@@ -51,80 +51,11 @@ export default function HomeTab({
 
   const recentTxs = [...filteredTxs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
   const upcomingBills = safeBills.filter(b => !b.paid && (b.daysUntilDue || 0) <= 7);
+  const upcomingBillsTotal = upcomingBills.reduce((sum, b) => sum + (b.amount || 0), 0);
 
-  // =========================================================================
-  // DIRECTION 2c: PLAYFUL DARK (VIVID CATEGORY TILES)
-  // =========================================================================
-  if (activeDirection === '2c') {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        
-        {/* Header Greeting */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ font: '800 22px Manrope', color: '#f3ece0' }}>Hey, {activeMember.name}!</div>
-            <div style={{ font: '600 12.5px Manrope', color: '#c08a52', marginTop: '2px' }}>Let's keep July on budget 🎯</div>
-          </div>
-          <div className="avat" style={{ background: '#f26a1b', width: '40px', height: '40px', fontSize: '18px' }}>
-            {activeMember.avatar || '👨‍👩‍👧‍👦'}
-          </div>
-        </div>
+  const { daysElapsed, daysRemaining } = getMonthProgress(selectedMonth);
+  const dailyAverage = daysElapsed > 0 ? Math.round(totalExpense / daysElapsed) : 0;
 
-        {/* Radial Black Card */}
-        <div style={{ background: '#000', borderRadius: '24px', padding: '22px', position: 'relative', overflow: 'hidden', border: '1px solid #2f281f' }}>
-          <div style={{ position: 'absolute', right: '-30px', top: '-30px', width: '130px', height: '130px', borderRadius: '50%', background: 'radial-gradient(circle,#f9812f,#e8590c)' }} />
-          <div style={{ font: '600 11.5px Manrope', color: 'rgba(255,255,255,0.55)', letterSpacing: '.03em', position: 'relative' }}>
-            TOTAL SPENT / {formatRupees(totalBudgetLimit)} BUDGET
-          </div>
-          <div style={{ font: '800 40px Manrope', color: '#fff', letterSpacing: '-.02em', marginTop: '6px', position: 'relative' }}>
-            {formatRupees(totalExpense)}
-          </div>
-          <div style={{ height: '9px', borderRadius: '6px', background: 'rgba(255,255,255,0.14)', overflow: 'hidden', marginTop: '14px', position: 'relative' }}>
-            <i style={{ display: 'block', height: '100%', width: `${budgetUtilization}%`, background: 'linear-gradient(90deg,#f9812f,#f26a1b)', borderRadius: '6px' }} />
-          </div>
-          <div style={{ font: '700 12px Manrope', color: '#ffd9b8', marginTop: '9px', position: 'relative' }}>
-            {formatRupees(remainingBudget)} left to spend
-          </div>
-        </div>
-
-        {/* Action Pills */}
-        <div style={{ display: 'flex', gap: '9px', overflow: 'hidden' }}>
-          <button className="action-pill" onClick={onOpenAddModal}>＋ Add expense</button>
-          <button className="action-pill secondary" onClick={onOpenAddModal}>Scan receipt</button>
-          <button className="action-pill secondary" onClick={onNavigateToBudgets}>Split</button>
-        </div>
-
-        {/* 2x2 Vivid Category Tiles */}
-        <div>
-          <div style={{ font: '800 15px Manrope', color: '#f3ece0', marginBottom: '12px' }}>Where it's going</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {safeCategories.slice(0, 4).map((cat) => {
-              const spent = filteredTxs
-                .filter(t => t.category === cat.id && t.type === 'expense')
-                .reduce((sum, t) => sum + (t.amount || 0), 0);
-              const pct = cat.limit > 0 ? Math.min(100, Math.round((spent / cat.limit) * 100)) : 0;
-              const bg = categoryColors[cat.id] || cat.color || '#f26a1b';
-
-              return (
-                <div key={cat.id} style={{ background: bg, borderRadius: '20px', padding: '16px', color: '#fff' }}>
-                  <div style={{ font: '800 15px Manrope' }}>{cat.icon} {cat.name.split(' ')[0]}</div>
-                  <div style={{ font: '800 22px Manrope', marginTop: '12px' }}>{formatRupees(spent)}</div>
-                  <div style={{ font: '600 11px Manrope', color: 'rgba(255,255,255,0.8)' }}>
-                    {pct}% of {formatRupees(cat.limit)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-      </div>
-    );
-  }
-
-  // =========================================================================
-  // DIRECTION 2b: BOLD HERO DARK (DEFAULT MAIN VIEW)
-  // =========================================================================
   return (
     <div style={{ margin: '-16px -20px 0 -20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       
@@ -149,13 +80,13 @@ export default function HomeTab({
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', font: '700 12px Manrope', color: 'rgba(255,255,255,0.9)' }}>
           <span>{budgetUtilization}% used</span>
-          <span>{formatRupees(remainingBudget)} left · 11 days</span>
+          <span>{formatRupees(remainingBudget)} left{selectedMonth === getCurrentMonth() ? ` · ${daysRemaining} days` : ''}</span>
         </div>
       </div>
 
       {/* Content Below Panel */}
       <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        
+
         {/* Action Pills */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
           <button className="action-pill" onClick={onOpenAddModal}>＋ Add expense</button>
@@ -167,14 +98,14 @@ export default function HomeTab({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }} onClick={onNavigateToGraphs} className="cursor-pointer">
             <div style={{ font: '600 11px Manrope', color: '#8a7d6d' }}>Daily average</div>
-            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>₹3,100</div>
-            <div style={{ font: '700 11px Manrope', color: '#5ec39d', marginTop: '2px' }}>↓ 8% vs June</div>
+            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>{formatRupees(dailyAverage)}</div>
+            <div style={{ font: '700 11px Manrope', color: '#8a7d6d', marginTop: '2px' }}>over {daysElapsed} day{daysElapsed === 1 ? '' : 's'}</div>
           </div>
 
           <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }} onClick={onNavigateToBudgets} className="cursor-pointer">
             <div style={{ font: '600 11px Manrope', color: '#8a7d6d' }}>Bills due soon</div>
-            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>₹7,750</div>
-            <div style={{ font: '700 11px Manrope', color: '#f9812f', marginTop: '2px' }}>{upcomingBills.length || 3} upcoming</div>
+            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>{formatRupees(upcomingBillsTotal)}</div>
+            <div style={{ font: '700 11px Manrope', color: '#f9812f', marginTop: '2px' }}>{upcomingBills.length} upcoming</div>
           </div>
         </div>
 
