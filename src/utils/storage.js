@@ -72,9 +72,11 @@ const INITIAL_PERSONAL_STATE = {
     { id: 'g-3', title: 'Goa / Bali Vacation Goal', target: 100000, current: 65000, category: 'Vacation', icon: '🌴' }
   ],
   transactions: [
-    { id: 'ptx-1', title: 'Monthly Salary Credit', amount: 145000, type: 'income', date: '2026-07-01' },
-    { id: 'ptx-2', title: 'SIP Investment Deposit', amount: 25000, type: 'expense', date: '2026-07-05' },
-    { id: 'ptx-3', title: 'Personal Tech Purchase', amount: 8400, type: 'expense', date: '2026-07-15' }
+    { id: 'ptx-1', title: 'Monthly Salary Credit', amount: 145000, type: 'income', category: 'other', date: '2026-07-01' },
+    { id: 'ptx-2', title: 'SIP Investment Deposit', amount: 25000, type: 'expense', category: 'investment', date: '2026-07-05' },
+    { id: 'ptx-3', title: 'Personal Tech Purchase', amount: 8400, type: 'expense', category: 'shopping', date: '2026-07-15' },
+    { id: 'ptx-4', title: 'Dinner with friends', amount: 1800, type: 'expense', category: 'food', date: '2026-07-18' },
+    { id: 'ptx-5', title: 'Cab rides', amount: 950, type: 'expense', category: 'transport', date: '2026-07-20' }
   ]
 };
 

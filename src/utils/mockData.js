@@ -6,6 +6,20 @@ export const DEFAULT_MEMBERS = [
   { id: 'emma', name: 'Emma (Ananya)', avatar: '👧', color: '#8b5cf6', role: 'Child', allowance: 4000, isEarner: false }
 ];
 
+// Categories for the personal (single-user) expense tracker — separate from
+// the household DEFAULT_CATEGORIES since personal spending has its own shape
+// (no rent/groceries split by family member).
+export const PERSONAL_CATEGORIES = [
+  { id: 'food', name: 'Food & Dining', icon: '🍽️', color: '#ec4899' },
+  { id: 'transport', name: 'Transport', icon: '🚗', color: '#14b8a6' },
+  { id: 'shopping', name: 'Shopping', icon: '🛍️', color: '#f43f5e' },
+  { id: 'bills', name: 'Bills & Utilities', icon: '⚡', color: '#f59e0b' },
+  { id: 'entertainment', name: 'Entertainment', icon: '🎮', color: '#8b5cf6' },
+  { id: 'health', name: 'Health', icon: '🏥', color: '#06b6d4' },
+  { id: 'investment', name: 'Investment / SIP', icon: '📈', color: '#3b82f6' },
+  { id: 'other', name: 'Other', icon: '📦', color: '#8a7d6d' }
+];
+
 export const DEFAULT_CATEGORIES = [
   { id: 'groceries', name: 'Groceries & Provisions', icon: '🛒', limit: 25000, color: '#34d399' },
   { id: 'housing', name: 'Rent & Maintenance', icon: '🏠', limit: 45000, color: '#3b82f6' },
