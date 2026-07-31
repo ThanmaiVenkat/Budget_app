@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Search, Trash2, Plus } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
-import { getMonthOptions } from '../utils/dates';
+import { getMonthOptions, getCurrentMonth } from '../utils/dates';
 
 export default function ExpensesTab({
   transactions = [],
   categories = [],
   members = [],
   activeMemberId = 'all',
-  selectedMonth = '2026-07',
+  selectedMonth = getCurrentMonth(),
   setSelectedMonth,
   onDeleteTx,
   onOpenAddModal
@@ -119,13 +119,13 @@ export default function ExpensesTab({
           </div>
         ) : (
           filtered.map(tx => {
-            const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '💰', name: tx.category || 'Expense' };
-            const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family' };
+            const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '💰', name: tx.category || 'Expense', color: '#f26a1b' };
+            const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family', color: '#8a7d6d' };
 
             return (
               <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: catObj.color || '#f26a1b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
                     <span>{catObj.icon}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -140,7 +140,7 @@ export default function ExpensesTab({
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: '700', color: tx.type === 'income' ? '#34d399' : '#f3ece0' }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: '700', color: tx.type === 'income' ? 'var(--green-accent)' : '#f3ece0' }}>
                     {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
                   </span>
                   <div>

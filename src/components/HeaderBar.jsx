@@ -36,10 +36,10 @@ export default function HeaderBar({
         >
           <Wallet size={18} />
         </div>
-        <div style={{ font: '700 12px Manrope', color: '#f3ece0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ color: '#f9812f', fontWeight: '800' }}>₹ INR</span>
-          <span style={{ color: '#8a7d6d', fontSize: '10px' }}>• Household Budget</span>
-        </div>
+        {/* Currency dropped from the label — every amount in the app already
+            shows ₹, so "₹ INR • Household Budget" was redundant text that
+            wrapped to two lines and crowded the controls on the right. */}
+        <span style={{ font: '700 13px Manrope', color: '#f3ece0', whiteSpace: 'nowrap' }}>Household Budget</span>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

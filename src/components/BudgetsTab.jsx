@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Edit2, Check, Calendar, ArrowRightLeft } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
-import { getMonthOptions } from '../utils/dates';
+import { getMonthOptions, getCurrentMonth, getRecentMonths } from '../utils/dates';
 
 export default function BudgetsTab({
   categories = [],
   transactions = [],
   activeMemberId = 'all',
-  selectedMonth = '2026-07',
+  selectedMonth = getCurrentMonth(),
   setSelectedMonth,
   enableRollover = true,
   setEnableRollover,
@@ -36,8 +36,11 @@ export default function BudgetsTab({
     ? 'All Months' 
     : new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  // Rollover calculation from last month (June)
-  const lastMonthKey = '2026-06';
+  // Rollover calculation from the month before whichever month is selected
+  // (falls back to the current month when viewing "All Months").
+  const rolloverAnchor = selectedMonth !== 'all' ? selectedMonth : getCurrentMonth();
+  const lastMonthKey = getRecentMonths(2, rolloverAnchor)[1];
+  const lastMonthName = new Date(lastMonthKey + '-01').toLocaleString('default', { month: 'long' });
   const lastMonthTxs = safeTxs.filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.date && t.date.startsWith(lastMonthKey));
   const lastMonthInc = lastMonthTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);
   const lastMonthExp = lastMonthTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
@@ -73,7 +76,7 @@ export default function BudgetsTab({
             <div>
               <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>Monthly Rollover Carry-Forward</h4>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                {enableRollover ? `Adding +${formatRupees(rolloverAmount)} leftover from June savings` : 'Rollover is disabled'}
+                {enableRollover ? `Adding +${formatRupees(rolloverAmount)} leftover from ${lastMonthName} savings` : 'Rollover is disabled'}
               </span>
             </div>
           </div>

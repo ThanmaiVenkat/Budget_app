@@ -1,12 +1,16 @@
 import { DEFAULT_MEMBERS, DEFAULT_CATEGORIES, INITIAL_TRANSACTIONS, INITIAL_BILLS } from './mockData';
 
+// v4 -> v5: the default member/category colors moved from random Tailwind
+// swatches to the app's own token palette. Bumping the version so browsers
+// that already saved the old colors to localStorage pick up the fix instead
+// of forever loading stale data over the new defaults.
 const KEYS = {
-  TRANSACTIONS: 'family_budget_transactions_v4',
-  MEMBERS: 'family_budget_members_v4',
-  CATEGORIES: 'family_budget_categories_v4',
-  BILLS: 'family_budget_bills_v4',
-  ROLLOVER: 'family_budget_rollover_v4',
-  PERSONAL_SAVINGS: 'personal_savings_tracker_v4'
+  TRANSACTIONS: 'family_budget_transactions_v5',
+  MEMBERS: 'family_budget_members_v5',
+  CATEGORIES: 'family_budget_categories_v5',
+  BILLS: 'family_budget_bills_v5',
+  ROLLOVER: 'family_budget_rollover_v5',
+  PERSONAL_SAVINGS: 'personal_savings_tracker_v5'
 };
 
 // Persist to localStorage so data survives page reloads and browser sessions.

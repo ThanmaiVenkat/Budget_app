@@ -1,4 +1,5 @@
 import React from 'react';
+import { Users } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
 import { getMonthProgress, getCurrentMonth } from '../utils/dates';
 
@@ -34,7 +35,7 @@ export default function HomeTab({
   const remainingBudget = Math.max(0, totalBudgetLimit - totalExpense);
   const budgetUtilization = totalBudgetLimit > 0 ? Math.min(100, Math.round((totalExpense / totalBudgetLimit) * 100)) : 0;
 
-  const activeMember = safeMembers.find(m => m.id === activeMemberId) || { name: 'Our Family', avatar: '👪' };
+  const activeMember = safeMembers.find(m => m.id === activeMemberId) || { id: 'all', name: 'Our Family' };
 
   const recentTxs = [...filteredTxs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
   const upcomingBills = safeBills.filter(b => !b.paid && (b.daysUntilDue || 0) <= 7);
@@ -51,7 +52,9 @@ export default function HomeTab({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ font: '700 14px Manrope', color: '#fff' }}>Hi, {activeMember.name} 👋</div>
           <div className="avat" style={{ background: 'rgba(0,0,0,0.22)', width: '38px', height: '38px', fontSize: '18px' }}>
-            {activeMember.avatar || '👪'}
+            {activeMember.id === 'all'
+              ? <Users size={18} color="#fff" />
+              : (activeMember.avatar || <Users size={18} color="#fff" />)}
           </div>
         </div>
 

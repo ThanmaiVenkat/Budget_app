@@ -20,7 +20,7 @@ export default function GraphsTab({
   categories = [],
   members = [],
   activeMemberId = 'all',
-  selectedMonth = '2026-07',
+  selectedMonth = getCurrentMonth(),
   setSelectedMonth
 }) {
   const safeTxs = Array.isArray(transactions) ? transactions : [];
@@ -59,7 +59,7 @@ export default function GraphsTab({
       fullTitle: mem.name || 'Member',
       spent: spent,
       avatar: mem.avatar || '👤',
-      fill: mem.color || '#3b82f6'
+      fill: mem.color || '#f26a1b'
     };
   }).sort((a, b) => b.spent - a.spent);
 

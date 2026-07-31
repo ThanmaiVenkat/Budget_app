@@ -51,7 +51,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
           </div>
           <button
             onClick={() => setShowAdd(!showAdd)}
-            style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: 'rgba(94, 195, 157, 0.15)', border: '1px solid rgba(94, 195, 157, 0.3)', color: 'var(--green-accent)', padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
           >
             {showAdd ? 'Cancel' : '+ New Bill'}
           </button>
@@ -105,14 +105,14 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                   justifyContent: 'space-between',
                   padding: '10px 12px',
                   borderRadius: '12px',
-                  background: b.paid ? 'rgba(52, 211, 153, 0.06)' : 'rgba(255, 255, 255, 0.03)',
-                  border: `1px solid ${b.paid ? 'rgba(52, 211, 153, 0.2)' : 'var(--bg-card-border)'}`,
+                  background: b.paid ? 'rgba(94, 195, 157, 0.06)' : 'rgba(255, 255, 255, 0.03)',
+                  border: `1px solid ${b.paid ? 'rgba(94, 195, 157, 0.2)' : 'var(--bg-card-border)'}`,
                   cursor: 'pointer'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   {b.paid ? (
-                    <CheckCircle2 size={20} color="#34d399" />
+                    <CheckCircle2 size={20} color="var(--green-accent)" />
                   ) : (
                     <Circle size={20} color="var(--text-muted)" />
                   )}
@@ -153,7 +153,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
       {/* BILL SPLIT CALCULATOR */}
       <div className="glass-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <Calculator size={18} color="#818cf8" />
+          <Calculator size={18} color="var(--gold-accent)" />
           <h3 style={{ fontSize: '0.95rem', fontWeight: '700' }}>Shared Bill Split Calculator (₹)</h3>
         </div>
 
@@ -181,14 +181,14 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
             </div>
           </div>
 
-          <div style={{ background: 'rgba(129, 140, 248, 0.12)', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '12px 14px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: 'rgba(217, 154, 58, 0.12)', border: '1px solid rgba(217, 154, 58, 0.3)', padding: '12px 14px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Each Person Pays</div>
-              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: '#818cf8' }}>
+              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--gold-accent)' }}>
                 {formatRupees(perPerson)}
               </div>
             </div>
-            <Users size={24} color="#818cf8" opacity={0.7} />
+            <Users size={24} color="var(--gold-accent)" opacity={0.7} />
           </div>
         </div>
       </div>

@@ -49,7 +49,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileSpreadsheet size={22} color="var(--primary)" />
+            <FileSpreadsheet size={22} color="var(--green-accent)" />
             <h2 style={{ fontSize: '1.1rem', fontWeight: '800' }}>Auto Excel / CSV Importer</h2>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -64,15 +64,15 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
         {/* Upload Drop Zone */}
         <label
           style={{
-            border: '2px dashed var(--primary)',
-            borderRadius: 'var(--radius-lg)',
+            border: '2px dashed var(--green-accent)',
+            borderRadius: '20px',
             padding: '24px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '10px',
-            background: 'rgba(16, 185, 129, 0.05)',
+            background: 'rgba(94, 195, 157, 0.05)',
             cursor: 'pointer',
             marginBottom: '16px',
             textAlign: 'center',
@@ -85,7 +85,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
-          <Upload size={32} color="var(--primary)" />
+          <Upload size={32} color="var(--green-accent)" />
           <div>
             <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-main)' }}>
               {file ? file.name : 'Tap or Drag Excel / CSV File Here'}
@@ -104,7 +104,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             style={{
               background: 'none',
               border: 'none',
-              color: 'var(--secondary)',
+              color: 'var(--text-muted)',
               fontSize: '0.75rem',
               fontWeight: '700',
               cursor: 'pointer',
@@ -118,23 +118,23 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
         </div>
 
         {loading && (
-          <div style={{ textAlign: 'center', padding: '16px', color: 'var(--primary)', fontWeight: '600', fontSize: '0.85rem' }}>
+          <div style={{ textAlign: 'center', padding: '16px', color: 'var(--green-accent)', fontWeight: '600', fontSize: '0.85rem' }}>
             ⚡ Parsing spreadsheet automatically...
           </div>
         )}
 
         {error && (
-          <div style={{ background: 'rgba(244, 63, 94, 0.12)', border: '1px solid rgba(244, 63, 94, 0.3)', padding: '12px', borderRadius: 'var(--radius-md)', color: 'var(--danger)', fontSize: '0.78rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: 'rgba(248, 113, 113, 0.12)', border: '1px solid rgba(248, 113, 113, 0.3)', padding: '12px', borderRadius: '12px', color: '#f87171', fontSize: '0.78rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={18} /> {error}
           </div>
         )}
 
         {/* Parsed Preview Card */}
         {parsedResult && (
-          <div className="glass-card" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', marginBottom: '16px', padding: '14px' }}>
+          <div className="glass-card" style={{ background: 'rgba(94, 195, 157, 0.08)', border: '1px solid rgba(94, 195, 157, 0.25)', marginBottom: '16px', padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <CheckCircle size={18} color="var(--primary)" />
-              <span style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--primary)' }}>
+              <CheckCircle size={18} color="var(--green-accent)" />
+              <span style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--green-accent)' }}>
                 Successfully Detected {parsedResult.totalRows} Transactions!
               </span>
             </div>
@@ -154,7 +154,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
               {parsedResult.transactions.slice(0, 3).map((tx, idx) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', padding: '3px 0' }}>
                   <span>{tx.title} ({tx.date})</span>
-                  <span style={{ fontWeight: '700', color: tx.type === 'income' ? 'var(--primary)' : 'var(--text-main)' }}>
+                  <span style={{ fontWeight: '700', color: tx.type === 'income' ? 'var(--green-accent)' : 'var(--text-main)' }}>
                     {formatRupees(tx.amount)}
                   </span>
                 </div>

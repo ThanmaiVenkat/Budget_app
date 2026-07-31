@@ -78,14 +78,14 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 padding: '4px 12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: type === 'income' ? '#34d399' : 'transparent',
+                background: type === 'income' ? 'var(--green-accent)' : 'transparent',
                 color: type === 'income' ? '#040407' : '#fff',
                 fontWeight: '700',
                 fontSize: '0.78rem',
                 cursor: 'pointer'
               }}
             >
-              💰 Dad's Income
+              💰 {earner.name.split(' ')[0]}'s Income
             </button>
           </div>
 
@@ -100,7 +100,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           <div className="form-group" style={{ marginBottom: '4px' }}>
             <label className="form-label" style={{ fontSize: '0.72rem' }}>1. AMOUNT (₹)</label>
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.4rem', fontWeight: '800', color: '#34d399' }}>
+              <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.4rem', fontWeight: '800', color: 'var(--green-accent)' }}>
                 ₹
               </span>
               <input
@@ -124,10 +124,10 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
             </label>
 
             {type === 'income' ? (
-              <div style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: 'rgba(94, 195, 157, 0.15)', border: '1px solid rgba(94, 195, 157, 0.3)', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '1.3rem' }}>{earner.avatar || '💼'}</span>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#34d399' }}>{earner.name}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--green-accent)' }}>{earner.name}</div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Primary household earner</div>
                 </div>
               </div>
@@ -146,8 +146,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         gap: '6px',
                         padding: '6px 12px',
                         borderRadius: '999px',
-                        background: isSelected ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${isSelected ? '#34d399' : 'var(--bg-card-border)'}`,
+                        background: isSelected ? 'rgba(94, 195, 157, 0.2)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${isSelected ? 'var(--green-accent)' : 'var(--bg-card-border)'}`,
                         color: isSelected ? 'var(--text-main)' : 'var(--text-muted)',
                         fontWeight: isSelected ? '700' : '500',
                         fontSize: '0.78rem',
@@ -182,8 +182,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         justifyContent: 'center',
                         padding: '8px 4px',
                         borderRadius: '12px',
-                        background: isSelected ? 'rgba(52, 211, 153, 0.18)' : 'rgba(255, 255, 255, 0.03)',
-                        border: `1px solid ${isSelected ? '#34d399' : 'var(--bg-card-border)'}`,
+                        background: isSelected ? 'rgba(94, 195, 157, 0.18)' : 'rgba(255, 255, 255, 0.03)',
+                        border: `1px solid ${isSelected ? 'var(--green-accent)' : 'var(--bg-card-border)'}`,
                         color: isSelected ? '#ffffff' : 'var(--text-muted)',
                         cursor: 'pointer',
                         fontSize: '0.72rem',
@@ -244,7 +244,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           )}
 
           <button type="submit" className="btn-primary" style={{ marginTop: '6px' }}>
-            {type === 'income' ? 'Log Dad Salary Credit (₹)' : 'Add Expense Entry (₹)'}
+            {type === 'income' ? `Log ${earner.name.split(' ')[0]} Salary Credit (₹)` : 'Add Expense Entry (₹)'}
           </button>
         </form>
       </div>
