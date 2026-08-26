@@ -6,7 +6,7 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
     { id: 'home', label: 'Home', icon: Home },
     { id: 'graphs', label: 'Insights', icon: TrendingUp },
     { id: 'add', label: 'Add', isFab: true },
-    { id: 'budgets', label: 'Bills', icon: Receipt },
+    { id: 'budgets', label: 'Budgets', icon: Receipt },
     { id: 'members', label: 'You', icon: User }
   ];
 

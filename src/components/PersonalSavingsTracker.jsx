@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { PiggyBank, Target, Sparkles, Trash2, Sliders, Calculator, CheckCircle2, TrendingUp } from 'lucide-react';
+import { ArrowLeft, PiggyBank, Target, Sparkles, Trash2, Sliders, Calculator, CheckCircle2, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { formatRupees } from '../utils/mockData';
 
-export default function PersonalSavingsTracker({ personalState, setPersonalState }) {
+export default function PersonalSavingsTracker({ personalState, setPersonalState, onBack }) {
   const { salary = 145000, expenses = 32000, goals = [], transactions = [] } = personalState || {};
 
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
@@ -135,7 +135,26 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      
+
+      {/* Back to Family Budget */}
+      <button
+        onClick={onBack}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: 'none',
+          border: 'none',
+          color: '#8a7d6d',
+          font: '700 12px Manrope',
+          cursor: 'pointer',
+          padding: 0,
+          alignSelf: 'flex-start'
+        }}
+      >
+        <ArrowLeft size={14} /> Back to Family Budget
+      </button>
+
       {/* PERSONAL HERO SAVINGS CARD */}
       <div
         className="glass-card"

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, FileSpreadsheet, Layers, Wallet } from 'lucide-react';
+import { Download, FileSpreadsheet, Layers, PiggyBank, Wallet } from 'lucide-react';
 import { exportTransactionsToCSV } from '../utils/storage';
 
 export default function HeaderBar({
@@ -10,6 +10,8 @@ export default function HeaderBar({
   selectedMonth = '2026-07',
   setSelectedMonth,
   onOpenExcelModal,
+  onOpenPersonal,
+  isPersonalActive = false,
   activeDirection = '2b',
   setActiveDirection
 }) {
@@ -81,6 +83,26 @@ export default function HeaderBar({
           <option value="2026-05">May 2026</option>
           <option value="all">All Months</option>
         </select>
+
+        {/* Personal Savings Tracker Toggle */}
+        <button
+          onClick={onOpenPersonal}
+          style={{
+            background: isPersonalActive ? 'rgba(52, 211, 153, 0.25)' : 'rgba(52, 211, 153, 0.15)',
+            border: '1px solid rgba(52, 211, 153, 0.4)',
+            borderRadius: '50%',
+            width: '30px',
+            height: '30px',
+            color: '#34d399',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          title="My Personal Savings Tracker"
+        >
+          <PiggyBank size={14} />
+        </button>
 
         {/* Upload Excel Button */}
         <button

@@ -12,6 +12,7 @@ export default function HomeTab({
   onNavigateToExpenses,
   onNavigateToGraphs,
   onNavigateToBudgets,
+  onNavigateToBills,
   onOpenAddModal,
   onToggleBillPaid
 }) {
@@ -172,7 +173,7 @@ export default function HomeTab({
             <div style={{ font: '700 11px Manrope', color: '#5ec39d', marginTop: '2px' }}>↓ 8% vs June</div>
           </div>
 
-          <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }} onClick={onNavigateToBudgets} className="cursor-pointer">
+          <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }} onClick={onNavigateToBills} className="cursor-pointer">
             <div style={{ font: '600 11px Manrope', color: '#8a7d6d' }}>Bills due soon</div>
             <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>₹7,750</div>
             <div style={{ font: '700 11px Manrope', color: '#f9812f', marginTop: '2px' }}>{upcomingBills.length || 3} upcoming</div>

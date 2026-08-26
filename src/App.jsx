@@ -126,6 +126,11 @@ export default function App() {
     setActiveTab('graphs');
   };
 
+  // Deep link to Bill Reminders (lives inside the "You" tab alongside Members)
+  const handleNavigateToBills = () => {
+    setActiveTab('members');
+  };
+
   return (
     <div className="app-container">
       
@@ -152,6 +157,8 @@ export default function App() {
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
           onOpenExcelModal={() => setShowExcelModal(true)}
+          onOpenPersonal={() => setActiveTab('personal')}
+          isPersonalActive={activeTab === 'personal'}
           activeDirection={activeDirection}
           setActiveDirection={setActiveDirection}
         />
@@ -189,6 +196,7 @@ export default function App() {
               onNavigateToExpenses={() => setActiveTab('expenses')}
               onNavigateToGraphs={handleNavigateToGraphs}
               onNavigateToBudgets={() => setActiveTab('budgets')}
+              onNavigateToBills={handleNavigateToBills}
               onOpenAddModal={() => setShowAddModal(true)}
               onToggleBillPaid={handleToggleBillPaid}
             />
@@ -222,6 +230,7 @@ export default function App() {
             <PersonalSavingsTracker
               personalState={personalState}
               setPersonalState={setPersonalState}
+              onBack={() => setActiveTab('home')}
             />
           )}
 
