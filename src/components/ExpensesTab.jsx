@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Trash2, Plus } from 'lucide-react';
-import { formatRupees } from '../utils/mockData';
+import { formatRupees, getAvailableMonths } from '../utils/mockData';
 
 export default function ExpensesTab({
   transactions = [],
@@ -19,6 +19,7 @@ export default function ExpensesTab({
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
   const safeMembers = Array.isArray(members) ? members : [];
+  const availableMonths = getAvailableMonths(safeTxs);
 
   const filtered = safeTxs.filter(tx => {
     const titleText = (tx.title || '').toLowerCase();
@@ -72,9 +73,9 @@ export default function ExpensesTab({
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
           <option value="all">📅 All Months</option>
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
+          {availableMonths.map((m) => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
         </select>
 
         <select

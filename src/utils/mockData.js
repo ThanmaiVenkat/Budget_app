@@ -193,6 +193,34 @@ export const formatRupees = (amount) => {
   return '₹' + Number(amount).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 };
 
+// Derives the list of YYYY-MM months actually present in the transactions,
+// newest first, so month pickers stay correct as data changes over time.
+export const getAvailableMonths = (transactions = []) => {
+  const keys = new Set();
+  (transactions || []).forEach((t) => {
+    if (t.date && t.date.length >= 7) keys.add(t.date.slice(0, 7));
+  });
+
+  if (keys.size === 0) {
+    keys.add(new Date().toISOString().slice(0, 7));
+  }
+
+  return Array.from(keys)
+    .sort((a, b) => (a < b ? 1 : -1))
+    .map((key) => ({
+      value: key,
+      label: new Date(key + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })
+    }));
+};
+
+// Returns the YYYY-MM key immediately before the given one (e.g. '2026-07' -> '2026-06').
+export const getPreviousMonthKey = (monthKey) => {
+  const [year, month] = (monthKey || '').split('-').map(Number);
+  if (!year || !month) return null;
+  const d = new Date(year, month - 2, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
 export const getBillBadgeStatus = (daysUntilDue, paid) => {
   if (paid) return { text: 'Paid', bg: 'rgba(52, 211, 153, 0.15)', border: 'rgba(52, 211, 153, 0.3)', color: '#34d399' };
   if (daysUntilDue < 3) return { text: `Due in ${daysUntilDue}d (Urgent)`, bg: 'rgba(248, 113, 113, 0.18)', border: 'rgba(248, 113, 113, 0.4)', color: '#f87171' };

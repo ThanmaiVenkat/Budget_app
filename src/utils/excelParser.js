@@ -36,7 +36,7 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
         const categoryKey = findKey(['category', 'head', 'cat', 'group', 'class']);
         const memberKey = findKey(['member', 'person', 'paidby', 'user', 'who', 'name']);
         const dateKey = findKey(['date', 'time', 'day', 'when']);
-        const methodKey = findKey(['payment', 'method', 'mode', 'type', 'upi']);
+        const methodKey = findKey(['payment', 'method', 'mode', 'upi']);
         const notesKey = findKey(['note', 'remark', 'comment']);
         const typeKey = findKey(['type', 'kind', 'crdr', 'credit']);
 
@@ -64,27 +64,34 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
             txType = 'income';
           }
 
-          // Category resolution
-          let catName = categoryKey && row[categoryKey] ? String(row[categoryKey]).trim() : 'General';
-          let matchedCat = existingCategories.find(c => c.name.toLowerCase() === catName.toLowerCase() || c.id === catName.toLowerCase());
-          
-          let catId = matchedCat ? matchedCat.id : catName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-          if (!matchedCat && !newCategoriesMap.has(catId)) {
-            newCategoriesMap.set(catId, {
-              id: catId,
-              name: catName,
-              icon: '📦',
-              limit: 10000,
-              color: '#3b82f6'
-            });
+          // Category resolution — income rows always store the literal 'income'
+          // category below, so skip creating an unused category for them.
+          let catId = 'income';
+          if (txType !== 'income') {
+            let catName = categoryKey && row[categoryKey] ? String(row[categoryKey]).trim() : 'General';
+            let matchedCat = existingCategories.find(c => c.name.toLowerCase() === catName.toLowerCase() || c.id === catName.toLowerCase());
+
+            catId = matchedCat ? matchedCat.id : catName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            if (!matchedCat && !newCategoriesMap.has(catId)) {
+              newCategoriesMap.set(catId, {
+                id: catId,
+                name: catName,
+                icon: '📦',
+                limit: 10000,
+                color: '#3b82f6'
+              });
+            }
           }
 
-          // Member resolution
-          let memName = memberKey && row[memberKey] ? String(row[memberKey]).trim() : 'Family';
-          let matchedMem = existingMembers.find(m => m.name.toLowerCase().includes(memName.toLowerCase()) || m.id === memName.toLowerCase());
-          
-          let memberId = matchedMem ? matchedMem.id : memName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-          if (!matchedMem && !newMembersMap.has(memberId) && memberId !== 'all') {
+          // Member resolution — rows with no identifiable member column fall back to
+          // the shared "All Family" bucket rather than spawning a fake "Family" member.
+          let memName = memberKey && row[memberKey] ? String(row[memberKey]).trim() : '';
+          let matchedMem = memName
+            ? existingMembers.find(m => m.name.toLowerCase().includes(memName.toLowerCase()) || m.id === memName.toLowerCase())
+            : null;
+
+          let memberId = matchedMem ? matchedMem.id : (memName ? memName.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'all');
+          if (memName && !matchedMem && !newMembersMap.has(memberId) && memberId !== 'all') {
             newMembersMap.set(memberId, {
               id: memberId,
               name: memName,
@@ -115,7 +122,7 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
             title: rawTitle,
             amount: numAmount,
             category: txType === 'income' ? 'income' : catId,
-            memberId: memberId || 'mom',
+            memberId,
             date: dateStr,
             paymentMethod: methodKey && row[methodKey] ? String(row[methodKey]) : 'UPI',
             notes: notesKey && row[notesKey] ? String(row[notesKey]) : 'Uploaded via Excel'

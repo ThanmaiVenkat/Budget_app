@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, FileSpreadsheet, Layers, PiggyBank, Wallet } from 'lucide-react';
 import { exportTransactionsToCSV } from '../utils/storage';
+import { getAvailableMonths } from '../utils/mockData';
 
 export default function HeaderBar({
   transactions = [],
@@ -18,6 +19,8 @@ export default function HeaderBar({
   const handleExport = () => {
     exportTransactionsToCSV(transactions || [], members || [], categories || []);
   };
+
+  const availableMonths = getAvailableMonths(transactions);
 
   const toggleDirection = () => {
     if (typeof setActiveDirection === 'function') {
@@ -78,9 +81,9 @@ export default function HeaderBar({
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
+          {availableMonths.map((m) => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
           <option value="all">All Months</option>
         </select>
 
