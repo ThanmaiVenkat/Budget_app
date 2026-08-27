@@ -32,7 +32,7 @@ export default function App() {
   const [showExcelModal, setShowExcelModal] = useState(false);
   const [isFrameMode, setIsFrameMode] = useState(true);
 
-  // Sync state to window.storage
+  // Persist state to localStorage
   useEffect(() => {
     saveState('TRANSACTIONS', transactions);
   }, [transactions]);
