@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Calendar, CheckCircle2, Circle, Calculator, Users } from 'lucide-react';
+import { Calendar, CheckCircle2, Circle, Calculator, Users, Pencil, Trash2 } from 'lucide-react';
 import { formatRupees, getBillBadgeStatus } from '../utils/mockData';
 
-export default function BillRemindersTab({ bills, members, onToggleBillPaid, onAddBill }) {
+export default function BillRemindersTab({ bills, members, onToggleBillPaid, onAddBill, onUpdateBill, onDeleteBill }) {
   const [showAdd, setShowAdd] = useState(false);
+  const [editingBillId, setEditingBillId] = useState(null);
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [daysUntilDue, setDaysUntilDue] = useState('5');
@@ -13,25 +14,58 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
   const [splitAmount, setSplitAmount] = useState('2400');
   const [selectedPeopleCount, setSelectedPeopleCount] = useState(4);
 
+  const resetForm = () => {
+    setTitle('');
+    setAmount('');
+    setDaysUntilDue('5');
+    setEditingBillId(null);
+    setShowAdd(false);
+  };
+
+  const handleStartEdit = (bill) => {
+    setEditingBillId(bill.id);
+    setTitle(bill.title);
+    setAmount(String(bill.amount));
+    setDaysUntilDue(String(bill.daysUntilDue ?? 5));
+    setPayer(bill.payer);
+    setShowAdd(true);
+  };
+
+  const handleDeleteBill = (billId) => {
+    if (window.confirm('Delete this bill reminder?') && onDeleteBill) {
+      onDeleteBill(billId);
+    }
+  };
+
   const handleCreateBill = (e) => {
     e.preventDefault();
     if (!title || !amount) return;
 
     const days = parseInt(daysUntilDue) || 5;
 
-    onAddBill({
-      id: 'b-' + Date.now(),
-      title,
-      amount: parseFloat(amount),
-      daysUntilDue: days,
-      dueDate: `In ${days} days`,
-      paid: false,
-      payer
-    });
+    if (editingBillId) {
+      if (onUpdateBill) {
+        onUpdateBill(editingBillId, {
+          title,
+          amount: parseFloat(amount),
+          daysUntilDue: days,
+          dueDate: `In ${days} days`,
+          payer
+        });
+      }
+    } else {
+      onAddBill({
+        id: 'b-' + Date.now(),
+        title,
+        amount: parseFloat(amount),
+        daysUntilDue: days,
+        dueDate: `In ${days} days`,
+        paid: false,
+        payer
+      });
+    }
 
-    setTitle('');
-    setAmount('');
-    setShowAdd(false);
+    resetForm();
   };
 
   const perPerson = parseFloat(splitAmount) > 0 && selectedPeopleCount > 0 
@@ -49,7 +83,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
             <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Color-coded by due date urgency</span>
           </div>
           <button
-            onClick={() => setShowAdd(!showAdd)}
+            onClick={() => (showAdd ? resetForm() : setShowAdd(true))}
             style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
           >
             {showAdd ? 'Cancel' : '+ New Bill'}
@@ -75,7 +109,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
             </div>
 
             <button type="submit" className="btn-primary" style={{ padding: '8px', fontSize: '0.85rem' }}>
-              Save Bill Reminder
+              {editingBillId ? 'Update Bill Reminder' : 'Save Bill Reminder'}
             </button>
           </form>
         )}
@@ -116,7 +150,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
                   <span style={{ fontSize: '0.88rem', fontWeight: '800', color: b.paid ? 'var(--text-muted)' : 'var(--text-main)' }}>
                     {formatRupees(b.amount)}
                   </span>
@@ -133,6 +167,22 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                   >
                     {badge.text}
                   </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleStartEdit(b); }}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
+                      title="Edit bill"
+                    >
+                      <Pencil size={12} opacity={0.6} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteBill(b.id); }}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
+                      title="Delete bill"
+                    >
+                      <Trash2 size={12} color="#f87171" opacity={0.6} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

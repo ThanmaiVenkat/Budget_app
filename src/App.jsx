@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import confetti from 'canvas-confetti';
 import { Smartphone, Monitor } from 'lucide-react';
 import HeaderBar from './components/HeaderBar';
@@ -6,14 +6,22 @@ import FamilyMemberBar from './components/FamilyMemberBar';
 import BottomNav from './components/BottomNav';
 import HomeTab from './components/HomeTab';
 import ExpensesTab from './components/ExpensesTab';
-import GraphsTab from './components/GraphsTab';
 import BudgetsTab from './components/BudgetsTab';
 import MembersTab from './components/MembersTab';
 import BillRemindersTab from './components/BillRemindersTab';
-import PersonalSavingsTracker from './components/PersonalSavingsTracker';
 import AddExpenseSheet from './components/AddExpenseSheet';
-import ExcelImportModal from './components/ExcelImportModal';
 import { loadState, saveState, resetToDefaultState } from './utils/storage';
+
+// Lazy-loaded: pulls in recharts / xlsx, only needed once the user opens these views.
+const GraphsTab = lazy(() => import('./components/GraphsTab'));
+const PersonalSavingsTracker = lazy(() => import('./components/PersonalSavingsTracker'));
+const ExcelImportModal = lazy(() => import('./components/ExcelImportModal'));
+
+const TabLoadingFallback = () => (
+  <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
+    Loading…
+  </div>
+);
 
 export default function App() {
   const [initialData] = useState(() => loadState());
@@ -105,6 +113,16 @@ export default function App() {
   // Add Bill
   const handleAddBill = (newBill) => {
     setBills((prev) => [...prev, newBill]);
+  };
+
+  // Update Bill
+  const handleUpdateBill = (billId, updates) => {
+    setBills((prev) => prev.map((b) => (b.id === billId ? { ...b, ...updates } : b)));
+  };
+
+  // Delete Bill
+  const handleDeleteBill = (billId) => {
+    setBills((prev) => prev.filter((b) => b.id !== billId));
   };
 
   // Add Family Member
@@ -216,22 +234,26 @@ export default function App() {
           )}
 
           {activeTab === 'graphs' && (
-            <GraphsTab
-              transactions={transactions}
-              categories={categories}
-              members={members}
-              activeMemberId={activeMemberId}
-              selectedMonth={selectedMonth}
-              setSelectedMonth={setSelectedMonth}
-            />
+            <Suspense fallback={<TabLoadingFallback />}>
+              <GraphsTab
+                transactions={transactions}
+                categories={categories}
+                members={members}
+                activeMemberId={activeMemberId}
+                selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
+              />
+            </Suspense>
           )}
 
           {activeTab === 'personal' && (
-            <PersonalSavingsTracker
-              personalState={personalState}
-              setPersonalState={setPersonalState}
-              onBack={() => setActiveTab('home')}
-            />
+            <Suspense fallback={<TabLoadingFallback />}>
+              <PersonalSavingsTracker
+                personalState={personalState}
+                setPersonalState={setPersonalState}
+                onBack={() => setActiveTab('home')}
+              />
+            </Suspense>
           )}
 
           {activeTab === 'budgets' && (
@@ -259,6 +281,8 @@ export default function App() {
                 members={members}
                 onToggleBillPaid={handleToggleBillPaid}
                 onAddBill={handleAddBill}
+                onUpdateBill={handleUpdateBill}
+                onDeleteBill={handleDeleteBill}
               />
             </div>
           )}
@@ -283,12 +307,14 @@ export default function App() {
 
         {/* Auto Excel / CSV Importer Modal */}
         {showExcelModal && (
-          <ExcelImportModal
-            categories={categories}
-            members={members}
-            onClose={() => setShowExcelModal(false)}
-            onImportSuccess={handleExcelImportSuccess}
-          />
+          <Suspense fallback={null}>
+            <ExcelImportModal
+              categories={categories}
+              members={members}
+              onClose={() => setShowExcelModal(false)}
+              onImportSuccess={handleExcelImportSuccess}
+            />
+          </Suspense>
         )}
 
       </div>

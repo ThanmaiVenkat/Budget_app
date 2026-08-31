@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, PiggyBank, Target, Sparkles, Trash2, Sliders, Calculator, CheckCircle2, TrendingUp } from 'lucide-react';
+import { ArrowLeft, PiggyBank, Target, Sparkles, Trash2, Pencil, Sliders, Calculator, CheckCircle2, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { formatRupees } from '../utils/mockData';
 
@@ -7,6 +7,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
   const { salary = 145000, expenses = 32000, goals = [], transactions = [] } = personalState || {};
 
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState(null);
   const [showAddTxModal, setShowAddTxModal] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState(null);
   const [depositAmount, setDepositAmount] = useState('');
@@ -77,29 +78,64 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
     setDepositAmount('');
   };
 
-  // Add New Goal
+  // Add or Update a Goal
   const handleCreateGoal = (e) => {
     e.preventDefault();
     if (!goalTitle || !targetAmount) return;
 
-    const newGoal = {
-      id: 'g-' + Date.now(),
-      title: goalTitle,
-      target: parseFloat(targetAmount),
-      current: parseFloat(currentAmount) || 0,
-      category,
-      icon: category === 'Emergency' ? '🛡️' : category === 'Investment' ? '📈' : '🌴'
-    };
+    const icon = category === 'Emergency' ? '🛡️' : category === 'Investment' ? '📈' : '🌴';
 
-    setPersonalState(prev => ({
-      ...prev,
-      goals: [...(prev.goals || []), newGoal]
-    }));
+    if (editingGoalId) {
+      setPersonalState(prev => ({
+        ...prev,
+        goals: (prev.goals || []).map(g => g.id === editingGoalId
+          ? { ...g, title: goalTitle, target: parseFloat(targetAmount), current: parseFloat(currentAmount) || 0, category, icon }
+          : g)
+      }));
+    } else {
+      const newGoal = {
+        id: 'g-' + Date.now(),
+        title: goalTitle,
+        target: parseFloat(targetAmount),
+        current: parseFloat(currentAmount) || 0,
+        category,
+        icon
+      };
 
+      setPersonalState(prev => ({
+        ...prev,
+        goals: [...(prev.goals || []), newGoal]
+      }));
+    }
+
+    resetGoalForm();
+  };
+
+  const resetGoalForm = () => {
     setGoalTitle('');
     setTargetAmount('');
     setCurrentAmount('');
+    setCategory('Investment');
+    setEditingGoalId(null);
     setShowAddGoalModal(false);
+  };
+
+  const handleStartEditGoal = (goal) => {
+    setEditingGoalId(goal.id);
+    setGoalTitle(goal.title);
+    setTargetAmount(String(goal.target));
+    setCurrentAmount(String(goal.current || 0));
+    setCategory(goal.category);
+    setShowAddGoalModal(true);
+  };
+
+  const handleDeleteGoal = (goalId) => {
+    if (window.confirm('Delete this savings goal?')) {
+      setPersonalState(prev => ({
+        ...prev,
+        goals: (prev.goals || []).filter(g => g.id !== goalId)
+      }));
+    }
   };
 
   // Add Personal Tx
@@ -340,7 +376,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
             <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>My Savings Goals & Targets</h3>
           </div>
           <button
-            onClick={() => setShowAddGoalModal(true)}
+            onClick={() => { setEditingGoalId(null); setGoalTitle(''); setTargetAmount(''); setCurrentAmount(''); setCategory('Investment'); setShowAddGoalModal(true); }}
             style={{
               background: 'rgba(52, 211, 153, 0.15)',
               border: '1px solid rgba(52, 211, 153, 0.3)',
@@ -388,12 +424,28 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '0.7rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>{pct}% achieved</span>
-                  <button
-                    onClick={() => setSelectedGoalId(goal.id)}
-                    style={{ background: 'none', border: 'none', color: '#818cf8', fontWeight: '700', cursor: 'pointer' }}
-                  >
-                    + Quick Deposit
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      onClick={() => setSelectedGoalId(goal.id)}
+                      style={{ background: 'none', border: 'none', color: '#818cf8', fontWeight: '700', cursor: 'pointer' }}
+                    >
+                      + Quick Deposit
+                    </button>
+                    <button
+                      onClick={() => handleStartEditGoal(goal)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
+                      title="Edit goal"
+                    >
+                      <Pencil size={12} opacity={0.6} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteGoal(goal.id)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
+                      title="Delete goal"
+                    >
+                      <Trash2 size={12} color="#f87171" opacity={0.6} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -468,11 +520,11 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
 
       {/* CREATE NEW GOAL MODAL */}
       {showAddGoalModal && (
-        <div className="sheet-overlay" onClick={() => setShowAddGoalModal(false)}>
+        <div className="sheet-overlay" onClick={resetGoalForm}>
           <div className="sheet-modal" onClick={(e) => e.stopPropagation()}>
             <div className="sheet-handle" />
             <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '12px' }}>
-              Create Personal Savings Goal
+              {editingGoalId ? 'Edit Personal Savings Goal' : 'Create Personal Savings Goal'}
             </h3>
 
             <form onSubmit={handleCreateGoal} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -522,7 +574,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
               </div>
 
               <button type="submit" className="btn-primary">
-                Save Savings Goal
+                {editingGoalId ? 'Update Savings Goal' : 'Save Savings Goal'}
               </button>
             </form>
           </div>

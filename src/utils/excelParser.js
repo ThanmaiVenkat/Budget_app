@@ -43,16 +43,25 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
         const parsedTransactions = [];
         const newCategoriesMap = new Map();
         const newMembersMap = new Map();
+        const skippedRows = [];
 
         rawJson.forEach((row, idx) => {
-          let rawTitle = String(row[titleKey] || `Item #${idx + 1}`).trim();
-          if (!rawTitle) return; // skip blank rows
+          const sheetRow = idx + 2; // +1 for 0-index, +1 for the header row
+          const titleCell = row[titleKey];
+          const rawTitle = (titleCell === undefined || titleCell === null ? '' : String(titleCell)).trim();
+          if (!rawTitle) {
+            skippedRows.push({ row: sheetRow, reason: 'Missing title' });
+            return;
+          }
 
           // Clean amount
           let rawAmount = String(row[amountKey] || '0').replace(/[₹,$\s]/g, '');
           let numAmount = Math.abs(parseFloat(rawAmount)) || 0;
 
-          if (numAmount === 0) return;
+          if (numAmount === 0) {
+            skippedRows.push({ row: sheetRow, reason: `"${rawTitle}" has no valid amount` });
+            return;
+          }
 
           // Determine transaction type (expense vs income)
           let txType = 'expense';
@@ -133,7 +142,8 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
           transactions: parsedTransactions,
           newCategories: Array.from(newCategoriesMap.values()),
           newMembers: Array.from(newMembersMap.values()),
-          totalRows: parsedTransactions.length
+          totalRows: parsedTransactions.length,
+          skippedRows
         });
 
       } catch (err) {
