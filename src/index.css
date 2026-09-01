@@ -134,7 +134,7 @@ body {
   white-space: nowrap;
 }
 
-.header-month-select {
+.form-select.header-month-select {
   padding: 4px 8px;
   height: 30px;
 }
@@ -173,7 +173,7 @@ body {
     padding: 6px;
   }
 
-  .header-month-select {
+  .form-select.header-month-select {
     padding: 4px 4px 4px 6px;
     font-size: 10px !important;
   }
