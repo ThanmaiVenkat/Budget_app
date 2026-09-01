@@ -37,9 +37,6 @@ body {
   background-color: #0d0b08;
   color: var(--text-main);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   overflow-x: hidden;
   line-height: 1.5;
 }
