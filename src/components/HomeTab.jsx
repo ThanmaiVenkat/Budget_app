@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatRupees } from '../utils/mockData';
+import { formatRupees, getPreviousMonthKey } from '../utils/mockData';
 
 export default function HomeTab({
   transactions = [],
@@ -30,11 +30,30 @@ export default function HomeTab({
 
   const totalExpense = filteredTxs
     .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + (t.amount || 0), 0) || 62000;
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const totalBudgetLimit = safeCategories.reduce((sum, c) => sum + (c.limit || 0), 0) || 90000;
+  const totalBudgetLimit = safeCategories.reduce((sum, c) => sum + (c.limit || 0), 0);
   const remainingBudget = Math.max(0, totalBudgetLimit - totalExpense);
-  const budgetUtilization = Math.min(100, Math.round((totalExpense / totalBudgetLimit) * 100));
+  const budgetUtilization = totalBudgetLimit > 0 ? Math.min(100, Math.round((totalExpense / totalBudgetLimit) * 100)) : 0;
+
+  // Daily average: real spend so far / days in the selected month (only meaningful for a specific month)
+  const daysInSelectedMonth = (() => {
+    if (selectedMonth === 'all') return null;
+    const [y, m] = selectedMonth.split('-').map(Number);
+    return y && m ? new Date(y, m, 0).getDate() : null;
+  })();
+  const dailyAverage = daysInSelectedMonth ? totalExpense / daysInSelectedMonth : null;
+
+  // Compare to the previous month's spend, when there is one to compare against
+  const prevMonthKey = selectedMonth !== 'all' ? getPreviousMonthKey(selectedMonth) : null;
+  const prevMonthExpense = prevMonthKey
+    ? safeTxs
+        .filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.type === 'expense' && t.date && t.date.startsWith(prevMonthKey))
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+    : 0;
+  const expenseDeltaPct = prevMonthExpense > 0
+    ? Math.round(((totalExpense - prevMonthExpense) / prevMonthExpense) * 100)
+    : null;
 
   const activeMember = safeMembers.find(m => m.id === activeMemberId) || { name: 'Our Family', avatar: '👨‍👩‍👧‍👦' };
 
@@ -151,7 +170,7 @@ export default function HomeTab({
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', font: '700 12px Manrope', color: 'rgba(255,255,255,0.9)' }}>
           <span>{budgetUtilization}% used</span>
-          <span>{formatRupees(remainingBudget)} left · 11 days</span>
+          <span>{formatRupees(remainingBudget)} left</span>
         </div>
       </div>
 
@@ -169,14 +188,24 @@ export default function HomeTab({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }}>
             <div style={{ font: '600 11px Manrope', color: '#8a7d6d' }}>Daily average</div>
-            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>₹3,100</div>
-            <div style={{ font: '700 11px Manrope', color: '#5ec39d', marginTop: '2px' }}>↓ 8% vs June</div>
+            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>
+              {dailyAverage !== null ? formatRupees(Math.round(dailyAverage)) : '—'}
+            </div>
+            <div style={{ font: '700 11px Manrope', color: expenseDeltaPct !== null && expenseDeltaPct <= 0 ? '#5ec39d' : '#f87171', marginTop: '2px' }}>
+              {expenseDeltaPct !== null
+                ? `${expenseDeltaPct <= 0 ? '↓' : '↑'} ${Math.abs(expenseDeltaPct)}% vs last month`
+                : 'No prior month to compare'}
+            </div>
           </div>
 
           <div style={{ background: '#211c15', border: '1px solid #2f281f', borderRadius: '18px', padding: '16px' }} onClick={onNavigateToBills} className="cursor-pointer">
             <div style={{ font: '600 11px Manrope', color: '#8a7d6d' }}>Bills due soon</div>
-            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>₹7,750</div>
-            <div style={{ font: '700 11px Manrope', color: '#f9812f', marginTop: '2px' }}>{upcomingBills.length || 3} upcoming</div>
+            <div style={{ font: '800 20px Manrope', color: '#f3ece0', marginTop: '4px' }}>
+              {formatRupees(upcomingBills.reduce((sum, b) => sum + (b.amount || 0), 0))}
+            </div>
+            <div style={{ font: '700 11px Manrope', color: '#f9812f', marginTop: '2px' }}>
+              {upcomingBills.length > 0 ? `${upcomingBills.length} upcoming` : 'All caught up'}
+            </div>
           </div>
         </div>
 
@@ -187,25 +216,33 @@ export default function HomeTab({
             <div style={{ font: '600 12px Manrope', color: '#f9812f', cursor: 'pointer' }} onClick={onNavigateToExpenses}>All activity</div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {recentTxs.map((tx) => {
-              const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '📦', name: tx.category };
-              const bg = categoryColors[tx.category] || '#f26a1b';
+          {recentTxs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '28px 10px', color: '#6b6152' }}>
+              <p style={{ fontSize: '1.6rem', marginBottom: '6px' }}>🧾</p>
+              <p style={{ font: '700 13px Manrope', color: '#8a7d6d' }}>No expenses yet</p>
+              <p style={{ font: '600 11.5px Manrope', marginTop: '2px' }}>Tap + Add expense to log your first one</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {recentTxs.map((tx) => {
+                const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '📦', name: tx.category };
+                const bg = categoryColors[tx.category] || '#f26a1b';
 
-              return (
-                <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                  <div className="catic" style={{ width: '42px', height: '42px', background: bg, borderRadius: '13px' }}>
-                    {catObj.icon || tx.title.charAt(0)}
+                return (
+                  <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                    <div className="catic" style={{ width: '42px', height: '42px', background: bg, borderRadius: '13px' }}>
+                      {catObj.icon || tx.title.charAt(0)}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ font: '700 13.5px Manrope', color: '#f3ece0' }}>{tx.title}</div>
+                      <div style={{ font: '600 11.5px Manrope', color: '#8a7d6d' }}>{catObj.name} · {tx.date}</div>
+                    </div>
+                    <div style={{ font: '800 14px Manrope', color: '#f3ece0' }}>-{formatRupees(tx.amount)}</div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ font: '700 13.5px Manrope', color: '#f3ece0' }}>{tx.title}</div>
-                    <div style={{ font: '600 11.5px Manrope', color: '#8a7d6d' }}>{catObj.name} · {tx.date}</div>
-                  </div>
-                  <div style={{ font: '800 14px Manrope', color: '#f3ece0' }}>-{formatRupees(tx.amount)}</div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
       </div>

@@ -41,6 +41,14 @@ body {
   line-height: 1.5;
 }
 
+/* On wide screens the app is still a centered mobile-width column by design;
+   give the surrounding space a deliberate ambient glow instead of flat black. */
+@media (min-width: 700px) {
+  body {
+    background: radial-gradient(ellipse 900px 700px at center, #1c150e 0%, #0d0b08 65%);
+  }
+}
+
 .app-container {
   width: 100%;
   min-height: 100vh;
@@ -70,7 +78,7 @@ body {
 .mobile-full-wrapper {
   width: 100%;
   max-width: 420px;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg-page);
   position: relative;
   display: flex;

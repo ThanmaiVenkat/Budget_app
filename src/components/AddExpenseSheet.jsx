@@ -12,6 +12,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
   const [showMore, setShowMore] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [notes, setNotes] = useState('');
+  const [amountError, setAmountError] = useState('');
 
   const dadMember = members.find(m => m.id === 'dad') || { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻' };
 
@@ -25,7 +26,11 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
   const handleSubmit = (e) => {
     e.preventDefault();
     const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setAmountError('Enter an amount greater than ₹0');
+      return;
+    }
+    setAmountError('');
 
     const catObj = categories.find(c => c.id === category);
     const defaultTitle = type === 'income' ? 'Dad Salary / Earnings' : (catObj ? catObj.name : 'Expense');
@@ -104,14 +109,19 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 type="number"
                 step="0.01"
                 className="form-input"
-                style={{ paddingLeft: '38px', fontSize: '1.4rem', fontWeight: '800', height: '52px' }}
+                style={{ paddingLeft: '38px', fontSize: '1.4rem', fontWeight: '800', height: '52px', borderColor: amountError ? '#f87171' : undefined }}
                 placeholder="0.00"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => { setAmount(e.target.value); if (amountError) setAmountError(''); }}
                 required
                 autoFocus
               />
             </div>
+            {amountError && (
+              <div style={{ color: '#f87171', fontSize: '0.72rem', fontWeight: '600', marginTop: '4px' }}>
+                {amountError}
+              </div>
+            )}
           </div>
 
           {/* FIELD 2: WHO SPENT OR EARNED */}
