@@ -130,6 +130,18 @@ export default function App() {
     setMembers((prev) => [...prev, newMember]);
   };
 
+  // Delete Family Member — their past transactions/bills stay in history
+  // (existing fallback rendering already handles a memberId with no match).
+  // The sole earner is never removable: income entry, the earner banner, and
+  // bill payer defaults all assume 'dad' exists.
+  const handleDeleteMember = (memberId) => {
+    if (memberId === 'dad' || memberId === 'all') return;
+    setMembers((prev) => prev.filter((m) => m.id !== memberId));
+    if (activeMemberId === memberId) {
+      setActiveMemberId('all');
+    }
+  };
+
   // Reset to default sample state
   const handleResetData = () => {
     if (window.confirm('Reset all family budget data to sample dataset (Rupees ₹)?')) {
@@ -267,6 +279,7 @@ export default function App() {
                 members={members}
                 transactions={transactions}
                 onAddMember={handleAddMember}
+                onDeleteMember={handleDeleteMember}
               />
               <BillRemindersTab
                 bills={bills}

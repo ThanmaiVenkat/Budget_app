@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
 
-export default function MembersTab({ members = [], transactions = [], onAddMember }) {
+export default function MembersTab({ members = [], transactions = [], onAddMember, onDeleteMember }) {
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('🧒');
@@ -32,6 +33,20 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
   };
 
   const dadMember = members.find(m => m.id === 'dad') || { name: 'Dad (Rajesh)', avatar: '👨‍💻' };
+
+  const handleDeleteMember = (member) => {
+    const spent = transactions
+      .filter(t => t.memberId === member.id && t.type === 'expense')
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    const warning = spent > 0
+      ? `Remove ${member.name}? Their ${formatRupees(spent)} in past expenses will stay in the history, just no longer linked to a member.`
+      : `Remove ${member.name}?`;
+
+    if (window.confirm(warning) && onDeleteMember) {
+      onDeleteMember(member.id);
+    }
+  };
 
   // Calculate Dad's total earnings
   const dadTotalEarnings = transactions
@@ -184,6 +199,23 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
                   </div>
                 </div>
               )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                {isDad ? (
+                  <span style={{ fontSize: '0.66rem', color: 'var(--text-dim)' }}>
+                    The primary earner can't be removed
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleDeleteMember(m)}
+                    aria-label={`Remove ${m.name}`}
+                    title="Remove member"
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', fontSize: '0.68rem' }}
+                  >
+                    <Trash2 size={12} color="#f87171" opacity={0.6} /> Remove
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
