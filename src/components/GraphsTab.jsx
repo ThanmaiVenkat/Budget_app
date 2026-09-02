@@ -12,7 +12,7 @@ import {
   Legend
 } from 'recharts';
 import { BarChart3, PieChart as PieIcon, Users, Calendar } from 'lucide-react';
-import { formatRupees } from '../utils/mockData';
+import { formatRupees, getAvailableMonths } from '../utils/mockData';
 
 export default function GraphsTab({
   transactions = [],
@@ -34,6 +34,8 @@ export default function GraphsTab({
   });
 
   const totalExpense = monthTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
+
+  const availableMonths = getAvailableMonths(safeTxs);
 
   // 1. RECHARTS DONUT DATA: Category Breakdown
   const categoryChartData = safeCategories.map(cat => {
@@ -62,8 +64,8 @@ export default function GraphsTab({
     };
   }).sort((a, b) => b.spent - a.spent);
 
-  // 3. RECHARTS MONTHLY TREND DATA (Income vs Expense over past 4 months)
-  const monthTrendKeys = ['2026-07', '2026-06', '2026-05', '2026-04'];
+  // 3. RECHARTS MONTHLY TREND DATA (Income vs Expense over the last 4 months with data)
+  const monthTrendKeys = availableMonths.slice(0, 4).map((m) => m.value);
   const monthlyTrendData = monthTrendKeys.map(mKey => {
     const txs = safeTxs.filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.date && t.date.startsWith(mKey));
     const income = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);
@@ -108,9 +110,9 @@ export default function GraphsTab({
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
+          {availableMonths.map((m) => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
           <option value="all">📅 All Time</option>
         </select>
       </div>

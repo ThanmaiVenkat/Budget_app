@@ -36,23 +36,32 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
         const categoryKey = findKey(['category', 'head', 'cat', 'group', 'class']);
         const memberKey = findKey(['member', 'person', 'paidby', 'user', 'who', 'name']);
         const dateKey = findKey(['date', 'time', 'day', 'when']);
-        const methodKey = findKey(['payment', 'method', 'mode', 'type', 'upi']);
+        const methodKey = findKey(['payment', 'method', 'mode', 'upi']);
         const notesKey = findKey(['note', 'remark', 'comment']);
         const typeKey = findKey(['type', 'kind', 'crdr', 'credit']);
 
         const parsedTransactions = [];
         const newCategoriesMap = new Map();
         const newMembersMap = new Map();
+        const skippedRows = [];
 
         rawJson.forEach((row, idx) => {
-          let rawTitle = String(row[titleKey] || `Item #${idx + 1}`).trim();
-          if (!rawTitle) return; // skip blank rows
+          const sheetRow = idx + 2; // +1 for 0-index, +1 for the header row
+          const titleCell = row[titleKey];
+          const rawTitle = (titleCell === undefined || titleCell === null ? '' : String(titleCell)).trim();
+          if (!rawTitle) {
+            skippedRows.push({ row: sheetRow, reason: 'Missing title' });
+            return;
+          }
 
           // Clean amount
           let rawAmount = String(row[amountKey] || '0').replace(/[₹,$\s]/g, '');
           let numAmount = Math.abs(parseFloat(rawAmount)) || 0;
 
-          if (numAmount === 0) return;
+          if (numAmount === 0) {
+            skippedRows.push({ row: sheetRow, reason: `"${rawTitle}" has no valid amount` });
+            return;
+          }
 
           // Determine transaction type (expense vs income)
           let txType = 'expense';
@@ -64,27 +73,34 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
             txType = 'income';
           }
 
-          // Category resolution
-          let catName = categoryKey && row[categoryKey] ? String(row[categoryKey]).trim() : 'General';
-          let matchedCat = existingCategories.find(c => c.name.toLowerCase() === catName.toLowerCase() || c.id === catName.toLowerCase());
-          
-          let catId = matchedCat ? matchedCat.id : catName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-          if (!matchedCat && !newCategoriesMap.has(catId)) {
-            newCategoriesMap.set(catId, {
-              id: catId,
-              name: catName,
-              icon: '📦',
-              limit: 10000,
-              color: '#3b82f6'
-            });
+          // Category resolution — income rows always store the literal 'income'
+          // category below, so skip creating an unused category for them.
+          let catId = 'income';
+          if (txType !== 'income') {
+            let catName = categoryKey && row[categoryKey] ? String(row[categoryKey]).trim() : 'General';
+            let matchedCat = existingCategories.find(c => c.name.toLowerCase() === catName.toLowerCase() || c.id === catName.toLowerCase());
+
+            catId = matchedCat ? matchedCat.id : catName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            if (!matchedCat && !newCategoriesMap.has(catId)) {
+              newCategoriesMap.set(catId, {
+                id: catId,
+                name: catName,
+                icon: '📦',
+                limit: 10000,
+                color: '#3b82f6'
+              });
+            }
           }
 
-          // Member resolution
-          let memName = memberKey && row[memberKey] ? String(row[memberKey]).trim() : 'Family';
-          let matchedMem = existingMembers.find(m => m.name.toLowerCase().includes(memName.toLowerCase()) || m.id === memName.toLowerCase());
-          
-          let memberId = matchedMem ? matchedMem.id : memName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-          if (!matchedMem && !newMembersMap.has(memberId) && memberId !== 'all') {
+          // Member resolution — rows with no identifiable member column fall back to
+          // the shared "All Family" bucket rather than spawning a fake "Family" member.
+          let memName = memberKey && row[memberKey] ? String(row[memberKey]).trim() : '';
+          let matchedMem = memName
+            ? existingMembers.find(m => m.name.toLowerCase().includes(memName.toLowerCase()) || m.id === memName.toLowerCase())
+            : null;
+
+          let memberId = matchedMem ? matchedMem.id : (memName ? memName.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'all');
+          if (memName && !matchedMem && !newMembersMap.has(memberId) && memberId !== 'all') {
             newMembersMap.set(memberId, {
               id: memberId,
               name: memName,
@@ -115,7 +131,7 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
             title: rawTitle,
             amount: numAmount,
             category: txType === 'income' ? 'income' : catId,
-            memberId: memberId || 'mom',
+            memberId,
             date: dateStr,
             paymentMethod: methodKey && row[methodKey] ? String(row[methodKey]) : 'UPI',
             notes: notesKey && row[notesKey] ? String(row[notesKey]) : 'Uploaded via Excel'
@@ -126,7 +142,8 @@ export const parseExcelSpreadsheet = async (file, existingCategories, existingMe
           transactions: parsedTransactions,
           newCategories: Array.from(newCategoriesMap.values()),
           newMembers: Array.from(newMembersMap.values()),
-          totalRows: parsedTransactions.length
+          totalRows: parsedTransactions.length,
+          skippedRows
         });
 
       } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Check } from 'lucide-react';
-import { formatRupees } from '../utils/mockData';
+import { X } from 'lucide-react';
+import { generateId } from '../utils/mockData';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave }) {
   const [type, setType] = useState('expense');
@@ -12,6 +12,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
   const [showMore, setShowMore] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [notes, setNotes] = useState('');
+  const [amountError, setAmountError] = useState('');
 
   const dadMember = members.find(m => m.id === 'dad') || { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻' };
 
@@ -25,13 +26,17 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
   const handleSubmit = (e) => {
     e.preventDefault();
     const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) return;
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      setAmountError('Enter an amount greater than ₹0');
+      return;
+    }
+    setAmountError('');
 
     const catObj = categories.find(c => c.id === category);
     const defaultTitle = type === 'income' ? 'Dad Salary / Earnings' : (catObj ? catObj.name : 'Expense');
 
     onSave({
-      id: 'tx-' + Date.now(),
+      id: generateId('tx'),
       type,
       title: title.trim() || defaultTitle,
       amount: parsedAmount,
@@ -86,7 +91,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
             </button>
           </div>
 
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={16} />
           </button>
         </div>
@@ -104,14 +109,19 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 type="number"
                 step="0.01"
                 className="form-input"
-                style={{ paddingLeft: '38px', fontSize: '1.4rem', fontWeight: '800', height: '52px' }}
+                style={{ paddingLeft: '38px', fontSize: '1.4rem', fontWeight: '800', height: '52px', borderColor: amountError ? '#f87171' : undefined }}
                 placeholder="0.00"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => { setAmount(e.target.value); if (amountError) setAmountError(''); }}
                 required
                 autoFocus
               />
             </div>
+            {amountError && (
+              <div style={{ color: '#f87171', fontSize: '0.72rem', fontWeight: '600', marginTop: '4px' }}>
+                {amountError}
+              </div>
+            )}
           </div>
 
           {/* FIELD 2: WHO SPENT OR EARNED */}
@@ -152,8 +162,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      <span>{m.avatar}</span>
-                      <span>{m.name.split(' ')[0]}</span>
+                      <span>{m.avatar || '👤'}</span>
+                      <span>{(m.name || 'Member').split(' ')[0]}</span>
                     </button>
                   );
                 })}
@@ -188,8 +198,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         gap: '2px'
                       }}
                     >
-                      <span style={{ fontSize: '1.2rem' }}>{c.icon}</span>
-                      <span style={{ fontWeight: isSelected ? '700' : '500' }}>{c.name.split(' ')[0]}</span>
+                      <span style={{ fontSize: '1.2rem' }}>{c.icon || '📦'}</span>
+                      <span style={{ fontWeight: isSelected ? '700' : '500' }}>{(c.name || 'Category').split(' ')[0]}</span>
                     </div>
                   );
                 })}

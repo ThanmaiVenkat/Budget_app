@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Trash2, Plus } from 'lucide-react';
-import { formatRupees } from '../utils/mockData';
+import { Search, Trash2, Plus, Check, X } from 'lucide-react';
+import { formatRupees, getAvailableMonths } from '../utils/mockData';
 
 export default function ExpensesTab({
   transactions = [],
@@ -15,10 +15,12 @@ export default function ExpensesTab({
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
   const safeMembers = Array.isArray(members) ? members : [];
+  const availableMonths = getAvailableMonths(safeTxs);
 
   const filtered = safeTxs.filter(tx => {
     const titleText = (tx.title || '').toLowerCase();
@@ -50,6 +52,7 @@ export default function ExpensesTab({
             className="form-input"
             style={{ width: '100%', paddingLeft: '36px', height: '40px', fontSize: '0.85rem' }}
             placeholder="Search expenses..."
+            aria-label="Search expenses"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -58,6 +61,7 @@ export default function ExpensesTab({
           onClick={onOpenAddModal}
           style={{ background: 'var(--orange-primary)', color: '#fff', border: 'none', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           title="Add Entry"
+          aria-label="Add expense entry"
         >
           <Plus size={20} />
         </button>
@@ -72,9 +76,9 @@ export default function ExpensesTab({
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
           <option value="all">📅 All Months</option>
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
+          {availableMonths.map((m) => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
         </select>
 
         <select
@@ -143,14 +147,40 @@ export default function ExpensesTab({
                   <span style={{ fontSize: '0.88rem', fontWeight: '700', color: tx.type === 'income' ? '#34d399' : '#f3ece0' }}>
                     {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
                   </span>
-                  <div>
-                    <button
-                      onClick={() => onDeleteTx && onDeleteTx(tx.id)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', marginTop: '2px' }}
-                      title="Delete item"
-                    >
-                      <Trash2 size={13} color="#f87171" opacity={0.6} />
-                    </button>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                    {confirmDeleteId === tx.id ? (
+                      <>
+                        <span style={{ fontSize: '0.65rem', color: '#f87171', fontWeight: '700' }}>Delete?</span>
+                        <button
+                          onClick={() => {
+                            if (onDeleteTx) onDeleteTx(tx.id);
+                            setConfirmDeleteId(null);
+                          }}
+                          style={{ background: 'rgba(248, 113, 113, 0.15)', border: 'none', borderRadius: '6px', color: '#f87171', cursor: 'pointer', padding: '3px', display: 'flex' }}
+                          title="Confirm delete"
+                          aria-label={`Confirm delete of ${tx.title || 'expense'}`}
+                        >
+                          <Check size={13} />
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '6px', color: 'var(--text-dim)', cursor: 'pointer', padding: '3px', display: 'flex' }}
+                          title="Cancel"
+                          aria-label="Cancel delete"
+                        >
+                          <X size={13} />
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(tx.id)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}
+                        title="Delete item"
+                        aria-label={`Delete ${tx.title || 'expense'}`}
+                      >
+                        <Trash2 size={13} color="#f87171" opacity={0.6} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

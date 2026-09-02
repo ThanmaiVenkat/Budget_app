@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileSpreadsheet, Upload, CheckCircle, Sparkles, Download, AlertCircle } from 'lucide-react';
+import { X, FileSpreadsheet, Upload, CheckCircle, Download, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { parseExcelSpreadsheet, downloadSampleExcelTemplate } from '../utils/excelParser';
 import { formatRupees } from '../utils/mockData';
@@ -52,7 +52,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             <FileSpreadsheet size={22} color="var(--primary)" />
             <h2 style={{ fontSize: '1.1rem', fontWeight: '800' }}>Auto Excel / CSV Importer</h2>
           </div>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={18} />
           </button>
         </div>
@@ -148,6 +148,26 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
                 <div>• Detected <b>{parsedResult.newMembers.length}</b> new family members</div>
               )}
             </div>
+
+            {parsedResult.skippedRows && parsedResult.skippedRows.length > 0 && (
+              <div style={{ marginTop: '10px', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '700', color: 'var(--danger)' }}>
+                  <AlertCircle size={14} /> Skipped {parsedResult.skippedRows.length} row{parsedResult.skippedRows.length > 1 ? 's' : ''}
+                </div>
+                <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px', maxHeight: '80px', overflowY: 'auto' }}>
+                  {parsedResult.skippedRows.slice(0, 5).map((s, i) => (
+                    <div key={i} style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                      Row {s.row}: {s.reason}
+                    </div>
+                  ))}
+                  {parsedResult.skippedRows.length > 5 && (
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>
+                      + {parsedResult.skippedRows.length - 5} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Quick Preview List */}
             <div style={{ marginTop: '10px', maxHeight: '120px', overflowY: 'auto', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px' }}>

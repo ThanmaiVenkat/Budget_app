@@ -37,11 +37,16 @@ body {
   background-color: #0d0b08;
   color: var(--text-main);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   overflow-x: hidden;
   line-height: 1.5;
+}
+
+/* On wide screens the app is still a centered mobile-width column by design;
+   give the surrounding space a deliberate ambient glow instead of flat black. */
+@media (min-width: 700px) {
+  body {
+    background: radial-gradient(ellipse 900px 700px at center, #1c150e 0%, #0d0b08 65%);
+  }
 }
 
 .app-container {
@@ -73,7 +78,7 @@ body {
 .mobile-full-wrapper {
   width: 100%;
   max-width: 420px;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg-page);
   position: relative;
   display: flex;
@@ -114,6 +119,69 @@ body {
   background: rgba(23, 20, 15, 0.95);
   backdrop-filter: blur(12px);
   z-index: 50;
+  gap: 6px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.header-view-toggle {
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.form-select.header-month-select {
+  padding: 4px 8px;
+  height: 30px;
+}
+
+.header-icon-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+/* The phone-frame simulator caps out at 390px wide regardless of the real
+   viewport, so this subtitle never actually has room and was pushing the
+   right-side icons past the frame edge even at the default width. */
+.header-subtitle {
+  display: none;
+}
+
+/* Trim further as the frame itself shrinks to match a genuinely narrow
+   viewport (<390px). */
+@media (max-width: 389px) {
+  .header-toggle-label {
+    display: none;
+  }
+
+  .header-bar {
+    padding-left: 16px;
+    padding-right: 16px;
+    gap: 2px;
+  }
+
+  .header-right {
+    gap: 2px;
+  }
+
+  .header-view-toggle {
+    padding: 6px;
+  }
+
+  .form-select.header-month-select {
+    padding: 4px 4px 4px 6px;
+    font-size: 10px !important;
+  }
+
+  .header-icon-btn {
+    width: 26px;
+    height: 26px;
+  }
 }
 
 /* Layered Surface Cards */

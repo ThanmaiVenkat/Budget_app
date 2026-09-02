@@ -11,16 +11,8 @@ const KEYS = {
 
 const getStorageItem = (key) => {
   try {
-    if (typeof window !== 'undefined') {
-      if (window.storage && typeof window.storage.getItem === 'function') {
-        return window.storage.getItem(key);
-      }
-      if (window.storage && window.storage[key]) {
-        return window.storage[key];
-      }
-      if (window._storageStore && window._storageStore[key]) {
-        return window._storageStore[key];
-      }
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
     }
   } catch (e) {
     console.error('getStorageItem error:', e);
@@ -30,15 +22,8 @@ const getStorageItem = (key) => {
 
 const setStorageItem = (key, value) => {
   try {
-    if (typeof window !== 'undefined') {
-      if (window.storage && typeof window.storage.setItem === 'function') {
-        window.storage.setItem(key, value);
-        return;
-      }
-      if (!window.storage) window.storage = {};
-      window.storage[key] = value;
-      if (!window._storageStore) window._storageStore = {};
-      window._storageStore[key] = value;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, value);
     }
   } catch (e) {
     console.error('setStorageItem error:', e);
@@ -47,16 +32,8 @@ const setStorageItem = (key, value) => {
 
 const removeStorageItem = (key) => {
   try {
-    if (typeof window !== 'undefined') {
-      if (window.storage && typeof window.storage.removeItem === 'function') {
-        window.storage.removeItem(key);
-      }
-      if (window.storage && window.storage[key]) {
-        delete window.storage[key];
-      }
-      if (window._storageStore && window._storageStore[key]) {
-        delete window._storageStore[key];
-      }
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(key);
     }
   } catch (e) {
     console.error('removeStorageItem error:', e);
@@ -86,7 +63,7 @@ const parseOrFallback = (val, fallback) => {
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
     }
     return parsed || fallback;
-  } catch (e) {
+  } catch {
     return fallback;
   }
 };

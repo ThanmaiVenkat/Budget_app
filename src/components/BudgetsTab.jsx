@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Edit2, Check, Calendar, ArrowRightLeft } from 'lucide-react';
-import { formatRupees } from '../utils/mockData';
+import { formatRupees, getAvailableMonths, getPreviousMonthKey } from '../utils/mockData';
 
 export default function BudgetsTab({
   categories = [],
@@ -31,13 +31,17 @@ export default function BudgetsTab({
     setEditingId(null);
   };
 
-  const monthDisplayLabel = selectedMonth === 'all' 
-    ? 'All Months' 
+  const monthDisplayLabel = selectedMonth === 'all'
+    ? 'All Months'
     : new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  // Rollover calculation from last month (June)
-  const lastMonthKey = '2026-06';
-  const lastMonthTxs = safeTxs.filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.date && t.date.startsWith(lastMonthKey));
+  const availableMonths = getAvailableMonths(safeTxs);
+
+  // Rollover calculation from the month before the selected one
+  const lastMonthKey = selectedMonth === 'all' ? null : getPreviousMonthKey(selectedMonth);
+  const lastMonthTxs = lastMonthKey
+    ? safeTxs.filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.date && t.date.startsWith(lastMonthKey))
+    : [];
   const lastMonthInc = lastMonthTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);
   const lastMonthExp = lastMonthTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
   const lastMonthSavings = Math.max(0, lastMonthInc - lastMonthExp);
@@ -58,9 +62,9 @@ export default function BudgetsTab({
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
         >
-          <option value="2026-07">July 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-05">May 2026</option>
+          {availableMonths.map((m) => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
           <option value="all">📅 All Time</option>
         </select>
       </div>

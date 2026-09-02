@@ -1,12 +1,12 @@
 import React from 'react';
-import { Home, BarChart3, Receipt, User, Plus, TrendingUp } from 'lucide-react';
+import { Home, Receipt, User, TrendingUp } from 'lucide-react';
 
 export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
   const tabs = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'graphs', label: 'Insights', icon: TrendingUp },
     { id: 'add', label: 'Add', isFab: true },
-    { id: 'budgets', label: 'Bills', icon: Receipt },
+    { id: 'budgets', label: 'Budgets', icon: Receipt },
     { id: 'members', label: 'You', icon: User }
   ];
 
@@ -15,7 +15,7 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
       {tabs.map((tab) => {
         if (tab.isFab) {
           return (
-            <button key={tab.id} className="fab" onClick={onOpenAddModal} title="Add Expense">
+            <button key={tab.id} className="fab" onClick={onOpenAddModal} title="Add Expense" aria-label="Add expense">
               <span>+</span>
             </button>
           );
