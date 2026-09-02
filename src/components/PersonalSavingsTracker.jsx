@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, PiggyBank, Target, Sparkles, Trash2, Pencil, Sliders, Calculator, CheckCircle2, TrendingUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { formatRupees } from '../utils/mockData';
+import { formatRupees, generateId } from '../utils/mockData';
 
 export default function PersonalSavingsTracker({ personalState, setPersonalState, onBack }) {
   const { salary = 145000, expenses = 32000, goals = [], transactions = [] } = personalState || {};
@@ -94,7 +94,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
       }));
     } else {
       const newGoal = {
-        id: 'g-' + Date.now(),
+        id: generateId('g'),
         title: goalTitle,
         target: parseFloat(targetAmount),
         current: parseFloat(currentAmount) || 0,
@@ -144,7 +144,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
     if (!txTitle || !txAmount) return;
 
     const newTx = {
-      id: 'ptx-' + Date.now(),
+      id: generateId('ptx'),
       title: txTitle,
       amount: parseFloat(txAmount),
       type: txType,
@@ -400,9 +400,9 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
               <div key={goal.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '14px', border: '1px solid var(--bg-card-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.2rem' }}>{goal.icon}</span>
+                    <span style={{ fontSize: '1.2rem' }}>{goal.icon || '🎯'}</span>
                     <div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{goal.title}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{goal.title || 'Savings Goal'}</span>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{goal.category}</div>
                     </div>
                   </div>
@@ -435,6 +435,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
                       onClick={() => handleStartEditGoal(goal)}
                       style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
                       title="Edit goal"
+                      aria-label={`Edit ${goal.title || 'goal'}`}
                     >
                       <Pencil size={12} opacity={0.6} />
                     </button>
@@ -442,6 +443,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
                       onClick={() => handleDeleteGoal(goal.id)}
                       style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
                       title="Delete goal"
+                      aria-label={`Delete ${goal.title || 'goal'}`}
                     >
                       <Trash2 size={12} color="#f87171" opacity={0.6} />
                     </button>

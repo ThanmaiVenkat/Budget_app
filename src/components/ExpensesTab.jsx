@@ -52,6 +52,7 @@ export default function ExpensesTab({
             className="form-input"
             style={{ width: '100%', paddingLeft: '36px', height: '40px', fontSize: '0.85rem' }}
             placeholder="Search expenses..."
+            aria-label="Search expenses"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -60,6 +61,7 @@ export default function ExpensesTab({
           onClick={onOpenAddModal}
           style={{ background: 'var(--orange-primary)', color: '#fff', border: 'none', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           title="Add Entry"
+          aria-label="Add expense entry"
         >
           <Plus size={20} />
         </button>
@@ -156,6 +158,7 @@ export default function ExpensesTab({
                           }}
                           style={{ background: 'rgba(248, 113, 113, 0.15)', border: 'none', borderRadius: '6px', color: '#f87171', cursor: 'pointer', padding: '3px', display: 'flex' }}
                           title="Confirm delete"
+                          aria-label={`Confirm delete of ${tx.title || 'expense'}`}
                         >
                           <Check size={13} />
                         </button>
@@ -163,6 +166,7 @@ export default function ExpensesTab({
                           onClick={() => setConfirmDeleteId(null)}
                           style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '6px', color: 'var(--text-dim)', cursor: 'pointer', padding: '3px', display: 'flex' }}
                           title="Cancel"
+                          aria-label="Cancel delete"
                         >
                           <X size={13} />
                         </button>
@@ -172,6 +176,7 @@ export default function ExpensesTab({
                         onClick={() => setConfirmDeleteId(tx.id)}
                         style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}
                         title="Delete item"
+                        aria-label={`Delete ${tx.title || 'expense'}`}
                       >
                         <Trash2 size={13} color="#f87171" opacity={0.6} />
                       </button>

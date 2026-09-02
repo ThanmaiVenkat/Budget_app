@@ -70,6 +70,7 @@ export default function HeaderBar({
             gap: '4px'
           }}
           title="Toggle view mode"
+          aria-label="Toggle home screen layout"
         >
           <Layers size={12} /> <span className="header-toggle-label">{activeDirection === '2b' ? 'Hero' : 'Tiles'}</span>
         </button>
@@ -80,6 +81,7 @@ export default function HeaderBar({
           style={{ font: '700 11px Manrope', background: '#211c15', borderRadius: '999px', border: '1px solid #2f281f', color: '#f3ece0' }}
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
+          aria-label="Filter by month"
         >
           {availableMonths.map((m) => (
             <option key={m.value} value={m.value}>{m.label}</option>
@@ -102,6 +104,7 @@ export default function HeaderBar({
             justifyContent: 'center'
           }}
           title="My Personal Savings Tracker"
+          aria-label="Open personal savings tracker"
         >
           <PiggyBank size={14} />
         </button>
@@ -112,6 +115,7 @@ export default function HeaderBar({
           className="header-icon-btn"
           style={{ background: 'rgba(242,106,27,0.15)', border: '1px solid rgba(242,106,27,0.3)', borderRadius: '50%', color: '#f9812f', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           title="Upload Excel / CSV Sheet"
+          aria-label="Upload Excel or CSV sheet"
         >
           <FileSpreadsheet size={14} />
         </button>
@@ -121,6 +125,7 @@ export default function HeaderBar({
           className="header-icon-btn"
           style={{ background: 'none', border: 'none', color: '#8a7d6d', cursor: 'pointer' }}
           title="Export CSV Data"
+          aria-label="Export transactions as CSV"
         >
           <Download size={15} />
         </button>

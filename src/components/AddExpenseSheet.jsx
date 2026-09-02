@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
-import { formatRupees } from '../utils/mockData';
+import { formatRupees, generateId } from '../utils/mockData';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave }) {
   const [type, setType] = useState('expense');
@@ -36,7 +36,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
     const defaultTitle = type === 'income' ? 'Dad Salary / Earnings' : (catObj ? catObj.name : 'Expense');
 
     onSave({
-      id: 'tx-' + Date.now(),
+      id: generateId('tx'),
       type,
       title: title.trim() || defaultTitle,
       amount: parsedAmount,
@@ -91,7 +91,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
             </button>
           </div>
 
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={16} />
           </button>
         </div>
@@ -162,8 +162,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      <span>{m.avatar}</span>
-                      <span>{m.name.split(' ')[0]}</span>
+                      <span>{m.avatar || '👤'}</span>
+                      <span>{(m.name || 'Member').split(' ')[0]}</span>
                     </button>
                   );
                 })}
@@ -198,8 +198,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         gap: '2px'
                       }}
                     >
-                      <span style={{ fontSize: '1.2rem' }}>{c.icon}</span>
-                      <span style={{ fontWeight: isSelected ? '700' : '500' }}>{c.name.split(' ')[0]}</span>
+                      <span style={{ fontSize: '1.2rem' }}>{c.icon || '📦'}</span>
+                      <span style={{ fontWeight: isSelected ? '700' : '500' }}>{(c.name || 'Category').split(' ')[0]}</span>
                     </div>
                   );
                 })}

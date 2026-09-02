@@ -193,6 +193,18 @@ export const formatRupees = (amount) => {
   return '₹' + Number(amount).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 };
 
+// Collision-safe ID generator. Date.now() alone can produce duplicate ids if
+// two records are created within the same millisecond (e.g. a double-tap
+// before a modal closes), which would silently merge two unrelated records
+// under one id in delete/update-by-id logic. crypto.randomUUID() is
+// available in every modern browser; the suffix is a defensive fallback.
+export const generateId = (prefix) => {
+  const unique = (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `${prefix}-${unique}`;
+};
+
 // Derives the list of YYYY-MM months actually present in the transactions,
 // newest first, so month pickers stay correct as data changes over time.
 export const getAvailableMonths = (transactions = []) => {

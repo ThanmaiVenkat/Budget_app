@@ -128,7 +128,7 @@ export default function HomeTab({
 
               return (
                 <div key={cat.id} style={{ background: bg, borderRadius: '20px', padding: '16px', color: '#fff' }}>
-                  <div style={{ font: '800 15px Manrope' }}>{cat.icon} {cat.name.split(' ')[0]}</div>
+                  <div style={{ font: '800 15px Manrope' }}>{cat.icon || '📦'} {(cat.name || 'Category').split(' ')[0]}</div>
                   <div style={{ font: '800 22px Manrope', marginTop: '12px' }}>{formatRupees(spent)}</div>
                   <div style={{ font: '600 11px Manrope', color: 'rgba(255,255,255,0.8)' }}>
                     {pct}% of {formatRupees(cat.limit)}
@@ -231,7 +231,7 @@ export default function HomeTab({
                 return (
                   <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                     <div className="catic" style={{ width: '42px', height: '42px', background: bg, borderRadius: '13px' }}>
-                      {catObj.icon || tx.title.charAt(0)}
+                      {catObj.icon || (tx.title || '?').charAt(0)}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ font: '700 13.5px Manrope', color: '#f3ece0' }}>{tx.title}</div>

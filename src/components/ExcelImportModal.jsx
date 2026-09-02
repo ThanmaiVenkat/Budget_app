@@ -52,7 +52,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             <FileSpreadsheet size={22} color="var(--primary)" />
             <h2 style={{ fontSize: '1.1rem', fontWeight: '800' }}>Auto Excel / CSV Importer</h2>
           </div>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={18} />
           </button>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, Circle, Calculator, Users, Pencil, Trash2 } from 'lucide-react';
-import { formatRupees, getBillBadgeStatus } from '../utils/mockData';
+import { formatRupees, getBillBadgeStatus, generateId } from '../utils/mockData';
 
 export default function BillRemindersTab({ bills, members, onToggleBillPaid, onAddBill, onUpdateBill, onDeleteBill }) {
   const [showAdd, setShowAdd] = useState(false);
@@ -55,7 +55,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
       }
     } else {
       onAddBill({
-        id: 'b-' + Date.now(),
+        id: generateId('b'),
         title,
         amount: parseFloat(amount),
         daysUntilDue: days,
@@ -172,6 +172,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                       onClick={(e) => { e.stopPropagation(); handleStartEdit(b); }}
                       style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
                       title="Edit bill"
+                      aria-label={`Edit ${b.title || 'bill'}`}
                     >
                       <Pencil size={12} opacity={0.6} />
                     </button>
@@ -179,6 +180,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                       onClick={(e) => { e.stopPropagation(); handleDeleteBill(b.id); }}
                       style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', display: 'flex' }}
                       title="Delete bill"
+                      aria-label={`Delete ${b.title || 'bill'}`}
                     >
                       <Trash2 size={12} color="#f87171" opacity={0.6} />
                     </button>

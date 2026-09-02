@@ -15,7 +15,7 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
       {tabs.map((tab) => {
         if (tab.isFab) {
           return (
-            <button key={tab.id} className="fab" onClick={onOpenAddModal} title="Add Expense">
+            <button key={tab.id} className="fab" onClick={onOpenAddModal} title="Add Expense" aria-label="Add expense">
               <span>+</span>
             </button>
           );
