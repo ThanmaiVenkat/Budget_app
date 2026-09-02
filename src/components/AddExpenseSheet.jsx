@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, Check } from 'lucide-react';
-import { formatRupees, generateId } from '../utils/mockData';
+import { X } from 'lucide-react';
+import { generateId } from '../utils/mockData';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave }) {
   const [type, setType] = useState('expense');

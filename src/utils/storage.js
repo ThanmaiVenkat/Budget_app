@@ -63,7 +63,7 @@ const parseOrFallback = (val, fallback) => {
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
     }
     return parsed || fallback;
-  } catch (e) {
+  } catch {
     return fallback;
   }
 };

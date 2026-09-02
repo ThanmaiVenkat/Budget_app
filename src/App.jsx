@@ -138,12 +138,6 @@ export default function App() {
     }
   };
 
-  // Deep Link helper to Graphs tab pre-filtered to selected month
-  const handleNavigateToGraphs = (targetMonth) => {
-    if (targetMonth) setSelectedMonth(targetMonth);
-    setActiveTab('graphs');
-  };
-
   // Deep link to Bill Reminders (lives inside the "You" tab alongside Members)
   const handleNavigateToBills = () => {
     setActiveTab('members');
@@ -212,11 +206,9 @@ export default function App() {
               selectedMonth={selectedMonth}
               activeDirection={activeDirection}
               onNavigateToExpenses={() => setActiveTab('expenses')}
-              onNavigateToGraphs={handleNavigateToGraphs}
               onNavigateToBudgets={() => setActiveTab('budgets')}
               onNavigateToBills={handleNavigateToBills}
               onOpenAddModal={() => setShowAddModal(true)}
-              onToggleBillPaid={handleToggleBillPaid}
             />
           )}
 

@@ -7,7 +7,6 @@ export default function HeaderBar({
   transactions = [],
   members = [],
   categories = [],
-  onReset,
   selectedMonth = '2026-07',
   setSelectedMonth,
   onOpenExcelModal,

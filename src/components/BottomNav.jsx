@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, BarChart3, Receipt, User, Plus, TrendingUp } from 'lucide-react';
+import { Home, Receipt, User, TrendingUp } from 'lucide-react';
 
 export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
   const tabs = [

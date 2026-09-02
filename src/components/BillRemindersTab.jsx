@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, CheckCircle2, Circle, Calculator, Users, Pencil, Trash2 } from 'lucide-react';
+import { CheckCircle2, Circle, Calculator, Users, Pencil, Trash2 } from 'lucide-react';
 import { formatRupees, getBillBadgeStatus, generateId } from '../utils/mockData';
 
 export default function BillRemindersTab({ bills, members, onToggleBillPaid, onAddBill, onUpdateBill, onDeleteBill }) {

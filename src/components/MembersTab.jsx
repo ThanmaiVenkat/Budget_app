@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { formatRupees } from '../utils/mockData';
-import { ShieldCheck, Wallet, UserCheck } from 'lucide-react';
 
 export default function MembersTab({ members = [], transactions = [], onAddMember }) {
   const [showAdd, setShowAdd] = useState(false);
