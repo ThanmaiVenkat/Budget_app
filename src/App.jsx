@@ -191,13 +191,13 @@ export default function App() {
         <div className="sbar">
           <span>9:41</span>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <span style={{ width: '16px', height: '10px', border: '1.5px solid #f3ece0', borderRadius: '3px', display: 'inline-block' }} />
+            <span style={{ width: '16px', height: '10px', border: '1.5px solid var(--text-main)', borderRadius: '3px', display: 'inline-block' }} />
           </div>
         </div>
 
         {/* Family Member Quick Filter Bar (Visible in family modes) */}
         {activeTab !== 'personal' && (
-          <div style={{ padding: '0 20px 4px 20px', background: '#17140f' }}>
+          <div style={{ padding: '0 20px 4px 20px', background: 'var(--bg-page)' }}>
             <FamilyMemberBar
               members={members}
               activeMemberId={activeMemberId}

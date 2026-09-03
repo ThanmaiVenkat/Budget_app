@@ -59,7 +59,7 @@ export default function ExpensesTab({
         </div>
         <button
           onClick={onOpenAddModal}
-          style={{ background: 'var(--orange-primary)', color: '#fff', border: 'none', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          style={{ background: 'var(--accent-strong)', color: 'var(--text-on-accent-strong)', border: 'none', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           title="Add Entry"
           aria-label="Add expense entry"
         >
@@ -108,7 +108,7 @@ export default function ExpensesTab({
       {/* Summary Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0 4px' }}>
         <span>Showing {filtered.length} transactions</span>
-        <span style={{ color: '#f87171', fontWeight: '700' }}>
+        <span style={{ color: 'var(--danger)', fontWeight: '700' }}>
           Total Spent: {formatRupees(totalFilteredExpense)}
         </span>
       </div>
@@ -127,13 +127,13 @@ export default function ExpensesTab({
             const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family' };
 
             return (
-              <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+              <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--hairline)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--bg-card-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
                     <span>{catObj.icon}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: '#f3ece0' }}>{tx.title || 'Expense'}</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)' }}>{tx.title || 'Expense'}</span>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{ color: memberObj.color, fontWeight: '600' }}>{memberObj.avatar} {memberObj.name}</span>
                       <span>•</span>
@@ -144,19 +144,19 @@ export default function ExpensesTab({
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: '700', color: tx.type === 'income' ? '#34d399' : '#f3ece0' }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: '700', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
                     {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
                   </span>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
                     {confirmDeleteId === tx.id ? (
                       <>
-                        <span style={{ fontSize: '0.65rem', color: '#f87171', fontWeight: '700' }}>Delete?</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--danger)', fontWeight: '700' }}>Delete?</span>
                         <button
                           onClick={() => {
                             if (onDeleteTx) onDeleteTx(tx.id);
                             setConfirmDeleteId(null);
                           }}
-                          style={{ background: 'rgba(248, 113, 113, 0.15)', border: 'none', borderRadius: '6px', color: '#f87171', cursor: 'pointer', padding: '3px', display: 'flex' }}
+                          style={{ background: 'var(--danger-tint)', border: 'none', borderRadius: '6px', color: 'var(--danger)', cursor: 'pointer', padding: '3px', display: 'flex' }}
                           title="Confirm delete"
                           aria-label={`Confirm delete of ${tx.title || 'expense'}`}
                         >
@@ -164,7 +164,7 @@ export default function ExpensesTab({
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '6px', color: 'var(--text-dim)', cursor: 'pointer', padding: '3px', display: 'flex' }}
+                          style={{ background: 'var(--bg-card-hover)', border: 'none', borderRadius: '6px', color: 'var(--text-dim)', cursor: 'pointer', padding: '3px', display: 'flex' }}
                           title="Cancel"
                           aria-label="Cancel delete"
                         >
@@ -178,7 +178,7 @@ export default function ExpensesTab({
                         title="Delete item"
                         aria-label={`Delete ${tx.title || 'expense'}`}
                       >
-                        <Trash2 size={13} color="#f87171" opacity={0.6} />
+                        <Trash2 size={13} color="var(--danger)" opacity={0.6} />
                       </button>
                     )}
                   </div>

@@ -49,10 +49,10 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileSpreadsheet size={22} color="var(--primary)" />
+            <FileSpreadsheet size={22} color="var(--accent-strong)" />
             <h2 style={{ fontSize: '1.1rem', fontWeight: '800' }}>Auto Excel / CSV Importer</h2>
           </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'var(--bg-card-hover)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={18} />
           </button>
         </div>
@@ -64,8 +64,8 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
         {/* Upload Drop Zone */}
         <label
           style={{
-            border: '2px dashed var(--primary)',
-            borderRadius: 'var(--radius-lg)',
+            border: '1px dashed var(--accent-border)',
+            borderRadius: '14px',
             padding: '24px 16px',
             display: 'flex',
             flexDirection: 'column',
@@ -85,7 +85,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
-          <Upload size={32} color="var(--primary)" />
+          <Upload size={32} color="var(--accent-strong)" />
           <div>
             <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-main)' }}>
               {file ? file.name : 'Tap or Drag Excel / CSV File Here'}
@@ -104,7 +104,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             style={{
               background: 'none',
               border: 'none',
-              color: 'var(--secondary)',
+              color: 'var(--text-muted)',
               fontSize: '0.75rem',
               fontWeight: '700',
               cursor: 'pointer',
@@ -118,13 +118,13 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
         </div>
 
         {loading && (
-          <div style={{ textAlign: 'center', padding: '16px', color: 'var(--primary)', fontWeight: '600', fontSize: '0.85rem' }}>
+          <div style={{ textAlign: 'center', padding: '16px', color: 'var(--accent-strong)', fontWeight: '600', fontSize: '0.85rem' }}>
             ⚡ Parsing spreadsheet automatically...
           </div>
         )}
 
         {error && (
-          <div style={{ background: 'rgba(244, 63, 94, 0.12)', border: '1px solid rgba(244, 63, 94, 0.3)', padding: '12px', borderRadius: 'var(--radius-md)', color: 'var(--danger)', fontSize: '0.78rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: 'var(--danger-tint)', border: '1px solid var(--danger-border)', padding: '12px', borderRadius: '10px', color: 'var(--danger)', fontSize: '0.78rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={18} /> {error}
           </div>
         )}
@@ -133,8 +133,8 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
         {parsedResult && (
           <div className="glass-card" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', marginBottom: '16px', padding: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <CheckCircle size={18} color="var(--primary)" />
-              <span style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--primary)' }}>
+              <CheckCircle size={18} color="var(--accent-strong)" />
+              <span style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--positive)' }}>
                 Successfully Detected {parsedResult.totalRows} Transactions!
               </span>
             </div>
@@ -150,7 +150,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             </div>
 
             {parsedResult.skippedRows && parsedResult.skippedRows.length > 0 && (
-              <div style={{ marginTop: '10px', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.25)', borderRadius: '10px', padding: '8px 10px' }}>
+              <div style={{ marginTop: '10px', background: 'var(--danger-tint)', border: '1px solid var(--danger-border)', borderRadius: '10px', padding: '8px 10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: '700', color: 'var(--danger)' }}>
                   <AlertCircle size={14} /> Skipped {parsedResult.skippedRows.length} row{parsedResult.skippedRows.length > 1 ? 's' : ''}
                 </div>
@@ -170,11 +170,11 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
             )}
 
             {/* Quick Preview List */}
-            <div style={{ marginTop: '10px', maxHeight: '120px', overflowY: 'auto', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px' }}>
+            <div style={{ marginTop: '10px', maxHeight: '120px', overflowY: 'auto', borderTop: '1px solid var(--bg-card-hover)', paddingTop: '8px' }}>
               {parsedResult.transactions.slice(0, 3).map((tx, idx) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', padding: '3px 0' }}>
                   <span>{tx.title} ({tx.date})</span>
-                  <span style={{ fontWeight: '700', color: tx.type === 'income' ? 'var(--primary)' : 'var(--text-main)' }}>
+                  <span style={{ fontWeight: '700', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
                     {formatRupees(tx.amount)}
                   </span>
                 </div>

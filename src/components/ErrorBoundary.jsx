@@ -43,15 +43,15 @@ export default class ErrorBoundary extends React.Component {
           gap: '16px',
           padding: '32px 24px',
           textAlign: 'center',
-          background: '#17140f',
-          color: '#f3ece0',
+          background: 'var(--bg-page)',
+          color: 'var(--text-main)',
           fontFamily: "'Manrope', system-ui, sans-serif"
         }}
       >
-        <AlertTriangle size={40} color="#f87171" />
+        <AlertTriangle size={40} color="var(--danger)" />
         <div>
           <h1 style={{ fontSize: '1.1rem', fontWeight: '800', marginBottom: '6px' }}>Something went wrong</h1>
-          <p style={{ fontSize: '0.85rem', color: '#8a7d6d', maxWidth: '320px' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '320px' }}>
             The app hit an unexpected error and couldn't continue. Your data is safe in this browser
             &mdash; try reloading first.
           </p>
@@ -65,8 +65,8 @@ export default class ErrorBoundary extends React.Component {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              background: 'var(--orange-primary, #f26a1b)',
-              color: '#fff',
+              background: 'var(--accent-strong)',
+              color: 'var(--text-on-accent-strong)',
               border: 'none',
               borderRadius: '12px',
               padding: '12px',
@@ -85,9 +85,9 @@ export default class ErrorBoundary extends React.Component {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              background: 'rgba(248, 113, 113, 0.12)',
-              color: '#f87171',
-              border: '1px solid rgba(248, 113, 113, 0.3)',
+              background: 'var(--danger-tint)',
+              color: 'var(--danger)',
+              border: '1px solid var(--danger-border)',
               borderRadius: '12px',
               padding: '12px',
               fontWeight: '700',

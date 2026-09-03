@@ -29,10 +29,10 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
             key={tab.id}
             className={`tbtn ${isActive ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
-            style={{ color: isActive ? '#f3ece0' : '#6b6152' }}
+            style={{ color: isActive ? 'var(--text-main)' : 'var(--text-dim)' }}
           >
-            <div className="ic" style={{ background: isActive ? '#f26a1b' : '#3a3328' }}>
-              <Icon size={14} color="#fff" />
+            <div className="ic" style={{ background: isActive ? 'var(--accent)' : 'var(--bg-card-hover)' }}>
+              <Icon size={14} color="var(--text-on-accent-strong)" />
             </div>
             <span>{tab.label}</span>
           </button>
