@@ -38,7 +38,18 @@ export default function App() {
   const [activeDirection, setActiveDirection] = useState('2b'); // Default to 2b (Bold Hero), 2a removed
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);
-  const [isFrameMode, setIsFrameMode] = useState(true);
+  // The simulated phone bezel is a desktop preview aid; on a real handset (or
+  // the installed app) it would draw a fake phone inside the actual one.
+  const [isFrameMode, setIsFrameMode] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return true;
+    return window.matchMedia('(min-width: 700px)').matches;
+  });
+
+  // An installed app has no use for the preview toggle at all.
+  const isStandalone =
+    typeof window !== 'undefined' &&
+    ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      window.navigator.standalone === true);
 
   // Persist state to localStorage
   useEffect(() => {
@@ -159,10 +170,12 @@ export default function App() {
     <div className="app-container">
       
       {/* Viewport Frame Toggle Button */}
-      <button className="frame-toggle-btn" onClick={() => setIsFrameMode(!isFrameMode)}>
-        {isFrameMode ? <Monitor size={14} /> : <Smartphone size={14} />}
-        <span>{isFrameMode ? 'Full Screen' : 'Mobile Frame'}</span>
-      </button>
+      {!isStandalone && (
+        <button className="frame-toggle-btn" onClick={() => setIsFrameMode(!isFrameMode)}>
+          {isFrameMode ? <Monitor size={14} /> : <Smartphone size={14} />}
+          <span>{isFrameMode ? 'Full Screen' : 'Mobile Frame'}</span>
+        </button>
+      )}
 
       {/* Main Mobile App Frame */}
       <div className={isFrameMode ? 'mobile-frame-wrapper' : 'mobile-full-wrapper'}>

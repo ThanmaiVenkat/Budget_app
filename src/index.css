@@ -240,7 +240,10 @@ body {
 .mobile-full-wrapper {
   width: 100%;
   max-width: 420px;
+  /* dvh tracks Android Chrome's collapsing URL bar; vh is the fallback for
+     browsers without it. */
   height: 100vh;
+  height: 100dvh;
   background: var(--bg-page);
   position: relative;
   display: flex;
@@ -471,7 +474,8 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 76px;
+  height: calc(76px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--bg-page);
   border-top: 1px solid var(--bg-card-border);
   display: flex;
@@ -657,6 +661,17 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* Desktop-only preview aid. It is position:fixed, so at phone widths it
+   overlays the header's own controls; the app already defaults to full-screen
+   below this breakpoint, so there is nothing here for it to toggle. This must
+   follow the base rule: both are single-class selectors, so source order is
+   what decides the `display` value. */
+@media (max-width: 699px) {
+  .frame-toggle-btn {
+    display: none;
+  }
 }
 
 @keyframes fadeIn {
