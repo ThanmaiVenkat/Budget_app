@@ -15,7 +15,11 @@ export default function FamilyMemberBar({ members, activeMemberId, setActiveMemb
             <div className="member-avatar-wrapper">
               <span>{member.avatar}</span>
             </div>
-            <span className="member-name">{member.name}</span>
+            {/* Chips are a fixed-width track, so drop the parenthetical
+                ("Dad (Rajesh)" -> "Dad") and keep the full name as the title. */}
+            <span className="member-name" title={member.name}>
+              {(member.name || '').replace(/\s*\(.*\)\s*/, '').trim() || member.name}
+            </span>
           </button>
         );
       })}

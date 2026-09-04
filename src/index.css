@@ -1,28 +1,190 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Theme tokens.
+   The whole neutral ramp is derived from the accent hue rather than being warm
+   grey, so the orange reads across the entire surface instead of only in
+   accents. Every value below was picked against WCAG contrast on its own
+   ground -- see the pairs noted inline. :root is the warm-paper theme;
+   [data-theme="dark"] on <html> swaps in the warm-charcoal one.
+--------------------------------------------------------------------------- */
 :root {
-  --bg-page: #17140f;
-  --bg-card: #211c15;
-  --bg-card-hover: #2a251d;
-  --bg-card-border: #2f281f;
-  --bg-sheet: #1c1811;
+  --bg-shell: #F3E9DA;          /* outside the phone frame */
+  --bg-page: #FBF2E7;
+  --bg-card: #FFFAF3;
+  --bg-card-hover: #FBF1E4;
+  --bg-card-border: #EFDFCC;
+  --bg-sheet: #FFFAF3;
+  --bg-hero: #FDEFE0;           /* accent-tinted hero surface */
+  --bg-hero-border: #F2DCC5;
+  --track: #F0E3D4;             /* progress-bar troughs */
+  --track-hero: #F3DDC6;
+  --divider: #F0E3D4;
 
-  --orange-primary: #f26a1b;
-  --orange-bright: #f9812f;
-  --orange-dark: #e8590c;
+  --text-main: #2A1C12;         /* 14.9:1 on page */
+  --text-muted: #7B6450;        /* 5.0:1  on page */
+  --text-dim: #7E6650;          /* 4.9:1 page, 4.8:1 on hero tint */
+  --text-on-accent: #2A1C12;    /* 5.4:1 on --accent; white fails at 2.95 */
+  --text-on-accent-strong: #FFFAF3; /* 5.5:1 on --accent-strong */
 
-  --green-accent: #5ec39d;
-  --green-dark: #3e9e7e;
+  --accent: #E2762B;            /* fills, decorative */
+  --accent-bright: #EC8437;
+  --accent-strong: #9E531E;     /* anything carrying text -- 5.1:1 on page */
+  --accent-tint: #FBE6D2;
+  --accent-border: rgba(226, 118, 43, 0.32);
 
-  --coral-accent: #e0785a;
-  --gold-accent: #d99a3a;
+  --positive: #556B45;
+  --positive-strong: #46583A;
+  --positive-tint: #E6EBDC;
+  --positive-border: rgba(85, 107, 69, 0.3);
 
-  --text-main: #f3ece0;
-  --text-muted: #8a7d6d;
-  --text-dim: #6b6152;
+  --danger: #A8412A;
+  --danger-tint: #F7E2DB;
+  --danger-border: rgba(168, 65, 42, 0.3);
+
+  --info: #4A6B8A;
+  --info-tint: #E2E8EE;
+  --violet: #6B6A9E;
+  --violet-tint: #E7E6F0;
+  --gold: #B07C2A;
+  --coral: #C2661F;
+
+  /* Categorical palette for charts, category tiles and member chips --
+     warm-shifted so it sits inside the theme instead of fighting it. */
+  --cat-1: #C2661F;
+  --cat-2: #4A6B8A;
+  --cat-3: #B07C2A;
+  --cat-4: #A8496B;
+  --cat-5: #6B6A9E;
+  --cat-6: #3F7C82;
+  --cat-7: #7B5EA7;
+  --cat-8: #4F7A5C;
+  --cat-9: #A8412A;
+
+  --scrim: rgba(42, 28, 18, 0.45);
+  --hairline: rgba(42, 28, 18, 0.06);
+  --frame-bezel: #E0D2BE;
 
   --font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+}
+
+[data-theme="dark"] {
+  --bg-shell: #120D0A;
+  --bg-page: #1B1410;
+  --bg-card: #241A13;
+  --bg-card-hover: #2C2018;
+  --bg-card-border: #3B2A1E;
+  --bg-sheet: #241A13;
+  --bg-hero: #2C1E14;
+  --bg-hero-border: #43301F;
+  --track: #3B2A1E;
+  --track-hero: #47331F;
+  --divider: #2E211A;
+
+  --text-main: #F6EADC;         /* 15.4:1 on page */
+  --text-muted: #A99381;        /* 6.2:1  on page */
+  --text-dim: #9C8974;          /* 5.4:1 page, 4.8:1 on hero tint */
+  --text-on-accent: #1B1410;    /* 7.6:1 on --accent */
+  --text-on-accent-strong: #1B1410;
+
+  --accent: #F0904A;            /* 7.6:1 on page */
+  --accent-bright: #F79E5C;
+  --accent-strong: #F0904A;     /* on dark the lifted accent already passes */
+  --accent-tint: #3D2917;
+  --accent-border: rgba(240, 144, 74, 0.34);
+
+  --positive: #8FA87E;
+  --positive-strong: #A3BA92;
+  --positive-tint: #2A3423;
+  --positive-border: rgba(143, 168, 126, 0.3);
+
+  --danger: #E08A76;
+  --danger-tint: #3A211A;
+  --danger-border: rgba(224, 138, 118, 0.32);
+
+  --info: #8FB0CE;
+  --info-tint: #1F2A33;
+  --violet: #A9A7DC;
+  --violet-tint: #262336;
+  --gold: #D9A55C;
+  --coral: #E08A5B;
+
+  --cat-1: #E08A5B;
+  --cat-2: #8FB0CE;
+  --cat-3: #D9A55C;
+  --cat-4: #D98BA8;
+  --cat-5: #A9A7DC;
+  --cat-6: #74B3B8;
+  --cat-7: #B79BDE;
+  --cat-8: #93B79E;
+  --cat-9: #E08A76;
+
+  --scrim: rgba(0, 0, 0, 0.7);
+  --hairline: rgba(246, 234, 220, 0.06);
+  --frame-bezel: #2A211A;
+}
+
+/* Nothing in the app sets data-theme yet, so honour the OS preference:
+   a reader whose system is in dark mode gets the dark palette, and an
+   explicit [data-theme="light"] still wins. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-shell: #120D0A;
+    --bg-page: #1B1410;
+    --bg-card: #241A13;
+    --bg-card-hover: #2C2018;
+    --bg-card-border: #3B2A1E;
+    --bg-sheet: #241A13;
+    --bg-hero: #2C1E14;
+    --bg-hero-border: #43301F;
+    --track: #3B2A1E;
+    --track-hero: #47331F;
+    --divider: #2E211A;
+  
+    --text-main: #F6EADC;         /* 15.4:1 on page */
+    --text-muted: #A99381;        /* 6.2:1  on page */
+    --text-dim: #9C8974;          /* 5.4:1 page, 4.8:1 on hero tint */
+    --text-on-accent: #1B1410;    /* 7.6:1 on --accent */
+    --text-on-accent-strong: #1B1410;
+  
+    --accent: #F0904A;            /* 7.6:1 on page */
+    --accent-bright: #F79E5C;
+    --accent-strong: #F0904A;     /* on dark the lifted accent already passes */
+    --accent-tint: #3D2917;
+    --accent-border: rgba(240, 144, 74, 0.34);
+  
+    --positive: #8FA87E;
+    --positive-strong: #A3BA92;
+    --positive-tint: #2A3423;
+    --positive-border: rgba(143, 168, 126, 0.3);
+  
+    --danger: #E08A76;
+    --danger-tint: #3A211A;
+    --danger-border: rgba(224, 138, 118, 0.32);
+  
+    --info: #8FB0CE;
+    --info-tint: #1F2A33;
+    --violet: #A9A7DC;
+    --violet-tint: #262336;
+    --gold: #D9A55C;
+    --coral: #E08A5B;
+  
+    --cat-1: #E08A5B;
+    --cat-2: #8FB0CE;
+    --cat-3: #D9A55C;
+    --cat-4: #D98BA8;
+    --cat-5: #A9A7DC;
+    --cat-6: #74B3B8;
+    --cat-7: #B79BDE;
+    --cat-8: #93B79E;
+    --cat-9: #E08A76;
+  
+    --scrim: rgba(0, 0, 0, 0.7);
+    --hairline: rgba(246, 234, 220, 0.06);
+    --frame-bezel: #2A211A;
+  }
 }
 
 * {
@@ -34,7 +196,7 @@
 
 body {
   font-family: var(--font-family);
-  background-color: #0d0b08;
+  background-color: var(--bg-shell);
   color: var(--text-main);
   min-height: 100vh;
   overflow-x: hidden;
@@ -42,10 +204,10 @@ body {
 }
 
 /* On wide screens the app is still a centered mobile-width column by design;
-   give the surrounding space a deliberate ambient glow instead of flat black. */
+   give the surrounding space a deliberate warm falloff rather than a flat fill. */
 @media (min-width: 700px) {
   body {
-    background: radial-gradient(ellipse 900px 700px at center, #1c150e 0%, #0d0b08 65%);
+    background: radial-gradient(ellipse 900px 700px at center, var(--bg-page) 0%, var(--bg-shell) 70%);
   }
 }
 
@@ -67,8 +229,8 @@ body {
   max-height: calc(100vh - 20px);
   background: var(--bg-page);
   border-radius: 46px;
-  border: 10px solid #24201c;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08), 0 30px 60px -20px rgba(60,40,20,0.4), 0 0 25px rgba(242,106,27,0.15);
+  border: 10px solid var(--frame-bezel, #E0D2BE);
+  box-shadow: 0 24px 60px -28px rgba(90, 58, 30, 0.35);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -78,7 +240,10 @@ body {
 .mobile-full-wrapper {
   width: 100%;
   max-width: 420px;
+  /* dvh tracks Android Chrome's collapsing URL bar; vh is the fallback for
+     browsers without it. */
   height: 100vh;
+  height: 100dvh;
   background: var(--bg-page);
   position: relative;
   display: flex;
@@ -93,7 +258,7 @@ body {
   transform: translateX(-50%);
   width: 120px;
   height: 26px;
-  background: #24201c;
+  background: var(--frame-bezel, #E0D2BE);
   border-radius: 0 0 16px 16px;
   z-index: 100;
 }
@@ -116,8 +281,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(23, 20, 15, 0.95);
-  backdrop-filter: blur(12px);
+  background: var(--bg-page);
+  border-bottom: 1px solid var(--divider);
   z-index: 50;
   gap: 6px;
 }
@@ -184,14 +349,13 @@ body {
   }
 }
 
-/* Layered Surface Cards */
+/* Flat surfaces: a hairline border carries separation instead of a shadow. */
 .glass-card {
   background: var(--bg-card);
   border: 1px solid var(--bg-card-border);
-  border-radius: 20px;
+  border-radius: 14px;
   padding: 16px 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .glass-card:hover {
@@ -211,16 +375,16 @@ body {
 
 /* Category Progress Bar */
 .bar {
-  height: 7px;
-  border-radius: 6px;
-  background: #2a251d;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--track);
   overflow: hidden;
 }
 
 .bar > i {
   display: block;
   height: 100%;
-  border-radius: 6px;
+  border-radius: 3px;
   transition: width 0.5s ease;
 }
 
@@ -234,12 +398,12 @@ body {
 .catic {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font: 800 16px Manrope;
-  color: #fff;
+  color: var(--text-on-accent-strong);
   flex: none;
 }
 
@@ -263,27 +427,28 @@ body {
   border: none;
   color: var(--text-muted);
   font-family: inherit;
-  min-width: 58px;
+  width: 62px;
+  flex: 0 0 62px;
   transition: all 0.2s ease;
 }
 
 .member-avatar-wrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font: 800 15px Manrope;
-  background: #211c15;
-  border: 2px solid transparent;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  transition: all 0.2s ease;
 }
 
 .member-chip.active .member-avatar-wrapper {
-  border-color: var(--chip-color, var(--orange-primary));
-  box-shadow: 0 0 12px var(--chip-color, var(--orange-primary));
-  transform: scale(1.08);
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--text-on-accent-strong);
 }
 
 .member-chip.active .member-name {
@@ -292,10 +457,15 @@ body {
 }
 
 .member-name {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
   text-align: center;
   white-space: nowrap;
+  /* The chip is a fixed track in a horizontal scroller: names that exceed it
+     must clip, or they overlap the neighbouring chip's label. */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Bottom Navigation Bar matching design doc */
@@ -304,13 +474,14 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 88px;
-  background: linear-gradient(rgba(23, 20, 15, 0.4), #17140f 60%);
-  backdrop-filter: blur(16px);
+  height: calc(76px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--bg-page);
+  border-top: 1px solid var(--bg-card-border);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-around;
-  padding: 14px 22px 0;
+  padding: 0 18px;
   z-index: 90;
 }
 
@@ -318,86 +489,89 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font: 600 10px Manrope;
+  gap: 5px;
+  font: 500 10px Manrope;
   color: var(--text-dim);
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .tbtn.active {
-  color: var(--text-main);
+  color: var(--accent-strong);
+  font-weight: 600;
 }
 
-.tbtn.active .ic {
-  background: var(--orange-primary) !important;
-}
-
+/* The icon tile is gone -- the glyph itself carries the active state now. */
 .ic {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: currentColor;
 }
 
 .fab {
-  width: 56px;
-  height: 56px;
-  border-radius: 20px;
-  background: var(--orange-primary);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 18px -4px rgba(242, 106, 27, 0.6);
-  margin-top: -14px;
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .fab span {
-  color: #fff;
-  font: 300 30px Manrope;
+  color: var(--text-on-accent);
+  font: 300 28px Manrope;
   line-height: 1;
   margin-top: -2px;
 }
 
 .fab:hover {
-  transform: scale(1.06);
-  background: var(--orange-bright);
+  background: var(--accent-bright);
 }
 
 /* Action Pills (`+ Add expense`, `Scan receipt`, `Split`) */
 .action-pill {
-  background: #2a251d;
-  border: 1.5px solid #3a3226;
-  border-radius: 14px;
-  padding: 8px 14px;
-  font: 700 12.5px Manrope;
-  color: var(--orange-primary);
+  /* Same fill as the FAB so the two primary actions read as one accent. */
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font: 600 12px Manrope;
+  color: var(--text-on-accent);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
 }
 
 .action-pill.secondary {
-  color: #b8a892;
+  background: transparent;
+  border-color: var(--bg-card-border);
+  color: var(--text-muted);
 }
 
 .action-pill:hover {
-  background: #3a3226;
+  opacity: 0.9;
+}
+
+.action-pill.secondary:hover {
+  background: var(--bg-card-hover);
+  opacity: 1;
 }
 
 /* Slide-Up Bottom Sheet Modal */
 .sheet-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
+  background: var(--scrim);
+  backdrop-filter: blur(6px);
   z-index: 200;
   display: flex;
   justify-content: center;
@@ -409,20 +583,19 @@ body {
   width: 100%;
   max-width: 390px;
   background: var(--bg-sheet);
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
   border: 1px solid var(--bg-card-border);
   padding: 20px 20px 28px 20px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sheet-handle {
   width: 36px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-card-border);
   border-radius: 999px;
   margin: 0 auto 14px auto;
 }
@@ -440,9 +613,9 @@ body {
 }
 
 .form-input, .form-select, .form-textarea {
-  background: #211c15;
-  border: 1px solid #2f281f;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 10px;
   padding: 12px 14px;
   color: var(--text-main);
   font-family: inherit;
@@ -452,26 +625,24 @@ body {
 }
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--orange-primary);
-  box-shadow: 0 0 0 3px rgba(242, 106, 27, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-border);
 }
 
 .btn-primary {
   width: 100%;
   padding: 14px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #f9812f 0%, #e8590c 100%);
-  color: #fff;
+  border-radius: 12px;
+  background: var(--accent-strong);
+  color: var(--text-on-accent-strong);
   border: none;
-  font: 800 1rem Manrope;
+  font: 700 0.95rem Manrope;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(242, 106, 27, 0.35);
+  transition: opacity 0.2s ease;
 }
 
 .btn-primary:hover {
-  opacity: 0.95;
-  transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 .frame-toggle-btn {
@@ -479,9 +650,9 @@ body {
   top: 14px;
   right: 14px;
   z-index: 300;
-  background: rgba(36, 32, 28, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f3ece0;
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  color: var(--text-main);
   padding: 6px 12px;
   border-radius: 999px;
   font: 600 12px Manrope;
@@ -490,6 +661,17 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* Desktop-only preview aid. It is position:fixed, so at phone widths it
+   overlays the header's own controls; the app already defaults to full-screen
+   below this breakpoint, so there is nothing here for it to toggle. This must
+   follow the base rule: both are single-class selectors, so source order is
+   what decides the `display` value. */
+@media (max-width: 699px) {
+  .frame-toggle-btn {
+    display: none;
+  }
 }
 
 @keyframes fadeIn {

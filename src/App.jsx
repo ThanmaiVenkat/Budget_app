@@ -38,7 +38,18 @@ export default function App() {
   const [activeDirection, setActiveDirection] = useState('2b'); // Default to 2b (Bold Hero), 2a removed
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);
-  const [isFrameMode, setIsFrameMode] = useState(true);
+  // The simulated phone bezel is a desktop preview aid; on a real handset (or
+  // the installed app) it would draw a fake phone inside the actual one.
+  const [isFrameMode, setIsFrameMode] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return true;
+    return window.matchMedia('(min-width: 700px)').matches;
+  });
+
+  // An installed app has no use for the preview toggle at all.
+  const isStandalone =
+    typeof window !== 'undefined' &&
+    ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      window.navigator.standalone === true);
 
   // Persist state to localStorage
   useEffect(() => {
@@ -130,6 +141,18 @@ export default function App() {
     setMembers((prev) => [...prev, newMember]);
   };
 
+  // Delete Family Member — their past transactions/bills stay in history
+  // (existing fallback rendering already handles a memberId with no match).
+  // The sole earner is never removable: income entry, the earner banner, and
+  // bill payer defaults all assume 'dad' exists.
+  const handleDeleteMember = (memberId) => {
+    if (memberId === 'dad' || memberId === 'all') return;
+    setMembers((prev) => prev.filter((m) => m.id !== memberId));
+    if (activeMemberId === memberId) {
+      setActiveMemberId('all');
+    }
+  };
+
   // Reset to default sample state
   const handleResetData = () => {
     if (window.confirm('Reset all family budget data to sample dataset (Rupees ₹)?')) {
@@ -147,10 +170,12 @@ export default function App() {
     <div className="app-container">
       
       {/* Viewport Frame Toggle Button */}
-      <button className="frame-toggle-btn" onClick={() => setIsFrameMode(!isFrameMode)}>
-        {isFrameMode ? <Monitor size={14} /> : <Smartphone size={14} />}
-        <span>{isFrameMode ? 'Full Screen' : 'Mobile Frame'}</span>
-      </button>
+      {!isStandalone && (
+        <button className="frame-toggle-btn" onClick={() => setIsFrameMode(!isFrameMode)}>
+          {isFrameMode ? <Monitor size={14} /> : <Smartphone size={14} />}
+          <span>{isFrameMode ? 'Full Screen' : 'Mobile Frame'}</span>
+        </button>
+      )}
 
       {/* Main Mobile App Frame */}
       <div className={isFrameMode ? 'mobile-frame-wrapper' : 'mobile-full-wrapper'}>
@@ -179,13 +204,13 @@ export default function App() {
         <div className="sbar">
           <span>9:41</span>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <span style={{ width: '16px', height: '10px', border: '1.5px solid #f3ece0', borderRadius: '3px', display: 'inline-block' }} />
+            <span style={{ width: '16px', height: '10px', border: '1.5px solid var(--text-main)', borderRadius: '3px', display: 'inline-block' }} />
           </div>
         </div>
 
         {/* Family Member Quick Filter Bar (Visible in family modes) */}
         {activeTab !== 'personal' && (
-          <div style={{ padding: '0 20px 4px 20px', background: '#17140f' }}>
+          <div style={{ padding: '0 20px 4px 20px', background: 'var(--bg-page)' }}>
             <FamilyMemberBar
               members={members}
               activeMemberId={activeMemberId}
@@ -267,6 +292,7 @@ export default function App() {
                 members={members}
                 transactions={transactions}
                 onAddMember={handleAddMember}
+                onDeleteMember={handleDeleteMember}
               />
               <BillRemindersTab
                 bills={bills}

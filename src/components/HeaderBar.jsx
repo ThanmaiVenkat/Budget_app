@@ -36,19 +36,18 @@ export default function HeaderBar({
             width: '34px',
             height: '34px',
             borderRadius: '10px',
-            background: 'linear-gradient(135deg, #f9812f 0%, #e8590c 100%)',
+            background: 'var(--accent-strong)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(242, 106, 27, 0.4)',
-            color: '#ffffff'
+            color: 'var(--text-on-accent-strong)'
           }}
         >
           <Wallet size={18} />
         </div>
-        <div style={{ font: '700 12px Manrope', color: '#f3ece0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ color: '#f9812f', fontWeight: '800' }}>₹ INR</span>
-          <span className="header-subtitle" style={{ color: '#8a7d6d', fontSize: '10px' }}>• Household Budget</span>
+        <div style={{ font: '700 12px Manrope', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+          <span style={{ color: 'var(--accent-strong)', fontWeight: '800' }}>₹ INR</span>
+          <span className="header-subtitle" style={{ color: 'var(--text-muted)', fontSize: '10px' }}>• Household Budget</span>
         </div>
       </div>
 
@@ -58,9 +57,9 @@ export default function HeaderBar({
           onClick={toggleDirection}
           className="header-view-toggle"
           style={{
-            background: 'rgba(242, 106, 27, 0.15)',
-            border: '1px solid rgba(242, 106, 27, 0.3)',
-            color: '#f9812f',
+            background: 'var(--accent-tint)',
+            border: '1px solid var(--accent-border)',
+            color: 'var(--accent-strong)',
             borderRadius: '999px',
             font: '700 11px Manrope',
             cursor: 'pointer',
@@ -77,7 +76,7 @@ export default function HeaderBar({
         {/* Month Selector Dropdown */}
         <select
           className="form-select header-month-select"
-          style={{ font: '700 11px Manrope', background: '#211c15', borderRadius: '999px', border: '1px solid #2f281f', color: '#f3ece0' }}
+          style={{ font: '700 11px Manrope', background: 'var(--bg-card)', borderRadius: '999px', border: '1px solid var(--bg-card-border)', color: 'var(--text-main)' }}
           value={selectedMonth}
           onChange={(e) => setSelectedMonth && setSelectedMonth(e.target.value)}
           aria-label="Filter by month"
@@ -93,10 +92,10 @@ export default function HeaderBar({
           onClick={onOpenPersonal}
           className="header-icon-btn"
           style={{
-            background: isPersonalActive ? 'rgba(52, 211, 153, 0.25)' : 'rgba(52, 211, 153, 0.15)',
-            border: '1px solid rgba(52, 211, 153, 0.4)',
+            background: isPersonalActive ? 'var(--positive-tint)' : 'var(--positive-tint)',
+            border: '1px solid var(--positive-border)',
             borderRadius: '50%',
-            color: '#34d399',
+            color: 'var(--positive)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -112,7 +111,7 @@ export default function HeaderBar({
         <button
           onClick={onOpenExcelModal}
           className="header-icon-btn"
-          style={{ background: 'rgba(242,106,27,0.15)', border: '1px solid rgba(242,106,27,0.3)', borderRadius: '50%', color: '#f9812f', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ background: 'var(--accent-tint)', border: '1px solid var(--accent-border)', borderRadius: '50%', color: 'var(--accent-strong)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           title="Upload Excel / CSV Sheet"
           aria-label="Upload Excel or CSV sheet"
         >
@@ -122,7 +121,7 @@ export default function HeaderBar({
         <button
           onClick={handleExport}
           className="header-icon-btn"
-          style={{ background: 'none', border: 'none', color: '#8a7d6d', cursor: 'pointer' }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
           title="Export CSV Data"
           aria-label="Export transactions as CSV"
         >

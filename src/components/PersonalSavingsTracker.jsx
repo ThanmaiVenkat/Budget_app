@@ -181,7 +181,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
           gap: '6px',
           background: 'none',
           border: 'none',
-          color: '#8a7d6d',
+          color: 'var(--text-muted)',
           font: '700 12px Manrope',
           cursor: 'pointer',
           padding: 0,
@@ -195,13 +195,13 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
       <div
         className="glass-card"
         style={{
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)',
-          border: '1px solid rgba(52, 211, 153, 0.35)'
+          background: 'var(--positive-tint)',
+          border: '1px solid var(--positive-border)'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <PiggyBank size={18} color="#34d399" />
+            <PiggyBank size={18} color="var(--positive)" />
             <h3 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>
               My Personal Savings Tracker
             </h3>
@@ -212,9 +212,9 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
               fontWeight: '700',
               padding: '3px 10px',
               borderRadius: '999px',
-              background: 'rgba(52, 211, 153, 0.2)',
-              border: '1px solid rgba(52, 211, 153, 0.4)',
-              color: '#34d399'
+              background: 'var(--positive-tint)',
+              border: '1px solid var(--positive-border)',
+              color: 'var(--positive)'
             }}
           >
             {personalSavingsRate}% Savings Rate
@@ -226,23 +226,23 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-          <div style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 10px', borderRadius: '12px' }}>
+          <div style={{ background: 'var(--bg-page)', padding: '8px 10px', borderRadius: '12px' }}>
             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Salary / Income</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#34d399', marginTop: '2px' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--positive)', marginTop: '2px' }}>
               {formatRupees(totalPersonalIncome)}
             </div>
           </div>
 
-          <div style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 10px', borderRadius: '12px' }}>
+          <div style={{ background: 'var(--bg-page)', padding: '8px 10px', borderRadius: '12px' }}>
             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Personal Expenses</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#f87171', marginTop: '2px' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--danger)', marginTop: '2px' }}>
               {formatRupees(totalPersonalExpense)}
             </div>
           </div>
 
-          <div style={{ background: 'rgba(0,0,0,0.3)', padding: '8px 10px', borderRadius: '12px' }}>
+          <div style={{ background: 'var(--bg-page)', padding: '8px 10px', borderRadius: '12px' }}>
             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Saved in Goals</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#818cf8', marginTop: '2px' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--violet)', marginTop: '2px' }}>
               {formatRupees(totalSavedInGoals)}
             </div>
           </div>
@@ -250,13 +250,13 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
       </div>
 
       {/* GLITCH-FREE SIP MUTUAL FUND WEALTH PROJECTION CALCULATOR */}
-      <div className="glass-card" style={{ background: 'rgba(18, 18, 28, 0.95)', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+      <div className="glass-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--violet)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={18} color="#818cf8" />
+            <Sparkles size={18} color="var(--violet)" />
             <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>SIP Mutual Fund Wealth Projection</h3>
           </div>
-          <span style={{ fontSize: '0.68rem', color: '#818cf8', background: 'rgba(129, 140, 248, 0.15)', padding: '2px 8px', borderRadius: '999px', fontWeight: '700' }}>
+          <span style={{ fontSize: '0.68rem', color: 'var(--violet)', background: 'var(--violet-tint)', padding: '2px 8px', borderRadius: '999px', fontWeight: '700' }}>
             +{returnsPercent}% Growth
           </span>
         </div>
@@ -315,8 +315,8 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
                   padding: '3px 8px',
                   borderRadius: '6px',
                   border: '1px solid var(--bg-card-border)',
-                  background: sipAmountStr === val ? 'rgba(129, 140, 248, 0.25)' : 'rgba(255,255,255,0.03)',
-                  color: sipAmountStr === val ? '#818cf8' : 'var(--text-muted)',
+                  background: sipAmountStr === val ? 'var(--violet-tint)' : 'var(--hairline)',
+                  color: sipAmountStr === val ? 'var(--violet)' : 'var(--text-muted)',
                   fontWeight: '700',
                   cursor: 'pointer'
                 }}
@@ -327,16 +327,16 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
           </div>
 
           {/* Projection Results Box */}
-          <div style={{ background: 'rgba(129, 140, 248, 0.12)', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ background: 'var(--violet-tint)', border: '1px solid var(--violet)', padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Estimated Future Wealth ({numSipYears} Years)</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: '800', color: '#818cf8', letterSpacing: '-0.5px' }}>
+                <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--violet)', letterSpacing: '-0.5px' }}>
                   {formatRupees(projectedWealth)}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.7rem', color: '#34d399', fontWeight: '700' }}>
+                <div style={{ fontSize: '0.7rem', color: 'var(--positive)', fontWeight: '700' }}>
                   +{formatRupees(estimatedReturns)}
                 </div>
                 <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)' }}>Estimated Profit</div>
@@ -349,18 +349,18 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
                 className="progress-bar-fill"
                 style={{
                   width: `${projectedWealth > 0 ? Math.round((totalInvested / projectedWealth) * 100) : 100}%`,
-                  background: '#3b82f6'
+                  background: 'var(--info)'
                 }}
               />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-muted)' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#3b82f6' }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--info)' }} />
                 Invested Capital: {formatRupees(totalInvested)}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#34d399' }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--positive)' }} />
                 Wealth Gain: {formatRupees(estimatedReturns)}
               </span>
             </div>
@@ -372,15 +372,15 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
       <div className="glass-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Target size={18} color="#34d399" />
+            <Target size={18} color="var(--positive)" />
             <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>My Savings Goals & Targets</h3>
           </div>
           <button
             onClick={() => { setEditingGoalId(null); setGoalTitle(''); setTargetAmount(''); setCurrentAmount(''); setCategory('Investment'); setShowAddGoalModal(true); }}
             style={{
-              background: 'rgba(52, 211, 153, 0.15)',
-              border: '1px solid rgba(52, 211, 153, 0.3)',
-              color: '#34d399',
+              background: 'var(--positive-tint)',
+              border: '1px solid var(--positive-border)',
+              color: 'var(--positive)',
               padding: '4px 10px',
               borderRadius: '999px',
               fontSize: '0.72rem',
@@ -397,7 +397,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
             const pct = Math.min(100, Math.round(((goal.current || 0) / (goal.target || 1)) * 100));
 
             return (
-              <div key={goal.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '14px', border: '1px solid var(--bg-card-border)' }}>
+              <div key={goal.id} style={{ background: 'var(--hairline)', padding: '12px', borderRadius: '14px', border: '1px solid var(--bg-card-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '1.2rem' }}>{goal.icon || '🎯'}</span>
@@ -408,7 +408,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '800', color: '#34d399' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--positive)' }}>
                       {formatRupees(goal.current)}
                     </span>
                     <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>
@@ -419,7 +419,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
 
                 {/* Progress bar */}
                 <div className="progress-bar-bg">
-                  <div className="progress-bar-fill" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #34d399, #059669)' }} />
+                  <div className="progress-bar-fill" style={{ width: `${pct}%`, background: 'var(--positive)' }} />
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '0.7rem' }}>
@@ -427,7 +427,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <button
                       onClick={() => setSelectedGoalId(goal.id)}
-                      style={{ background: 'none', border: 'none', color: '#818cf8', fontWeight: '700', cursor: 'pointer' }}
+                      style={{ background: 'none', border: 'none', color: 'var(--violet)', fontWeight: '700', cursor: 'pointer' }}
                     >
                       + Quick Deposit
                     </button>
@@ -445,7 +445,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
                       title="Delete goal"
                       aria-label={`Delete ${goal.title || 'goal'}`}
                     >
-                      <Trash2 size={12} color="#f87171" opacity={0.6} />
+                      <Trash2 size={12} color="var(--danger)" opacity={0.6} />
                     </button>
                   </div>
                 </div>
@@ -490,7 +490,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
           <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>Personal Income & Expense History</h3>
           <button
             onClick={() => setShowAddTxModal(true)}
-            style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', padding: '4px 10px', borderRadius: '999px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: 'var(--positive-tint)', border: '1px solid var(--positive-border)', color: 'var(--positive)', padding: '4px 10px', borderRadius: '999px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
           >
             + Add Personal Item
           </button>
@@ -505,14 +505,14 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: tx.type === 'income' ? '#34d399' : '#f87171' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: tx.type === 'income' ? 'var(--positive)' : 'var(--danger)' }}>
                   {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount)}
                 </span>
                 <button
                   onClick={() => handleDeleteTx(tx.id)}
                   style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}
                 >
-                  <Trash2 size={13} color="#f87171" opacity={0.6} />
+                  <Trash2 size={13} color="var(--danger)" opacity={0.6} />
                 </button>
               </div>
             </div>
@@ -593,18 +593,18 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
             </h3>
 
             <form onSubmit={handleAddPersonalTx} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--bg-card-hover)', padding: '4px', borderRadius: '12px' }}>
                 <button
                   type="button"
                   onClick={() => setTxType('expense')}
-                  style={{ padding: '6px', borderRadius: '8px', border: 'none', background: txType === 'expense' ? '#f87171' : 'transparent', color: '#fff', fontWeight: '700' }}
+                  style={{ padding: '6px', borderRadius: '8px', border: 'none', background: txType === 'expense' ? 'var(--accent-strong)' : 'transparent', color: txType === 'expense' ? 'var(--text-on-accent-strong)' : 'var(--text-muted)', fontWeight: '700' }}
                 >
                   Expense
                 </button>
                 <button
                   type="button"
                   onClick={() => setTxType('income')}
-                  style={{ padding: '6px', borderRadius: '8px', border: 'none', background: txType === 'income' ? '#34d399' : 'transparent', color: txType === 'income' ? '#040407' : '#fff', fontWeight: '700' }}
+                  style={{ padding: '6px', borderRadius: '8px', border: 'none', background: txType === 'income' ? 'var(--positive)' : 'transparent', color: txType === 'income' ? 'var(--text-on-accent-strong)' : 'var(--text-muted)', fontWeight: '700' }}
                 >
                   Income
                 </button>

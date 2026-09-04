@@ -53,7 +53,7 @@ export default function BudgetsTab({
       {/* Month Filter Selector */}
       <div className="glass-card" style={{ padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Calendar size={18} color="#f9812f" />
+          <Calendar size={18} color="var(--accent-strong)" />
           <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>Budget Period</span>
         </div>
         <select
@@ -70,10 +70,10 @@ export default function BudgetsTab({
       </div>
 
       {/* MONTHLY ROLLOVER CARD TOGGLE */}
-      <div className="glass-card" style={{ background: 'linear-gradient(135deg, rgba(249, 129, 47, 0.1) 0%, rgba(94, 195, 157, 0.1) 100%)', border: '1px solid rgba(249, 129, 47, 0.3)' }}>
+      <div className="glass-card" style={{ background: 'var(--accent-tint)', border: '1px solid var(--accent-border)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <ArrowRightLeft size={20} color="#f9812f" />
+            <ArrowRightLeft size={20} color="var(--accent-strong)" />
             <div>
               <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>Monthly Rollover Carry-Forward</h4>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
@@ -87,9 +87,9 @@ export default function BudgetsTab({
             style={{
               padding: '6px 12px',
               borderRadius: '999px',
-              border: `1px solid ${enableRollover ? '#f9812f' : 'var(--bg-card-border)'}`,
-              background: enableRollover ? 'rgba(249, 129, 47, 0.2)' : 'transparent',
-              color: enableRollover ? '#f9812f' : 'var(--text-muted)',
+              border: `1px solid ${enableRollover ? 'var(--accent-strong)' : 'var(--bg-card-border)'}`,
+              background: enableRollover ? 'var(--accent-tint)' : 'transparent',
+              color: enableRollover ? 'var(--accent-strong)' : 'var(--text-muted)',
               fontSize: '0.72rem',
               fontWeight: '700',
               cursor: 'pointer'
@@ -142,7 +142,7 @@ export default function BudgetsTab({
                       />
                       <button
                         onClick={() => handleSaveEdit(cat.id)}
-                        style={{ background: '#f9812f', border: 'none', borderRadius: '6px', padding: '4px 8px', color: '#ffffff', fontWeight: '700', cursor: 'pointer' }}
+                        style={{ background: 'var(--accent-strong)', border: 'none', borderRadius: '6px', padding: '4px 8px', color: 'var(--text-on-accent-strong)', fontWeight: '700', cursor: 'pointer' }}
                       >
                         <Check size={14} />
                       </button>
@@ -162,17 +162,17 @@ export default function BudgetsTab({
               </div>
 
               {/* Progress bar */}
-              <div className="bar" style={{ background: '#2a251d' }}>
+              <div className="bar" style={{ background: 'var(--bg-card-hover)' }}>
                 <i
                   style={{
                     width: `${hasSpending ? pct : 0}%`,
-                    background: isOver ? '#f87171' : isNear ? '#f59e0b' : cat.color || '#f26a1b'
+                    background: isOver ? 'var(--danger)' : isNear ? 'var(--gold)' : cat.color || 'var(--accent)'
                   }}
                 />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '0.72rem' }}>
-                <span style={{ color: isOver ? '#f87171' : isNear ? '#f59e0b' : 'var(--text-dim)' }}>
+                <span style={{ color: isOver ? 'var(--danger)' : isNear ? 'var(--gold)' : 'var(--text-dim)' }}>
                   {!hasSpending ? 'No spending recorded' : isOver ? '⚠️ Over budget!' : isNear ? '⚡ Approaching limit' : `${100 - pct}% remaining`}
                 </span>
                 <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>

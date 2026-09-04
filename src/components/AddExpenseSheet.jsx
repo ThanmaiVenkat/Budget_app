@@ -56,7 +56,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
         <div className="sheet-handle" />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', gap: '6px', background: 'rgba(255,255,255,0.06)', padding: '3px', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', gap: '6px', background: 'var(--bg-card-hover)', padding: '3px', borderRadius: '12px' }}>
             <button
               type="button"
               onClick={() => handleTypeChange('expense')}
@@ -64,8 +64,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 padding: '4px 12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: type === 'expense' ? '#f87171' : 'transparent',
-                color: '#fff',
+                background: type === 'expense' ? 'var(--accent-strong)' : 'transparent',
+                color: type === 'expense' ? 'var(--text-on-accent-strong)' : 'var(--text-muted)',
                 fontWeight: '700',
                 fontSize: '0.78rem',
                 cursor: 'pointer'
@@ -80,8 +80,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 padding: '4px 12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: type === 'income' ? '#34d399' : 'transparent',
-                color: type === 'income' ? '#040407' : '#fff',
+                background: type === 'income' ? 'var(--positive)' : 'transparent',
+                color: type === 'income' ? 'var(--text-on-accent-strong)' : 'var(--text-muted)',
                 fontWeight: '700',
                 fontSize: '0.78rem',
                 cursor: 'pointer'
@@ -91,7 +91,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
             </button>
           </div>
 
-          <button onClick={onClose} aria-label="Close" style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'var(--bg-card-hover)', border: 'none', borderRadius: '50%', width: '30px', height: '30px', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <X size={16} />
           </button>
         </div>
@@ -102,14 +102,14 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           <div className="form-group" style={{ marginBottom: '4px' }}>
             <label className="form-label" style={{ fontSize: '0.72rem' }}>1. AMOUNT (₹)</label>
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.4rem', fontWeight: '800', color: '#34d399' }}>
+              <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.4rem', fontWeight: '800', color: 'var(--positive)' }}>
                 ₹
               </span>
               <input
                 type="number"
                 step="0.01"
                 className="form-input"
-                style={{ paddingLeft: '38px', fontSize: '1.4rem', fontWeight: '800', height: '52px', borderColor: amountError ? '#f87171' : undefined }}
+                style={{ paddingLeft: '38px', fontSize: '1.4rem', fontWeight: '800', height: '52px', borderColor: amountError ? 'var(--danger)' : undefined }}
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => { setAmount(e.target.value); if (amountError) setAmountError(''); }}
@@ -118,7 +118,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
               />
             </div>
             {amountError && (
-              <div style={{ color: '#f87171', fontSize: '0.72rem', fontWeight: '600', marginTop: '4px' }}>
+              <div style={{ color: 'var(--danger)', fontSize: '0.72rem', fontWeight: '600', marginTop: '4px' }}>
                 {amountError}
               </div>
             )}
@@ -131,10 +131,10 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
             </label>
 
             {type === 'income' ? (
-              <div style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: 'var(--positive-tint)', border: '1px solid var(--positive-border)', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '1.3rem' }}>{dadMember.avatar}</span>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#34d399' }}>{dadMember.name}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--positive)' }}>{dadMember.name}</div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Dad earns the primary household income</div>
                 </div>
               </div>
@@ -153,8 +153,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         gap: '6px',
                         padding: '6px 12px',
                         borderRadius: '999px',
-                        background: isSelected ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${isSelected ? '#34d399' : 'var(--bg-card-border)'}`,
+                        background: isSelected ? 'var(--positive-tint)' : 'var(--hairline)',
+                        border: `1px solid ${isSelected ? 'var(--positive)' : 'var(--bg-card-border)'}`,
                         color: isSelected ? 'var(--text-main)' : 'var(--text-muted)',
                         fontWeight: isSelected ? '700' : '500',
                         fontSize: '0.78rem',
@@ -189,9 +189,9 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         justifyContent: 'center',
                         padding: '8px 4px',
                         borderRadius: '12px',
-                        background: isSelected ? 'rgba(52, 211, 153, 0.18)' : 'rgba(255, 255, 255, 0.03)',
-                        border: `1px solid ${isSelected ? '#34d399' : 'var(--bg-card-border)'}`,
-                        color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                        background: isSelected ? 'var(--positive-tint)' : 'var(--hairline)',
+                        border: `1px solid ${isSelected ? 'var(--positive)' : 'var(--bg-card-border)'}`,
+                        color: isSelected ? 'var(--positive-strong)' : 'var(--text-muted)',
                         cursor: 'pointer',
                         fontSize: '0.72rem',
                         textAlign: 'center',

@@ -1,21 +1,21 @@
 export const DEFAULT_MEMBERS = [
-  { id: 'all', name: 'All Family', avatar: '👨‍👩‍👧‍👦', color: '#34d399', role: 'Household Pool' },
-  { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻', color: '#3b82f6', role: 'Primary Earner & Head', allowance: 145000, isEarner: true },
-  { id: 'mom', name: 'Mom (Priya)', avatar: '👩‍💼', color: '#ec4899', role: 'Household Manager', allowance: 40000, isEarner: false },
-  { id: 'alex', name: 'Alex (Rohan)', avatar: '👦', color: '#f59e0b', role: 'Child', allowance: 5000, isEarner: false },
-  { id: 'emma', name: 'Emma (Ananya)', avatar: '👧', color: '#8b5cf6', role: 'Child', allowance: 4000, isEarner: false }
+  { id: 'all', name: 'All Family', avatar: '👨‍👩‍👧‍👦', color: '#C2661F', role: 'Household Pool' },
+  { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻', color: '#4A6B8A', role: 'Primary Earner & Head', allowance: 145000, isEarner: true },
+  { id: 'mom', name: 'Mom (Priya)', avatar: '👩‍💼', color: '#A8496B', role: 'Household Manager', allowance: 40000, isEarner: false },
+  { id: 'alex', name: 'Alex (Rohan)', avatar: '👦', color: '#B07C2A', role: 'Child', allowance: 5000, isEarner: false },
+  { id: 'emma', name: 'Emma (Ananya)', avatar: '👧', color: '#7B5EA7', role: 'Child', allowance: 4000, isEarner: false }
 ];
 
 export const DEFAULT_CATEGORIES = [
-  { id: 'groceries', name: 'Groceries & Provisions', icon: '🛒', limit: 25000, color: '#34d399' },
-  { id: 'housing', name: 'Rent & Maintenance', icon: '🏠', limit: 45000, color: '#3b82f6' },
-  { id: 'utilities', name: 'Electricity & Bills', icon: '⚡', limit: 12000, color: '#f59e0b' },
-  { id: 'dining', name: 'Dining Out & Swiggy', icon: '🍽️', limit: 15000, color: '#ec4899' },
-  { id: 'entertainment', name: 'Movies & Outings', icon: '🎮', limit: 8000, color: '#8b5cf6' },
-  { id: 'health', name: 'Health & Pharmacy', icon: '🏥', limit: 10000, color: '#06b6d4' },
-  { id: 'education', name: 'School & Tuition', icon: '📚', limit: 15000, color: '#6366f1' },
-  { id: 'transport', name: 'Fuel & Cab Fare', icon: '🚗', limit: 10000, color: '#14b8a6' },
-  { id: 'shopping', name: 'Shopping & Clothes', icon: '🛍️', limit: 12000, color: '#f43f5e' }
+  { id: 'groceries', name: 'Groceries & Provisions', icon: '🛒', limit: 25000, color: '#4F7A5C' },
+  { id: 'housing', name: 'Rent & Maintenance', icon: '🏠', limit: 45000, color: '#4A6B8A' },
+  { id: 'utilities', name: 'Electricity & Bills', icon: '⚡', limit: 12000, color: '#B07C2A' },
+  { id: 'dining', name: 'Dining Out & Swiggy', icon: '🍽️', limit: 15000, color: '#A8496B' },
+  { id: 'entertainment', name: 'Movies & Outings', icon: '🎮', limit: 8000, color: '#7B5EA7' },
+  { id: 'health', name: 'Health & Pharmacy', icon: '🏥', limit: 10000, color: '#3F7C82' },
+  { id: 'education', name: 'School & Tuition', icon: '📚', limit: 15000, color: '#6B6A9E' },
+  { id: 'transport', name: 'Fuel & Cab Fare', icon: '🚗', limit: 10000, color: '#3F7C82' },
+  { id: 'shopping', name: 'Shopping & Clothes', icon: '🛍️', limit: 12000, color: '#A8412A' }
 ];
 
 export const INITIAL_TRANSACTIONS = [
@@ -234,8 +234,8 @@ export const getPreviousMonthKey = (monthKey) => {
 };
 
 export const getBillBadgeStatus = (daysUntilDue, paid) => {
-  if (paid) return { text: 'Paid', bg: 'rgba(52, 211, 153, 0.15)', border: 'rgba(52, 211, 153, 0.3)', color: '#34d399' };
-  if (daysUntilDue < 3) return { text: `Due in ${daysUntilDue}d (Urgent)`, bg: 'rgba(248, 113, 113, 0.18)', border: 'rgba(248, 113, 113, 0.4)', color: '#f87171' };
-  if (daysUntilDue <= 7) return { text: `Due in ${daysUntilDue}d`, bg: 'rgba(245, 158, 11, 0.18)', border: 'rgba(245, 158, 11, 0.4)', color: '#f59e0b' };
-  return { text: `Due in ${daysUntilDue}d`, bg: 'rgba(52, 211, 153, 0.15)', border: 'rgba(52, 211, 153, 0.3)', color: '#34d399' };
+  if (paid) return { text: 'Paid', bg: 'var(--positive-tint)', border: 'var(--positive-border)', color: 'var(--positive)' };
+  if (daysUntilDue < 3) return { text: `Due in ${daysUntilDue}d (Urgent)`, bg: 'var(--danger-tint)', border: 'var(--danger-border)', color: 'var(--danger)' };
+  if (daysUntilDue <= 7) return { text: `Due in ${daysUntilDue}d`, bg: 'var(--accent-tint)', border: 'var(--accent-border)', color: 'var(--accent-strong)' };
+  return { text: `Due in ${daysUntilDue}d`, bg: 'var(--positive-tint)', border: 'var(--positive-border)', color: 'var(--positive)' };
 };

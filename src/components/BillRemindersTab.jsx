@@ -84,14 +84,14 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
           </div>
           <button
             onClick={() => (showAdd ? resetForm() : setShowAdd(true))}
-            style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: 'var(--positive-tint)', border: '1px solid var(--positive-border)', color: 'var(--positive)', padding: '4px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
           >
             {showAdd ? 'Cancel' : '+ New Bill'}
           </button>
         </div>
 
         {showAdd && (
-          <form onSubmit={handleCreateBill} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '14px', marginBottom: '12px' }}>
+          <form onSubmit={handleCreateBill} style={{ background: 'var(--hairline)', padding: '12px', borderRadius: '14px', marginBottom: '12px' }}>
             <div className="form-group">
               <label className="form-label">Bill Name</label>
               <input type="text" className="form-input" placeholder="e.g. Airtel Wifi" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -129,14 +129,14 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                   justifyContent: 'space-between',
                   padding: '10px 12px',
                   borderRadius: '12px',
-                  background: b.paid ? 'rgba(52, 211, 153, 0.06)' : 'rgba(255, 255, 255, 0.03)',
-                  border: `1px solid ${b.paid ? 'rgba(52, 211, 153, 0.2)' : 'var(--bg-card-border)'}`,
+                  background: b.paid ? 'var(--positive-tint)' : 'var(--hairline)',
+                  border: `1px solid ${b.paid ? 'var(--positive-tint)' : 'var(--bg-card-border)'}`,
                   cursor: 'pointer'
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   {b.paid ? (
-                    <CheckCircle2 size={20} color="#34d399" />
+                    <CheckCircle2 size={20} color="var(--positive)" />
                   ) : (
                     <Circle size={20} color="var(--text-muted)" />
                   )}
@@ -182,7 +182,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                       title="Delete bill"
                       aria-label={`Delete ${b.title || 'bill'}`}
                     >
-                      <Trash2 size={12} color="#f87171" opacity={0.6} />
+                      <Trash2 size={12} color="var(--danger)" opacity={0.6} />
                     </button>
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
       {/* BILL SPLIT CALCULATOR */}
       <div className="glass-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <Calculator size={18} color="#818cf8" />
+          <Calculator size={18} color="var(--violet)" />
           <h3 style={{ fontSize: '0.95rem', fontWeight: '700' }}>Shared Bill Split Calculator (₹)</h3>
         </div>
 
@@ -223,14 +223,14 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
             </div>
           </div>
 
-          <div style={{ background: 'rgba(129, 140, 248, 0.12)', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '12px 14px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: 'var(--violet-tint)', border: '1px solid var(--violet)', padding: '12px 14px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Each Person Pays</div>
-              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: '#818cf8' }}>
+              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--violet)' }}>
                 {formatRupees(perPerson)}
               </div>
             </div>
-            <Users size={24} color="#818cf8" opacity={0.7} />
+            <Users size={24} color="var(--violet)" opacity={0.7} />
           </div>
         </div>
       </div>
