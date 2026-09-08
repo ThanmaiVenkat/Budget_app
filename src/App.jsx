@@ -10,6 +10,7 @@ import BudgetsTab from './components/BudgetsTab';
 import MembersTab from './components/MembersTab';
 import BillRemindersTab from './components/BillRemindersTab';
 import AddExpenseSheet from './components/AddExpenseSheet';
+import OnboardingScreen from './components/OnboardingScreen';
 import { loadState, saveState, resetToDefaultState } from './utils/storage';
 
 // Lazy-loaded: pulls in recharts / xlsx, only needed once the user opens these views.
@@ -34,7 +35,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState('home');
   const [activeMemberId, setActiveMemberId] = useState('all');
-  const [selectedMonth, setSelectedMonth] = useState('2026-07');
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [activeDirection, setActiveDirection] = useState('2b'); // Default to 2b (Bold Hero), 2a removed
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);
@@ -141,21 +142,31 @@ export default function App() {
     setMembers((prev) => [...prev, newMember]);
   };
 
+  // First-run setup: seeds the 'all' pseudo-member every filter and list
+  // elsewhere assumes is present, alongside the person who just onboarded.
+  const handleCompleteOnboarding = (member) => {
+    setMembers([
+      { id: 'all', name: 'All Family', avatar: '👨‍👩‍👧‍👦', color: '#C2661F', role: 'Household Pool' },
+      member
+    ]);
+  };
+
   // Delete Family Member — their past transactions/bills stay in history
   // (existing fallback rendering already handles a memberId with no match).
-  // The sole earner is never removable: income entry, the earner banner, and
-  // bill payer defaults all assume 'dad' exists.
+  // No member is protected from removal, the earner included: if that drops
+  // the household to zero real members, the onboarding screen simply
+  // reappears rather than the app being stuck in a half-configured state.
   const handleDeleteMember = (memberId) => {
-    if (memberId === 'dad' || memberId === 'all') return;
+    if (memberId === 'all') return;
     setMembers((prev) => prev.filter((m) => m.id !== memberId));
     if (activeMemberId === memberId) {
       setActiveMemberId('all');
     }
   };
 
-  // Reset to default sample state
+  // Reset to the empty first-run state
   const handleResetData = () => {
-    if (window.confirm('Reset all family budget data to sample dataset (Rupees ₹)?')) {
+    if (window.confirm('Erase all budget data on this device and start over?')) {
       resetToDefaultState();
       window.location.reload();
     }
@@ -165,6 +176,11 @@ export default function App() {
   const handleNavigateToBills = () => {
     setActiveTab('members');
   };
+
+  // The 'all' pseudo-member is always present once onboarding has run, so
+  // "no real members" — the true first-run state, or every member deleted —
+  // is anyone besides it, not an empty array.
+  const hasRealMembers = members.some((m) => m.id !== 'all');
 
   return (
     <div className="app-container">
@@ -185,12 +201,15 @@ export default function App() {
           <div className="mobile-notch" />
         )}
 
+        {!hasRealMembers ? (
+          <OnboardingScreen onComplete={handleCompleteOnboarding} />
+        ) : (
+        <>
         {/* Header Bar */}
         <HeaderBar
           transactions={transactions}
           members={members}
           categories={categories}
-          onReset={handleResetData}
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
           onOpenExcelModal={() => setShowExcelModal(true)}
@@ -302,6 +321,26 @@ export default function App() {
                 onUpdateBill={handleUpdateBill}
                 onDeleteBill={handleDeleteBill}
               />
+
+              {/* Reset was previously wired only as far as HeaderBar, which
+                  never rendered a control for it — there was no way to
+                  actually trigger it from a running app. */}
+              <button
+                onClick={handleResetData}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--danger)',
+                  opacity: 0.75,
+                  fontSize: '0.72rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  alignSelf: 'center'
+                }}
+              >
+                Erase all data on this device
+              </button>
             </div>
           )}
         </main>
@@ -333,6 +372,8 @@ export default function App() {
               onImportSuccess={handleExcelImportSuccess}
             />
           </Suspense>
+        )}
+        </>
         )}
 
       </div>

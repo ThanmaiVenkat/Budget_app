@@ -8,7 +8,8 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [daysUntilDue, setDaysUntilDue] = useState('5');
-  const [payer, setPayer] = useState(members[1]?.id || 'mom');
+  const realMembers = members.filter(m => m.id !== 'all');
+  const [payer, setPayer] = useState(realMembers[0]?.id || '');
 
   // Bill Split Calculator
   const [splitAmount, setSplitAmount] = useState('2400');
@@ -18,6 +19,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
     setTitle('');
     setAmount('');
     setDaysUntilDue('5');
+    setPayer(realMembers[0]?.id || '');
     setEditingBillId(null);
     setShowAdd(false);
   };
@@ -105,6 +107,40 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
               <div className="form-group">
                 <label className="form-label">Due in (Days)</label>
                 <input type="number" className="form-input" placeholder="e.g. 5" value={daysUntilDue} onChange={(e) => setDaysUntilDue(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Paid By</label>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+                {realMembers.map((m) => {
+                  const isSelected = payer === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPayer(m.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        borderRadius: '999px',
+                        background: isSelected ? 'var(--positive-tint)' : 'var(--hairline)',
+                        border: `1px solid ${isSelected ? 'var(--positive)' : 'var(--bg-card-border)'}`,
+                        color: isSelected ? 'var(--text-main)' : 'var(--text-muted)',
+                        fontWeight: isSelected ? '700' : '500',
+                        fontSize: '0.78rem',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                      }}
+                    >
+                      <span>{m.avatar || '👤'}</span>
+                      <span>{(m.name || 'Member').split(' ')[0]}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

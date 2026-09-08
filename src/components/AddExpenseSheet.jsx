@@ -3,25 +3,34 @@ import { X } from 'lucide-react';
 import { generateId } from '../utils/mockData';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave }) {
+  const realMembers = members.filter(m => m.id !== 'all');
+  const earners = realMembers.filter(m => m.isEarner);
+  // Only when exactly one member is flagged as the earner is there an
+  // unambiguous "who earned this" answer to pre-fill; zero or several
+  // earners both fall back to letting the user pick, same as an expense.
+  const singleEarner = earners.length === 1 ? earners[0] : null;
+  const defaultSpenderId = (realMembers.find(m => !m.isEarner) || realMembers[0])?.id || '';
+
   const [type, setType] = useState('expense');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState(categories[0]?.id || 'groceries');
-  // For expense, default to Mom or Mom/Dad. For Income, auto-set to Dad (Rajesh)
-  const [memberId, setMemberId] = useState('mom');
+  const [category, setCategory] = useState(categories[0]?.id || '');
+  const [memberId, setMemberId] = useState(defaultSpenderId);
   const [title, setTitle] = useState('');
   const [showMore, setShowMore] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [notes, setNotes] = useState('');
   const [amountError, setAmountError] = useState('');
 
-  const dadMember = members.find(m => m.id === 'dad') || { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻' };
-
   const handleTypeChange = (newType) => {
     setType(newType);
     if (newType === 'income') {
-      setMemberId('dad'); // Dad is the sole earner for household income
+      setMemberId(singleEarner ? singleEarner.id : defaultSpenderId);
+    } else {
+      setMemberId(defaultSpenderId);
     }
   };
+
+  const selectedMember = members.find(m => m.id === memberId);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,7 +42,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
     setAmountError('');
 
     const catObj = categories.find(c => c.id === category);
-    const defaultTitle = type === 'income' ? 'Dad Salary / Earnings' : (catObj ? catObj.name : 'Expense');
+    const firstName = (selectedMember?.name || 'Household').split(' ')[0];
+    const defaultTitle = type === 'income' ? `${firstName} Income` : (catObj ? catObj.name : 'Expense');
 
     onSave({
       id: generateId('tx'),
@@ -41,7 +51,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
       title: title.trim() || defaultTitle,
       amount: parsedAmount,
       category: type === 'income' ? 'income' : category,
-      memberId: type === 'income' ? 'dad' : memberId,
+      memberId,
       date: new Date().toISOString().split('T')[0],
       paymentMethod,
       notes
@@ -87,7 +97,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 cursor: 'pointer'
               }}
             >
-              💰 Dad's Income
+              💰 Income
             </button>
           </div>
 
@@ -97,7 +107,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          
+
           {/* FIELD 1: AMOUNT (₹) */}
           <div className="form-group" style={{ marginBottom: '4px' }}>
             <label className="form-label" style={{ fontSize: '0.72rem' }}>1. AMOUNT (₹)</label>
@@ -127,20 +137,20 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           {/* FIELD 2: WHO SPENT OR EARNED */}
           <div className="form-group" style={{ marginBottom: '4px' }}>
             <label className="form-label" style={{ fontSize: '0.72rem' }}>
-              {type === 'income' ? '2. EARNER (SOLE HOUSEHOLD EARNER)' : '2. WHO SPENT THIS MONEY?'}
+              {type === 'income' ? '2. EARNED BY' : '2. WHO SPENT THIS MONEY?'}
             </label>
 
-            {type === 'income' ? (
+            {type === 'income' && singleEarner ? (
               <div style={{ background: 'var(--positive-tint)', border: '1px solid var(--positive-border)', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{dadMember.avatar}</span>
+                <span style={{ fontSize: '1.3rem' }}>{singleEarner.avatar}</span>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--positive)' }}>{dadMember.name}</div>
-                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Dad earns the primary household income</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--positive)' }}>{singleEarner.name}</div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Logged as household income</div>
                 </div>
               </div>
             ) : (
               <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
-                {members.filter(m => m.id !== 'all').map((m) => {
+                {realMembers.map((m) => {
                   const isSelected = memberId === m.id;
                   return (
                     <button
@@ -222,7 +232,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 type="text"
                 className="form-input"
                 style={{ fontSize: '0.82rem', padding: '8px 12px' }}
-                placeholder={type === 'income' ? 'e.g. Dad July Salary / Bonus' : 'Item Title (e.g. Groceries / School Books)'}
+                placeholder={type === 'income' ? 'e.g. July Salary / Bonus' : 'Item Title (e.g. Groceries / School Books)'}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -251,7 +261,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           )}
 
           <button type="submit" className="btn-primary" style={{ marginTop: '6px' }}>
-            {type === 'income' ? 'Log Dad Salary Credit (₹)' : 'Add Expense Entry (₹)'}
+            {type === 'income' ? 'Log Income (₹)' : 'Add Expense Entry (₹)'}
           </button>
         </form>
       </div>

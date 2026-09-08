@@ -1,4 +1,4 @@
-import { DEFAULT_MEMBERS, DEFAULT_CATEGORIES, INITIAL_TRANSACTIONS, INITIAL_BILLS } from './mockData';
+import { DEFAULT_CATEGORIES } from './mockData';
 
 const KEYS = {
   TRANSACTIONS: 'family_budget_transactions_v4',
@@ -40,29 +40,26 @@ const removeStorageItem = (key) => {
   }
 };
 
-const INITIAL_PERSONAL_STATE = {
-  salary: 145000,
-  expenses: 32000,
-  goals: [
-    { id: 'g-1', title: 'Emergency Reserve Fund', target: 300000, current: 210000, category: 'Emergency', icon: '🛡️' },
-    { id: 'g-2', title: 'Equity SIP Mutual Funds', target: 500000, current: 350000, category: 'Investment', icon: '📈' },
-    { id: 'g-3', title: 'Goa / Bali Vacation Goal', target: 100000, current: 65000, category: 'Vacation', icon: '🌴' }
-  ],
-  transactions: [
-    { id: 'ptx-1', title: 'Monthly Salary Credit', amount: 145000, type: 'income', date: '2026-07-01' },
-    { id: 'ptx-2', title: 'SIP Investment Deposit', amount: 25000, type: 'expense', date: '2026-07-05' },
-    { id: 'ptx-3', title: 'Personal Tech Purchase', amount: 8400, type: 'expense', date: '2026-07-15' }
-  ]
-};
+// A household of one real person, not a sample family: a fresh install (or a
+// full Reset) starts here, same as an app just downloaded from a store.
+const EMPTY_MEMBERS = [];
+const EMPTY_TRANSACTIONS = [];
+const EMPTY_BILLS = [];
+const EMPTY_PERSONAL_STATE = { salary: 0, goals: [], transactions: [] };
 
+// `val === null` means the key was never written — true first run, so the
+// empty defaults above apply. Once a key exists, whatever is actually stored
+// wins even when it's an empty array: without this distinction, a user who
+// deletes their last transaction would see fake data reappear on next load,
+// since an empty array used to be treated the same as "nothing saved yet".
 const parseOrFallback = (val, fallback) => {
-  if (!val) return fallback;
+  if (val === null) return fallback;
   try {
     const parsed = JSON.parse(val);
     if (Array.isArray(fallback)) {
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+      return Array.isArray(parsed) ? parsed : fallback;
     }
-    return parsed || fallback;
+    return parsed !== null && parsed !== undefined ? parsed : fallback;
   } catch {
     return fallback;
   }
@@ -70,12 +67,12 @@ const parseOrFallback = (val, fallback) => {
 
 export const loadState = () => {
   try {
-    const transactions = parseOrFallback(getStorageItem(KEYS.TRANSACTIONS), INITIAL_TRANSACTIONS);
-    const members = parseOrFallback(getStorageItem(KEYS.MEMBERS), DEFAULT_MEMBERS);
+    const transactions = parseOrFallback(getStorageItem(KEYS.TRANSACTIONS), EMPTY_TRANSACTIONS);
+    const members = parseOrFallback(getStorageItem(KEYS.MEMBERS), EMPTY_MEMBERS);
     const categories = parseOrFallback(getStorageItem(KEYS.CATEGORIES), DEFAULT_CATEGORIES);
-    const bills = parseOrFallback(getStorageItem(KEYS.BILLS), INITIAL_BILLS);
+    const bills = parseOrFallback(getStorageItem(KEYS.BILLS), EMPTY_BILLS);
     const rollover = parseOrFallback(getStorageItem(KEYS.ROLLOVER), true);
-    const personal = parseOrFallback(getStorageItem(KEYS.PERSONAL_SAVINGS), INITIAL_PERSONAL_STATE);
+    const personal = parseOrFallback(getStorageItem(KEYS.PERSONAL_SAVINGS), EMPTY_PERSONAL_STATE);
 
     return {
       transactions,
@@ -88,12 +85,12 @@ export const loadState = () => {
   } catch (e) {
     console.error('Failed to load state:', e);
     return {
-      transactions: INITIAL_TRANSACTIONS,
-      members: DEFAULT_MEMBERS,
+      transactions: EMPTY_TRANSACTIONS,
+      members: EMPTY_MEMBERS,
       categories: DEFAULT_CATEGORIES,
-      bills: INITIAL_BILLS,
+      bills: EMPTY_BILLS,
       enableRollover: true,
-      personalState: INITIAL_PERSONAL_STATE
+      personalState: EMPTY_PERSONAL_STATE
     };
   }
 };
@@ -102,6 +99,8 @@ export const saveState = (key, data) => {
   setStorageItem(KEYS[key], JSON.stringify(data));
 };
 
+// Wipes all saved data back to the empty first-run state (category
+// taxonomy aside) — not to a sample dataset, since there no longer is one.
 export const resetToDefaultState = () => {
   removeStorageItem(KEYS.TRANSACTIONS);
   removeStorageItem(KEYS.MEMBERS);

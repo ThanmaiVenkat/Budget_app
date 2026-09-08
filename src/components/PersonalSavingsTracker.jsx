@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 import { formatRupees, generateId } from '../utils/mockData';
 
 export default function PersonalSavingsTracker({ personalState, setPersonalState, onBack }) {
-  const { salary = 145000, goals = [], transactions = [] } = personalState || {};
+  const { salary = 0, goals = [], transactions = [] } = personalState || {};
 
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState(null);
@@ -393,6 +393,13 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {goals.length === 0 && (
+            <div style={{ padding: '24px 10px', textAlign: 'center', color: 'var(--text-dim)' }}>
+              <p style={{ fontSize: '1.8rem', marginBottom: '8px' }}>🎯</p>
+              <p style={{ fontSize: '0.85rem', fontWeight: '600' }}>No savings goals yet</p>
+              <p style={{ fontSize: '0.72rem' }}>Tap "+ New Goal" to set your first target.</p>
+            </div>
+          )}
           {goals.map((goal) => {
             const pct = Math.min(100, Math.round(((goal.current || 0) / (goal.target || 1)) * 100));
 
@@ -497,6 +504,13 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {transactions.length === 0 && (
+            <div style={{ padding: '24px 10px', textAlign: 'center', color: 'var(--text-dim)' }}>
+              <p style={{ fontSize: '1.8rem', marginBottom: '8px' }}>🧾</p>
+              <p style={{ fontSize: '0.85rem', fontWeight: '600' }}>No personal transactions yet</p>
+              <p style={{ fontSize: '0.72rem' }}>Tap "+ Add Personal Item" to log your first one.</p>
+            </div>
+          )}
           {transactions.map(tx => (
             <div key={tx.id} className="transaction-item">
               <div>

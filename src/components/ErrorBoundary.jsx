@@ -21,7 +21,7 @@ export default class ErrorBoundary extends React.Component {
   };
 
   handleResetData = () => {
-    if (window.confirm('Reset all app data to the sample dataset? This clears anything you\'ve added.')) {
+    if (window.confirm('Erase all budget data on this device and start over?')) {
       resetToDefaultState();
       window.location.reload();
     }
