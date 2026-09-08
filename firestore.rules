@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  function isSignedIn() {
+    return request.auth != null;
+  }
+  function isMember(householdData) {
+    return isSignedIn() && request.auth.uid in householdData.memberUids;
+  }
+
+  match /databases/{database}/documents {
+    // Each user's own document: personal savings data and which household
+    // they belong to. Nobody else can read or write it.
+    match /users/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // A shared household budget. Readable only by its members — a code that
+    // hasn't been joined grants no visibility into the data behind it.
+    match /households/{code} {
+      allow get: if isMember(resource.data);
+      // No `allow list`: the app only ever reaches a household by its exact
+      // code, so listing the collection is denied by default.
+
+      // Creating a household: claiming an unused code as its sole member.
+      allow create: if isSignedIn()
+        && request.resource.data.joinCode == code
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.memberUids == [request.auth.uid]
+        && request.resource.data.data is map;
+
+      // Two distinct ways to update, nothing else:
+      //  - an existing member changing shared state, but never the
+      //    household's own identity (its code or its owner);
+      //  - someone who is not yet a member appending only themselves to
+      //    memberUids — the join operation, and the one case where a
+      //    non-member is allowed to touch the document at all.
+      allow update: if
+        (
+          isMember(resource.data)
+          && request.resource.data.joinCode == resource.data.joinCode
+          && request.resource.data.ownerUid == resource.data.ownerUid
+        )
+        || (
+          isSignedIn()
+          && !(request.auth.uid in resource.data.memberUids)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids'])
+          && request.resource.data.memberUids == resource.data.memberUids.concat([request.auth.uid])
+        );
+
+      allow delete: if false;
+    }
+  }
+}

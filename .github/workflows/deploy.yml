@@ -36,9 +36,24 @@ jobs:
 
       - name: Build
         # Pages serves this repo from /<repo-name>/, so assets need that prefix.
+        # The VITE_FIREBASE_* values are baked into the client bundle at build
+        # time — set them as repository secrets (Settings → Secrets and
+        # variables → Actions) with values from your Firebase project's web
+        # app config. They are not security-sensitive (Firebase's own docs:
+        # access control is Firestore's security rules, not hiding this
+        # config), but this keeps them out of the repo regardless. Missing
+        # values simply resolve to empty strings, which the app itself
+        # detects and reports on screen (see FirebaseNotConfigured.jsx)
+        # rather than failing the build.
         run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
