@@ -1,6 +1,7 @@
 import React from 'react';
-import { AlertTriangle, RotateCcw, Trash2 } from 'lucide-react';
-import { resetToDefaultState } from '../utils/storage';
+import { AlertTriangle, RotateCcw, LogOut } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -20,10 +21,13 @@ export default class ErrorBoundary extends React.Component {
     window.location.reload();
   };
 
-  handleResetData = () => {
-    if (window.confirm('Reset all app data to the sample dataset? This clears anything you\'ve added.')) {
-      resetToDefaultState();
-      window.location.reload();
+  // A stuck client-side session (bad cached auth state, a corrupted local
+  // Firestore cache) is the class of crash reload alone won't fix. Signing
+  // out clears both without touching the household's actual data, which
+  // lives in Firestore, not this browser.
+  handleSignOutAndReload = () => {
+    if (window.confirm('Sign out and reload? Your budget data is unaffected — it lives in the cloud, not this device.')) {
+      Promise.resolve(auth ? signOut(auth) : null).finally(() => window.location.reload());
     }
   };
 
@@ -52,8 +56,8 @@ export default class ErrorBoundary extends React.Component {
         <div>
           <h1 style={{ fontSize: '1.1rem', fontWeight: '800', marginBottom: '6px' }}>Something went wrong</h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '320px' }}>
-            The app hit an unexpected error and couldn't continue. Your data is safe in this browser
-            &mdash; try reloading first.
+            The app hit an unexpected error and couldn't continue. Your budget data lives in the
+            cloud, not this device &mdash; try reloading first.
           </p>
         </div>
 
@@ -79,7 +83,7 @@ export default class ErrorBoundary extends React.Component {
           </button>
 
           <button
-            onClick={this.handleResetData}
+            onClick={this.handleSignOutAndReload}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -95,7 +99,7 @@ export default class ErrorBoundary extends React.Component {
               cursor: 'pointer'
             }}
           >
-            <Trash2 size={16} /> Reset App Data
+            <LogOut size={16} /> Sign Out & Reload
           </button>
         </div>
       </div>

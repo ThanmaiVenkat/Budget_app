@@ -1,4 +1,5 @@
 import React from 'react';
+import Emoji from './Emoji';
 
 export default function FamilyMemberBar({ members, activeMemberId, setActiveMemberId }) {
   return (
@@ -13,7 +14,7 @@ export default function FamilyMemberBar({ members, activeMemberId, setActiveMemb
             style={{ '--chip-color': member.color }}
           >
             <div className="member-avatar-wrapper">
-              <span>{member.avatar}</span>
+              <Emoji size="20px">{member.avatar}</Emoji>
             </div>
             {/* Chips are a fixed-width track, so drop the parenthetical
                 ("Dad (Rajesh)" -> "Dad") and keep the full name as the title. */}

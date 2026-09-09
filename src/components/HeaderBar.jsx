@@ -1,7 +1,8 @@
 import React from 'react';
-import { Download, FileSpreadsheet, Layers, PiggyBank, Wallet } from 'lucide-react';
+import { Download, FileSpreadsheet, Layers, PiggyBank } from 'lucide-react';
 import { exportTransactionsToCSV } from '../utils/storage';
 import { getAvailableMonths } from '../utils/mockData';
+import TallyMark from './TallyMark';
 
 export default function HeaderBar({
   transactions = [],
@@ -29,7 +30,7 @@ export default function HeaderBar({
 
   return (
     <header className="header-bar">
-      {/* Minimal Icon Badge & Currency (App Name removed) */}
+      {/* App icon badge & currency */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div
           style={{
@@ -43,7 +44,7 @@ export default function HeaderBar({
             color: 'var(--text-on-accent-strong)'
           }}
         >
-          <Wallet size={18} />
+          <TallyMark size={18} />
         </div>
         <div style={{ font: '700 12px Manrope', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
           <span style={{ color: 'var(--accent-strong)', fontWeight: '800' }}>₹ INR</span>

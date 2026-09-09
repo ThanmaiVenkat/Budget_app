@@ -1,6 +1,6 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useRef, Suspense, lazy } from 'react';
 import confetti from 'canvas-confetti';
-import { Smartphone, Monitor } from 'lucide-react';
+import { Smartphone, Monitor, LogOut } from 'lucide-react';
 import HeaderBar from './components/HeaderBar';
 import FamilyMemberBar from './components/FamilyMemberBar';
 import BottomNav from './components/BottomNav';
@@ -10,7 +10,14 @@ import BudgetsTab from './components/BudgetsTab';
 import MembersTab from './components/MembersTab';
 import BillRemindersTab from './components/BillRemindersTab';
 import AddExpenseSheet from './components/AddExpenseSheet';
-import { loadState, saveState, resetToDefaultState } from './utils/storage';
+import OnboardingScreen from './components/OnboardingScreen';
+import AuthScreen from './components/AuthScreen';
+import HouseholdSetup from './components/HouseholdSetup';
+import HouseholdCreatedScreen from './components/HouseholdCreatedScreen';
+import DataAccessError from './components/DataAccessError';
+import FirebaseNotConfigured from './components/FirebaseNotConfigured';
+import { firebaseConfigured } from './firebase';
+import { useAppData } from './hooks/useAppData';
 
 // Lazy-loaded: pulls in recharts / xlsx, only needed once the user opens these views.
 const GraphsTab = lazy(() => import('./components/GraphsTab'));
@@ -23,174 +30,160 @@ const TabLoadingFallback = () => (
   </div>
 );
 
+const FullScreenLoading = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+    Loading…
+  </div>
+);
+
+const ALL_MEMBER = { id: 'all', name: 'All Family', avatar: '👨‍👩‍👧‍👦', color: '#C2661F', role: 'Household Pool' };
+const EMPTY_PERSONAL = { salary: 0, goals: [], transactions: [] };
+
 export default function App() {
-  const [initialData] = useState(() => loadState());
-  const [transactions, setTransactions] = useState(initialData.transactions);
-  const [members, setMembers] = useState(initialData.members);
-  const [categories, setCategories] = useState(initialData.categories);
-  const [bills, setBills] = useState(initialData.bills);
-  const [enableRollover, setEnableRollover] = useState(initialData.enableRollover);
-  const [personalState, setPersonalState] = useState(initialData.personalState);
+  const app = useAppData();
+  // Held here, not derived from Firestore: the household document (and this
+  // user's householdId) exist the instant createHousehold's writes land,
+  // which would otherwise swap the confirmation screen out before the code
+  // was ever readable.
+  const [justCreatedCode, setJustCreatedCode] = useState(null);
 
   const [activeTab, setActiveTab] = useState('home');
   const [activeMemberId, setActiveMemberId] = useState('all');
-  const [selectedMonth, setSelectedMonth] = useState('2026-07');
-  const [activeDirection, setActiveDirection] = useState('2b'); // Default to 2b (Bold Hero), 2a removed
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [activeDirection, setActiveDirection] = useState('2b');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);
-  // The simulated phone bezel is a desktop preview aid; on a real handset (or
-  // the installed app) it would draw a fake phone inside the actual one.
   const [isFrameMode, setIsFrameMode] = useState(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return true;
     return window.matchMedia('(min-width: 700px)').matches;
   });
 
-  // An installed app has no use for the preview toggle at all.
   const isStandalone =
     typeof window !== 'undefined' &&
     ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
       window.navigator.standalone === true);
 
-  // Persist state to localStorage
-  useEffect(() => {
-    saveState('TRANSACTIONS', transactions);
-  }, [transactions]);
+  // Live household data, straight off the Firestore snapshot. Every device in
+  // the household sees the same values, and a local write echoes back through
+  // here near-instantly via the offline cache.
+  const data = app.data;
+  const transactions = data?.transactions || [];
+  const members = data?.members || [];
+  const categories = data?.categories || [];
+  const bills = data?.bills || [];
+  const enableRollover = data?.enableRollover ?? true;
+  const personalState = app.personalState || EMPTY_PERSONAL;
 
-  useEffect(() => {
-    saveState('MEMBERS', members);
-  }, [members]);
+  const personalRef = useRef(personalState);
+  personalRef.current = personalState;
 
-  useEffect(() => {
-    saveState('CATEGORIES', categories);
-  }, [categories]);
-
-  useEffect(() => {
-    saveState('BILLS', bills);
-  }, [bills]);
-
-  useEffect(() => {
-    saveState('ROLLOVER', enableRollover);
-  }, [enableRollover]);
-
-  useEffect(() => {
-    saveState('PERSONAL_SAVINGS', personalState);
-  }, [personalState]);
-
-  // Add Single Transaction
+  // Every shared mutation computes the next value from the current snapshot
+  // (the same reducer logic as before) and writes it; the snapshot listener
+  // then repaints the UI. Handlers are redefined each render, so they always
+  // close over the latest data.
   const handleAddTransaction = (newTx) => {
-    setTransactions((prev) => [newTx, ...prev]);
-
+    app.updateData({ transactions: [newTx, ...transactions] });
     if (newTx.type === 'income') {
-      confetti({
-        particleCount: 60,
-        spread: 70,
-        origin: { y: 0.8 }
-      });
+      confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
     }
   };
 
-  // Handle Excel Auto Import
   const handleExcelImportSuccess = (result) => {
-    if (result.newCategories.length > 0) {
-      setCategories((prev) => [...prev, ...result.newCategories]);
-    }
-
-    if (result.newMembers.length > 0) {
-      setMembers((prev) => [...prev, ...result.newMembers]);
-    }
-
-    setTransactions((prev) => [...result.transactions, ...prev]);
+    app.updateData({
+      categories: result.newCategories.length ? [...categories, ...result.newCategories] : categories,
+      members: result.newMembers.length ? [...members, ...result.newMembers] : members,
+      transactions: [...result.transactions, ...transactions]
+    });
   };
 
-  // Delete Transaction
   const handleDeleteTransaction = (txId) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== txId));
+    app.updateData({ transactions: transactions.filter((t) => t.id !== txId) });
   };
 
-  // Update Category Limit
   const handleUpdateCategoryLimit = (catId, newLimit) => {
-    setCategories((prev) =>
-      prev.map((c) => (c.id === catId ? { ...c, limit: newLimit } : c))
-    );
+    app.updateData({ categories: categories.map((c) => (c.id === catId ? { ...c, limit: newLimit } : c)) });
   };
 
-  // Toggle Bill Paid
   const handleToggleBillPaid = (billId) => {
-    setBills((prev) =>
-      prev.map((b) => (b.id === billId ? { ...b, paid: !b.paid } : b))
-    );
+    app.updateData({ bills: bills.map((b) => (b.id === billId ? { ...b, paid: !b.paid } : b)) });
   };
 
-  // Add Bill
   const handleAddBill = (newBill) => {
-    setBills((prev) => [...prev, newBill]);
+    app.updateData({ bills: [...bills, newBill] });
   };
 
-  // Update Bill
   const handleUpdateBill = (billId, updates) => {
-    setBills((prev) => prev.map((b) => (b.id === billId ? { ...b, ...updates } : b)));
+    app.updateData({ bills: bills.map((b) => (b.id === billId ? { ...b, ...updates } : b)) });
   };
 
-  // Delete Bill
   const handleDeleteBill = (billId) => {
-    setBills((prev) => prev.filter((b) => b.id !== billId));
+    app.updateData({ bills: bills.filter((b) => b.id !== billId) });
   };
 
-  // Add Family Member
   const handleAddMember = (newMember) => {
-    setMembers((prev) => [...prev, newMember]);
+    app.updateData({ members: [...members, newMember] });
   };
 
-  // Delete Family Member — their past transactions/bills stay in history
-  // (existing fallback rendering already handles a memberId with no match).
-  // The sole earner is never removable: income entry, the earner banner, and
-  // bill payer defaults all assume 'dad' exists.
+  // First real member also seeds the 'all' pseudo-member every filter assumes.
+  const handleCompleteOnboarding = (member) => {
+    app.updateData({ members: [ALL_MEMBER, member] });
+  };
+
   const handleDeleteMember = (memberId) => {
-    if (memberId === 'dad' || memberId === 'all') return;
-    setMembers((prev) => prev.filter((m) => m.id !== memberId));
-    if (activeMemberId === memberId) {
-      setActiveMemberId('all');
+    if (memberId === 'all') return;
+    app.updateData({ members: members.filter((m) => m.id !== memberId) });
+    if (activeMemberId === memberId) setActiveMemberId('all');
+  };
+
+  const setEnableRollover = (val) => app.updateData({ enableRollover: val });
+
+  // Personal savings is per-user, not shared. Supports the functional-updater
+  // form its child uses; the ref keeps the base current across rapid calls.
+  const setPersonalState = (updater) => {
+    const base = personalRef.current || EMPTY_PERSONAL;
+    const next = typeof updater === 'function' ? updater(base) : updater;
+    app.updatePersonal(next);
+  };
+
+  const handleNavigateToBills = () => setActiveTab('members');
+
+  const hasRealMembers = members.some((m) => m.id !== 'all');
+
+  // Decide which screen the frame holds: config error, loading, sign-in,
+  // household setup, first-run onboarding, or the app itself.
+  const renderInner = () => {
+    if (!firebaseConfigured) return <FirebaseNotConfigured />;
+    if (!app.authReady) return <FullScreenLoading />;
+    if (!app.authUser) return <AuthScreen onLogin={app.login} onSignup={app.signup} onGoogleLogin={app.loginWithGoogle} />;
+    if (app.dataError) {
+      return <DataAccessError message={app.dataError} onRetry={app.retry} onLogout={app.logout} />;
     }
-  };
-
-  // Reset to default sample state
-  const handleResetData = () => {
-    if (window.confirm('Reset all family budget data to sample dataset (Rupees ₹)?')) {
-      resetToDefaultState();
-      window.location.reload();
+    if (!app.userDoc) return <FullScreenLoading />;
+    if (justCreatedCode) {
+      return <HouseholdCreatedScreen code={justCreatedCode} onContinue={() => setJustCreatedCode(null)} />;
     }
-  };
+    if (!app.userDoc.householdId) {
+      return (
+        <HouseholdSetup
+          onCreate={async (name) => {
+            const result = await app.createHousehold(name);
+            setJustCreatedCode(result.joinCode);
+            return result;
+          }}
+          onJoin={app.joinHousehold}
+          onLogout={app.logout}
+        />
+      );
+    }
+    if (!app.household) return <FullScreenLoading />;
+    if (!hasRealMembers) return <OnboardingScreen onComplete={handleCompleteOnboarding} />;
 
-  // Deep link to Bill Reminders (lives inside the "You" tab alongside Members)
-  const handleNavigateToBills = () => {
-    setActiveTab('members');
-  };
-
-  return (
-    <div className="app-container">
-      
-      {/* Viewport Frame Toggle Button */}
-      {!isStandalone && (
-        <button className="frame-toggle-btn" onClick={() => setIsFrameMode(!isFrameMode)}>
-          {isFrameMode ? <Monitor size={14} /> : <Smartphone size={14} />}
-          <span>{isFrameMode ? 'Full Screen' : 'Mobile Frame'}</span>
-        </button>
-      )}
-
-      {/* Main Mobile App Frame */}
-      <div className={isFrameMode ? 'mobile-frame-wrapper' : 'mobile-full-wrapper'}>
-        
-        {/* Top Phone Notch */}
-        {isFrameMode && (
-          <div className="mobile-notch" />
-        )}
-
-        {/* Header Bar */}
+    return (
+      <>
         <HeaderBar
           transactions={transactions}
           members={members}
           categories={categories}
-          onReset={handleResetData}
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
           onOpenExcelModal={() => setShowExcelModal(true)}
@@ -200,26 +193,12 @@ export default function App() {
           setActiveDirection={setActiveDirection}
         />
 
-        {/* Status bar */}
-        <div className="sbar">
-          <span>9:41</span>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <span style={{ width: '16px', height: '10px', border: '1.5px solid var(--text-main)', borderRadius: '3px', display: 'inline-block' }} />
-          </div>
-        </div>
-
-        {/* Family Member Quick Filter Bar (Visible in family modes) */}
         {activeTab !== 'personal' && (
           <div style={{ padding: '0 20px 4px 20px', background: 'var(--bg-page)' }}>
-            <FamilyMemberBar
-              members={members}
-              activeMemberId={activeMemberId}
-              setActiveMemberId={setActiveMemberId}
-            />
+            <FamilyMemberBar members={members} activeMemberId={activeMemberId} setActiveMemberId={setActiveMemberId} />
           </div>
         )}
 
-        {/* Scrollable View Content */}
         <main className="app-content">
           {activeTab === 'home' && (
             <HomeTab
@@ -302,18 +281,40 @@ export default function App() {
                 onUpdateBill={handleUpdateBill}
                 onDeleteBill={handleDeleteBill}
               />
+
+              {/* Account + household: where to find the code to add another
+                  device, and how to sign out. Replaces the old per-device
+                  "erase data" action, which no longer makes sense now that the
+                  data lives in the cloud, not this browser. */}
+              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>Account & Sync</h3>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    Signed in as {app.authUser.email}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-tint)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '10px 14px' }}>
+                  <div>
+                    <div style={{ fontSize: '0.66rem', letterSpacing: '.1em', color: 'var(--text-dim)', fontWeight: '600' }}>HOUSEHOLD CODE</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', letterSpacing: '.08em', color: 'var(--accent-strong)' }}>{app.joinCode}</div>
+                  </div>
+                  <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', maxWidth: '130px', textAlign: 'right' }}>
+                    Share to add family on their own devices
+                  </span>
+                </div>
+                <button
+                  onClick={app.logout}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--text-dim)', font: '600 12px Manrope', cursor: 'pointer', padding: '4px', alignSelf: 'center' }}
+                >
+                  <LogOut size={13} /> Sign out
+                </button>
+              </div>
             </div>
           )}
         </main>
 
-        {/* Bottom Mobile Navigation Bar matching Home Budget App.dc.html with icons */}
-        <BottomNav
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onOpenAddModal={() => setShowAddModal(true)}
-        />
+        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} onOpenAddModal={() => setShowAddModal(true)} />
 
-        {/* 3-Fields Quick Add Bottom Sheet Modal */}
         {showAddModal && (
           <AddExpenseSheet
             categories={categories}
@@ -323,7 +324,6 @@ export default function App() {
           />
         )}
 
-        {/* Auto Excel / CSV Importer Modal */}
         {showExcelModal && (
           <Suspense fallback={null}>
             <ExcelImportModal
@@ -334,7 +334,22 @@ export default function App() {
             />
           </Suspense>
         )}
+      </>
+    );
+  };
 
+  return (
+    <div className="app-container">
+      {!isStandalone && (
+        <button className="frame-toggle-btn" onClick={() => setIsFrameMode(!isFrameMode)}>
+          {isFrameMode ? <Monitor size={14} /> : <Smartphone size={14} />}
+          <span>{isFrameMode ? 'Full Screen' : 'Mobile Frame'}</span>
+        </button>
+      )}
+
+      <div className={isFrameMode ? 'mobile-frame-wrapper' : 'mobile-full-wrapper'}>
+        {isFrameMode && <div className="mobile-notch" />}
+        {renderInner()}
       </div>
     </div>
   );

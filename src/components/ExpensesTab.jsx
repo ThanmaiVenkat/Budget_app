@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Trash2, Plus, Check, X } from 'lucide-react';
 import { formatRupees, getAvailableMonths } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function ExpensesTab({
   transactions = [],
@@ -117,7 +118,7 @@ export default function ExpensesTab({
       <div className="glass-card" style={{ padding: '8px 12px' }}>
         {filtered.length === 0 ? (
           <div style={{ padding: '30px 10px', textAlign: 'center', color: 'var(--text-dim)' }}>
-            <p style={{ fontSize: '1.8rem', marginBottom: '8px' }}>💸</p>
+            <p style={{ marginBottom: '8px' }}><Emoji size="1.8rem">💸</Emoji></p>
             <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>No expenses for selected filters</p>
             <p style={{ fontSize: '0.75rem' }}>Try clearing filters or add a new entry.</p>
           </div>
@@ -129,13 +130,15 @@ export default function ExpensesTab({
             return (
               <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--hairline)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--bg-card-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
-                    <span>{catObj.icon}</span>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--bg-card-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Emoji size="1.1rem">{catObj.icon}</Emoji>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)' }}>{tx.title || 'Expense'}</span>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ color: memberObj.color, fontWeight: '600' }}>{memberObj.avatar} {memberObj.name}</span>
+                      <span style={{ color: memberObj.color, fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Emoji size="0.85rem">{memberObj.avatar}</Emoji> {memberObj.name}
+                      </span>
                       <span>•</span>
                       <span>{tx.date || 'N/A'}</span>
                     </div>

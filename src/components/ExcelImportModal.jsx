@@ -3,6 +3,7 @@ import { X, FileSpreadsheet, Upload, CheckCircle, Download, AlertCircle } from '
 import confetti from 'canvas-confetti';
 import { parseExcelSpreadsheet, downloadSampleExcelTemplate } from '../utils/excelParser';
 import { formatRupees } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function ExcelImportModal({ categories, members, onClose, onImportSuccess }) {
   const [file, setFile] = useState(null);
@@ -118,8 +119,8 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
         </div>
 
         {loading && (
-          <div style={{ textAlign: 'center', padding: '16px', color: 'var(--accent-strong)', fontWeight: '600', fontSize: '0.85rem' }}>
-            ⚡ Parsing spreadsheet automatically...
+          <div style={{ textAlign: 'center', padding: '16px', color: 'var(--accent-strong)', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Emoji size="0.9em">⚡</Emoji> Parsing spreadsheet automatically...
           </div>
         )}
 
@@ -191,7 +192,7 @@ export default function ExcelImportModal({ categories, members, onClose, onImpor
               className="btn-primary"
               style={{ marginTop: '12px' }}
             >
-              🚀 Import All {parsedResult.totalRows} Items Now
+              <Emoji size="0.9em">🚀</Emoji> Import All {parsedResult.totalRows} Items Now
             </button>
           </div>
         )}

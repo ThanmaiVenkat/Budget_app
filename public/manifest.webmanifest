@@ -1,6 +1,6 @@
 {
-  "name": "Family Budget",
-  "short_name": "Budget",
+  "name": "Tally",
+  "short_name": "Tally",
   "description": "Track household spending, budgets and bills for the whole family.",
   "start_url": ".",
   "scope": ".",
