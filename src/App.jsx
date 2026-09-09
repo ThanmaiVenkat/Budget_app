@@ -14,6 +14,7 @@ import OnboardingScreen from './components/OnboardingScreen';
 import AuthScreen from './components/AuthScreen';
 import HouseholdSetup from './components/HouseholdSetup';
 import HouseholdCreatedScreen from './components/HouseholdCreatedScreen';
+import DataAccessError from './components/DataAccessError';
 import FirebaseNotConfigured from './components/FirebaseNotConfigured';
 import { firebaseConfigured } from './firebase';
 import { useAppData } from './hooks/useAppData';
@@ -154,6 +155,9 @@ export default function App() {
     if (!firebaseConfigured) return <FirebaseNotConfigured />;
     if (!app.authReady) return <FullScreenLoading />;
     if (!app.authUser) return <AuthScreen onLogin={app.login} onSignup={app.signup} />;
+    if (app.dataError) {
+      return <DataAccessError message={app.dataError} onRetry={app.retry} onLogout={app.logout} />;
+    }
     if (!app.userDoc) return <FullScreenLoading />;
     if (justCreatedCode) {
       return <HouseholdCreatedScreen code={justCreatedCode} onContinue={() => setJustCreatedCode(null)} />;

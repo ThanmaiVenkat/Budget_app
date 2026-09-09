@@ -31,6 +31,19 @@ const AUTH_MESSAGES = {
 };
 const friendlyAuthError = (e) => AUTH_MESSAGES[e?.code] || e?.message || 'Something went wrong.';
 
+// A failure here almost always means the Firestore security rules haven't
+// been published yet (see README "Set up Firebase" step 5) — the project and
+// its config can be entirely correct and this still happens, since Firestore
+// defaults to denying everything until firestore.rules is deployed. Worth
+// naming specifically rather than a generic "something went wrong": it's the
+// most likely gap for anyone following the setup steps out of order.
+const describeDataError = (e) => {
+  if (e?.code === 'permission-denied') {
+    return "Can't reach your budget data — this usually means the Firestore security rules haven't been published yet. See README.md, \"Set up Firebase\" step 5.";
+  }
+  return e?.message || 'Something went wrong loading your data.';
+};
+
 // Single source of truth for auth + synced data. Drives the whole app: which
 // screen shows (loading / signed-out / no-household / ready) and the live
 // household data every tab reads.
@@ -40,6 +53,9 @@ export function useAppData() {
   const [userDoc, setUserDoc] = useState(null);
   const [household, setHousehold] = useState(null);
   const [householdReady, setHouseholdReady] = useState(false);
+  const [dataError, setDataError] = useState(null);
+  const [retryToken, setRetryToken] = useState(0);
+  const retry = useCallback(() => { setDataError(null); setRetryToken((n) => n + 1); }, []);
 
   const householdUnsubRef = useRef(null);
 
@@ -53,23 +69,35 @@ export function useAppData() {
         setUserDoc(null);
         setHousehold(null);
         setHouseholdReady(false);
+        setDataError(null);
       }
     });
     return unsub;
   }, []);
 
-  // Once signed in, make sure the user doc exists, then follow it live.
+  // Once signed in, make sure the user doc exists, then follow it live. Both
+  // steps can fail — most likely on unpublished security rules — and that
+  // failure is reported through dataError rather than left to hang the
+  // loading screen forever or vanish as an unhandled rejection.
   useEffect(() => {
     if (!authUser) return;
     let unsub = null;
     let cancelled = false;
     (async () => {
-      await ensureUserDoc(authUser.uid, authUser.email);
-      if (cancelled) return;
-      unsub = subscribeUser(authUser.uid, (data) => setUserDoc(data));
+      try {
+        await ensureUserDoc(authUser.uid, authUser.email);
+        if (cancelled) return;
+        unsub = subscribeUser(
+          authUser.uid,
+          (data) => setUserDoc(data),
+          (err) => { if (!cancelled) setDataError(describeDataError(err)); }
+        );
+      } catch (err) {
+        if (!cancelled) setDataError(describeDataError(err));
+      }
     })();
     return () => { cancelled = true; if (unsub) unsub(); };
-  }, [authUser]);
+  }, [authUser, retryToken]);
 
   // Follow the household named by the user doc; re-subscribe if it changes.
   useEffect(() => {
@@ -82,12 +110,13 @@ export function useAppData() {
       return;
     }
     setHouseholdReady(false);
-    householdUnsubRef.current = subscribeHousehold(householdId, (data) => {
-      setHousehold(data);
-      setHouseholdReady(true);
-    });
+    householdUnsubRef.current = subscribeHousehold(
+      householdId,
+      (data) => { setHousehold(data); setHouseholdReady(true); },
+      (err) => setDataError(describeDataError(err))
+    );
     return () => { if (householdUnsubRef.current) { householdUnsubRef.current(); householdUnsubRef.current = null; } };
-  }, [userDoc]);
+  }, [userDoc, retryToken]);
 
   const signup = useCallback(async (email, password) => {
     try { await createUserWithEmailAndPassword(auth, email, password); }
@@ -121,6 +150,8 @@ export function useAppData() {
     userDoc,
     household,
     householdReady,
+    dataError,
+    retry,
     data: household?.data || null,
     personalState: userDoc?.personalState || null,
     joinCode: household?.joinCode || householdId,

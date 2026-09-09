@@ -44,13 +44,22 @@ export const ensureUserDoc = async (uid, email) => {
   return ref;
 };
 
-export const subscribeUser = (uid, cb) => onSnapshot(doc(db, 'users', uid), (snap) => {
-  cb(snap.exists() ? snap.data() : null);
-});
+// onSnapshot's error callback is easy to forget entirely — without one, a
+// listener that fails (most commonly permission-denied, from security rules
+// that were never published) fails silently: no callback fires again, ever,
+// and the caller is left waiting on data that will never arrive. Both
+// subscriptions report failure through onError instead of swallowing it.
+export const subscribeUser = (uid, cb, onError) => onSnapshot(
+  doc(db, 'users', uid),
+  (snap) => cb(snap.exists() ? snap.data() : null),
+  onError
+);
 
-export const subscribeHousehold = (householdId, cb) => onSnapshot(doc(db, 'households', householdId), (snap) => {
-  cb(snap.exists() ? snap.data() : null);
-});
+export const subscribeHousehold = (householdId, cb, onError) => onSnapshot(
+  doc(db, 'households', householdId),
+  (snap) => cb(snap.exists() ? snap.data() : null),
+  onError
+);
 
 export const createHousehold = async (uid, name) => {
   // The household id *is* the join code, so join is a single direct write with
