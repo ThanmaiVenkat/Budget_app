@@ -263,18 +263,6 @@ body {
   z-index: 100;
 }
 
-/* Status Bar */
-.sbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 26px 4px;
-  font: 700 14px Manrope;
-  flex: none;
-  color: var(--text-main);
-  z-index: 50;
-}
-
 /* Header Bar */
 .header-bar {
   padding: 24px 22px 10px 22px;

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Wallet } from 'lucide-react';
 import { generateId, MEMBER_AVATARS, MEMBER_COLORS } from '../utils/mockData';
+import Emoji from './Emoji';
 
 // Shown in place of the whole tabbed app whenever the household has no real
 // members yet — a true first run, or every member having been deleted. A
@@ -87,7 +88,7 @@ export default function OnboardingScreen({ onComplete }) {
                   cursor: 'pointer'
                 }}
               >
-                {emoji}
+                <Emoji size="1.4rem">{emoji}</Emoji>
               </button>
             ))}
           </div>

@@ -154,7 +154,7 @@ export default function App() {
   const renderInner = () => {
     if (!firebaseConfigured) return <FirebaseNotConfigured />;
     if (!app.authReady) return <FullScreenLoading />;
-    if (!app.authUser) return <AuthScreen onLogin={app.login} onSignup={app.signup} />;
+    if (!app.authUser) return <AuthScreen onLogin={app.login} onSignup={app.signup} onGoogleLogin={app.loginWithGoogle} />;
     if (app.dataError) {
       return <DataAccessError message={app.dataError} onRetry={app.retry} onLogout={app.logout} />;
     }
@@ -192,13 +192,6 @@ export default function App() {
           activeDirection={activeDirection}
           setActiveDirection={setActiveDirection}
         />
-
-        <div className="sbar">
-          <span>9:41</span>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <span style={{ width: '16px', height: '10px', border: '1.5px solid var(--text-main)', borderRadius: '3px', display: 'inline-block' }} />
-          </div>
-        </div>
 
         {activeTab !== 'personal' && (
           <div style={{ padding: '0 20px 4px 20px', background: 'var(--bg-page)' }}>

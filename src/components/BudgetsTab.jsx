@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Edit2, Check, Calendar, ArrowRightLeft } from 'lucide-react';
 import { formatRupees, getAvailableMonths, getPreviousMonthKey } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function BudgetsTab({
   categories = [],
@@ -120,7 +121,7 @@ export default function BudgetsTab({
             <div key={cat.id} className="glass-card" style={{ padding: '14px 16px', opacity: hasSpending ? 1 : 0.6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '1.4rem' }}>{cat.icon || '📦'}</span>
+                  <Emoji size="1.4rem">{cat.icon || '📦'}</Emoji>
                   <div>
                     <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>{cat.name}</h4>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
@@ -172,8 +173,14 @@ export default function BudgetsTab({
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '0.72rem' }}>
-                <span style={{ color: isOver ? 'var(--danger)' : isNear ? 'var(--gold)' : 'var(--text-dim)' }}>
-                  {!hasSpending ? 'No spending recorded' : isOver ? '⚠️ Over budget!' : isNear ? '⚡ Approaching limit' : `${100 - pct}% remaining`}
+                <span style={{ color: isOver ? 'var(--danger)' : isNear ? 'var(--gold)' : 'var(--text-dim)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {!hasSpending
+                    ? 'No spending recorded'
+                    : isOver
+                      ? <><Emoji size="0.85em">⚠️</Emoji> Over budget!</>
+                      : isNear
+                        ? <><Emoji size="0.85em">⚡</Emoji> Approaching limit</>
+                        : `${100 - pct}% remaining`}
                 </span>
                 <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
                   {pct}% Used

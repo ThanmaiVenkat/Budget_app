@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatRupees, getPreviousMonthKey } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function HomeTab({
   transactions = [],
@@ -85,7 +86,7 @@ export default function HomeTab({
             <div style={{ font: '500 12px Manrope', color: 'var(--text-muted)', marginTop: '2px' }}>Let's keep this month on budget</div>
           </div>
           <div className="member-avatar-wrapper" style={{ width: '42px', height: '42px', fontSize: '19px' }}>
-            {activeMember.avatar || '👨‍👩‍👧‍👦'}
+            <Emoji size="22px">{activeMember.avatar || '👨‍👩‍👧‍👦'}</Emoji>
           </div>
         </div>
 
@@ -125,7 +126,9 @@ export default function HomeTab({
 
               return (
                 <div key={cat.id} style={{ background: bg, borderRadius: '14px', padding: '15px 16px', color: '#FFFAF3' }}>
-                  <div style={{ font: '700 13px Manrope' }}>{cat.icon || '📦'} {(cat.name || 'Category').split(' ')[0]}</div>
+                  <div style={{ font: '700 13px Manrope', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Emoji size="15px">{cat.icon || '📦'}</Emoji> {(cat.name || 'Category').split(' ')[0]}
+                  </div>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', lineHeight: 1.1, marginTop: '12px' }}>{formatRupees(spent)}</div>
                   <div style={{ font: '500 11px Manrope', color: 'rgba(255,250,243,0.85)', marginTop: '2px' }}>
                     {pct}% of {formatRupees(cat.limit)}
@@ -217,7 +220,7 @@ export default function HomeTab({
 
           {recentTxs.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '28px 10px', color: 'var(--text-dim)' }}>
-              <p style={{ fontSize: '1.6rem', marginBottom: '6px' }}>🧾</p>
+              <p style={{ marginBottom: '6px' }}><Emoji size="1.6rem">🧾</Emoji></p>
               <p style={{ font: '700 13px Manrope', color: 'var(--text-muted)' }}>No expenses yet</p>
               <p style={{ font: '600 11.5px Manrope', marginTop: '2px' }}>Tap + Add expense to log your first one</p>
             </div>
@@ -230,7 +233,7 @@ export default function HomeTab({
                 return (
                   <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '13px 0', borderBottom: '1px solid var(--divider)' }}>
                     <div className="catic" style={{ width: '38px', height: '38px', background: bg, borderRadius: '50%' }}>
-                      {catObj.icon || (tx.title || '?').charAt(0)}
+                      {catObj.icon ? <Emoji size="18px">{catObj.icon}</Emoji> : (tx.title || '?').charAt(0)}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ font: '600 13px Manrope', color: 'var(--text-main)' }}>{tx.title}</div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Circle, Calculator, Users, Pencil, Trash2 } from 'lucide-react';
 import { formatRupees, getBillBadgeStatus, generateId } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function BillRemindersTab({ bills, members, onToggleBillPaid, onAddBill, onUpdateBill, onDeleteBill }) {
   const [showAdd, setShowAdd] = useState(false);
@@ -136,7 +137,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                         flexShrink: 0
                       }}
                     >
-                      <span>{m.avatar || '👤'}</span>
+                      <Emoji size="15px">{m.avatar || '👤'}</Emoji>
                       <span>{(m.name || 'Member').split(' ')[0]}</span>
                     </button>
                   );
@@ -180,8 +181,8 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                     <span style={{ fontSize: '0.85rem', fontWeight: '600', textDecoration: b.paid ? 'line-through' : 'none', color: b.paid ? 'var(--text-muted)' : 'var(--text-main)' }}>
                       {b.title}
                     </span>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                      Paid by {memberObj.avatar} {memberObj.name}
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      Paid by <Emoji size="0.8rem">{memberObj.avatar}</Emoji> {memberObj.name}
                     </div>
                   </div>
                 </div>

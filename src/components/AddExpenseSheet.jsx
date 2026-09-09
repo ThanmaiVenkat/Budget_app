@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { generateId } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave }) {
   const realMembers = members.filter(m => m.id !== 'all');
@@ -81,7 +82,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 cursor: 'pointer'
               }}
             >
-              💸 Add Expense
+              <Emoji size="13px">💸</Emoji> Add Expense
             </button>
             <button
               type="button"
@@ -97,7 +98,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                 cursor: 'pointer'
               }}
             >
-              💰 Income
+              <Emoji size="13px">💰</Emoji> Income
             </button>
           </div>
 
@@ -142,7 +143,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
 
             {type === 'income' && singleEarner ? (
               <div style={{ background: 'var(--positive-tint)', border: '1px solid var(--positive-border)', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '1.3rem' }}>{singleEarner.avatar}</span>
+                <Emoji size="1.3rem">{singleEarner.avatar}</Emoji>
                 <div>
                   <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--positive)' }}>{singleEarner.name}</div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Logged as household income</div>
@@ -172,7 +173,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      <span>{m.avatar || '👤'}</span>
+                      <Emoji size="15px">{m.avatar || '👤'}</Emoji>
                       <span>{(m.name || 'Member').split(' ')[0]}</span>
                     </button>
                   );
@@ -208,7 +209,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         gap: '2px'
                       }}
                     >
-                      <span style={{ fontSize: '1.2rem' }}>{c.icon || '📦'}</span>
+                      <Emoji size="1.2rem">{c.icon || '📦'}</Emoji>
                       <span style={{ fontWeight: isSelected ? '700' : '500' }}>{(c.name || 'Category').split(' ')[0]}</span>
                     </div>
                   );

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, PiggyBank, Target, Sparkles, Trash2, Pencil } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { formatRupees, generateId } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function PersonalSavingsTracker({ personalState, setPersonalState, onBack }) {
   const { salary = 0, goals = [], transactions = [] } = personalState || {};
@@ -395,7 +396,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {goals.length === 0 && (
             <div style={{ padding: '24px 10px', textAlign: 'center', color: 'var(--text-dim)' }}>
-              <p style={{ fontSize: '1.8rem', marginBottom: '8px' }}>🎯</p>
+              <p style={{ marginBottom: '8px' }}><Emoji size="1.8rem">🎯</Emoji></p>
               <p style={{ fontSize: '0.85rem', fontWeight: '600' }}>No savings goals yet</p>
               <p style={{ fontSize: '0.72rem' }}>Tap "+ New Goal" to set your first target.</p>
             </div>
@@ -407,7 +408,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
               <div key={goal.id} style={{ background: 'var(--hairline)', padding: '12px', borderRadius: '14px', border: '1px solid var(--bg-card-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.2rem' }}>{goal.icon || '🎯'}</span>
+                    <Emoji size="1.2rem">{goal.icon || '🎯'}</Emoji>
                     <div>
                       <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{goal.title || 'Savings Goal'}</span>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{goal.category}</div>
@@ -506,7 +507,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {transactions.length === 0 && (
             <div style={{ padding: '24px 10px', textAlign: 'center', color: 'var(--text-dim)' }}>
-              <p style={{ fontSize: '1.8rem', marginBottom: '8px' }}>🧾</p>
+              <p style={{ marginBottom: '8px' }}><Emoji size="1.8rem">🧾</Emoji></p>
               <p style={{ fontSize: '0.85rem', fontWeight: '600' }}>No personal transactions yet</p>
               <p style={{ fontSize: '0.72rem' }}>Tap "+ Add Personal Item" to log your first one.</p>
             </div>

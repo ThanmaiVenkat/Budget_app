@@ -3,6 +3,8 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut
 } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -27,7 +29,11 @@ const AUTH_MESSAGES = {
   'auth/user-not-found': 'No account found for that email.',
   'auth/wrong-password': 'Email or password is incorrect.',
   'auth/too-many-requests': 'Too many attempts — wait a moment and try again.',
-  'auth/network-request-failed': 'Network problem — check your connection.'
+  'auth/network-request-failed': 'Network problem — check your connection.',
+  'auth/popup-closed-by-user': '',
+  'auth/cancelled-popup-request': '',
+  'auth/popup-blocked': 'Your browser blocked the sign-in popup — allow popups for this site and try again.',
+  'auth/account-exists-with-different-credential': 'An account already exists for that email using a different sign-in method — try email and password instead.'
 };
 const friendlyAuthError = (e) => AUTH_MESSAGES[e?.code] || e?.message || 'Something went wrong.';
 
@@ -128,6 +134,17 @@ export function useAppData() {
     catch (e) { throw new Error(friendlyAuthError(e)); }
   }, []);
 
+  const loginWithGoogle = useCallback(async () => {
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch (e) {
+      // Closing the picker isn't an error worth surfacing — the person just
+      // changed their mind, so leave them back on the sign-in screen quietly.
+      if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') return;
+      throw new Error(friendlyAuthError(e));
+    }
+  }, []);
+
   const logout = useCallback(() => signOut(auth), []);
 
   const createHousehold = useCallback((name) => repoCreateHousehold(authUser.uid, name), [authUser]);
@@ -157,6 +174,7 @@ export function useAppData() {
     joinCode: household?.joinCode || householdId,
     signup,
     login,
+    loginWithGoogle,
     logout,
     createHousehold,
     joinHousehold,

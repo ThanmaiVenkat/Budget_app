@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { formatRupees, MEMBER_AVATARS, MEMBER_COLORS } from '../utils/mockData';
+import Emoji from './Emoji';
 
 export default function MembersTab({ members = [], transactions = [], onAddMember, onDeleteMember }) {
   const [showAdd, setShowAdd] = useState(false);
@@ -64,7 +65,7 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
         <div className="glass-card" style={{ background: 'var(--accent-tint)', border: '1px solid var(--accent-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-card)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-              <span>{earner.avatar}</span>
+              <Emoji size="1.5rem">{earner.avatar}</Emoji>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
@@ -145,7 +146,7 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
                     cursor: 'pointer'
                   }}
                 >
-                  {emoji}
+                  <Emoji size="1.4rem">{emoji}</Emoji>
                 </button>
               ))}
             </div>
@@ -178,7 +179,7 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div className="member-avatar-wrapper" style={{ width: '46px', height: '46px', borderColor: m.color }}>
-                    <span>{m.avatar}</span>
+                    <Emoji size="24px">{m.avatar}</Emoji>
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
