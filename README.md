@@ -75,3 +75,24 @@ npm run dev
 Push to `main` — `.github/workflows/deploy.yml` builds and publishes to
 GitHub Pages automatically (Settings → Pages → Source → GitHub Actions must
 be set once, first time only).
+
+## Installing on your phone
+
+**iOS:** open the deployed site in Safari (not Chrome — iOS only lets Safari
+install web apps) → the Share icon → *Add to Home Screen*. It launches from
+the home screen like a normal app, full screen, no browser bar.
+
+**Android — as a native app:** this repo also has a Capacitor-wrapped
+Android project under `android/`, built by `.github/workflows/build-apk.yml`
+into a real installable `.apk`. Run it from the *Actions* tab → *Build
+Android APK* → *Run workflow*, then once it finishes, download the
+`tally-debug-apk` artifact from the run's summary page and open it on your
+phone (you'll be asked to allow installs from this source once — that
+prompt is unavoidable for any app that isn't distributed through the Play
+Store, it doesn't mean anything is wrong). The workflow bakes in the same
+Firebase secrets `deploy.yml` uses; without them, the installed app still
+opens, it just shows the same "Firebase not configured" screen the website
+would.
+
+Android also supports the same PWA install as iOS (Chrome menu → *Install
+app*), if you'd rather skip the APK.
