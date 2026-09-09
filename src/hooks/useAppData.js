@@ -33,7 +33,8 @@ const AUTH_MESSAGES = {
   'auth/popup-closed-by-user': '',
   'auth/cancelled-popup-request': '',
   'auth/popup-blocked': 'Your browser blocked the sign-in popup — allow popups for this site and try again.',
-  'auth/account-exists-with-different-credential': 'An account already exists for that email using a different sign-in method — try email and password instead.'
+  'auth/account-exists-with-different-credential': 'An account already exists for that email using a different sign-in method — try email and password instead.',
+  'auth/internal-error': 'Google sign-in couldn\'t load — an ad blocker or privacy extension may be blocking Google\'s scripts. Try disabling it for this site, or use email and password instead.'
 };
 const friendlyAuthError = (e) => AUTH_MESSAGES[e?.code] || e?.message || 'Something went wrong.';
 
