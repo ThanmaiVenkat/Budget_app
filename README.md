@@ -1,4 +1,4 @@
-# Family Budget
+# Tally
 
 A household budget tracker: shared expenses, bills, category budgets, and a
 per-person savings tracker. Installable as a PWA on Android/iOS. Data syncs

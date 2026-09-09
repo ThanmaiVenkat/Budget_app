@@ -173,7 +173,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-      {/* Back to Family Budget */}
+      {/* Back to main dashboard */}
       <button
         onClick={onBack}
         style={{
@@ -189,7 +189,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
           alignSelf: 'flex-start'
         }}
       >
-        <ArrowLeft size={14} /> Back to Family Budget
+        <ArrowLeft size={14} /> Back to Home
       </button>
 
       {/* PERSONAL HERO SAVINGS CARD */}

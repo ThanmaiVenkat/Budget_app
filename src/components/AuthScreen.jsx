@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wallet } from 'lucide-react';
+import TallyMark from './TallyMark';
 
 // Google's own multi-colour "G" mark — not a lucide icon, since lucide is a
 // generic outline set with no brand logos.
@@ -59,7 +59,7 @@ export default function AuthScreen({ onLogin, onSignup, onGoogleLogin }) {
             color: 'var(--text-on-accent-strong)', marginBottom: '18px'
           }}
         >
-          <Wallet size={24} />
+          <TallyMark size={24} />
         </div>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: '26px', color: 'var(--text-main)' }}>
           {isSignup ? 'Create your account' : 'Welcome back'}

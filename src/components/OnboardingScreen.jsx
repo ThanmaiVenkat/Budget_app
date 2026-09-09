@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wallet } from 'lucide-react';
+import TallyMark from './TallyMark';
 import { generateId, MEMBER_AVATARS, MEMBER_COLORS } from '../utils/mockData';
 import Emoji from './Emoji';
 
@@ -44,10 +44,10 @@ export default function OnboardingScreen({ onComplete }) {
             marginBottom: '18px'
           }}
         >
-          <Wallet size={24} />
+          <TallyMark size={24} />
         </div>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: '26px', color: 'var(--text-main)' }}>
-          Welcome to Family Budget
+          Welcome to Tally
         </div>
         <div style={{ font: '500 13px Manrope', color: 'var(--text-muted)', marginTop: '8px', maxWidth: '280px' }}>
           Let's set up your household. Add yourself first — you can invite the rest of the family afterward.
