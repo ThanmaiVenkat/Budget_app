@@ -108,7 +108,6 @@ export default function HomeTab({
         {/* Action Pills */}
         <div style={{ display: 'flex', gap: '9px', overflow: 'hidden' }}>
           <button className="action-pill" onClick={onOpenAddModal}>＋ Add expense</button>
-          <button className="action-pill secondary" onClick={onNavigateToBills}>Split a bill</button>
         </div>
 
         {/* 2x2 Vivid Category Tiles */}
@@ -180,7 +179,6 @@ export default function HomeTab({
         {/* Action Pills */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
           <button className="action-pill" onClick={onOpenAddModal}>＋ Add expense</button>
-          <button className="action-pill secondary" onClick={onNavigateToBills}>Split a bill</button>
         </div>
 
         {/* 2 Metric Cards */}
