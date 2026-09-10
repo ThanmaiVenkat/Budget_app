@@ -126,8 +126,8 @@ export default function HomeTab({
 
               return (
                 <div key={cat.id} style={{ background: bg, borderRadius: '14px', padding: '15px 16px', color: '#FFFAF3' }}>
-                  <div style={{ font: '700 13px Manrope', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <Emoji size="15px">{cat.icon || '📦'}</Emoji> {(cat.name || 'Category').split(' ')[0]}
+                  <div style={{ font: '700 13px Manrope' }}>
+                    {(cat.name || 'Category').split(' ')[0]}
                   </div>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', lineHeight: 1.1, marginTop: '12px' }}>{formatRupees(spent)}</div>
                   <div style={{ font: '500 11px Manrope', color: 'rgba(255,250,243,0.85)', marginTop: '2px' }}>
@@ -227,13 +227,13 @@ export default function HomeTab({
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {recentTxs.map((tx) => {
-                const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '📦', name: tx.category };
+                const catObj = safeCategories.find(c => c.id === tx.category) || { name: tx.category };
                 const bg = categoryColors[tx.category] || 'var(--accent)';
 
                 return (
                   <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '13px 0', borderBottom: '1px solid var(--divider)' }}>
                     <div className="catic" style={{ width: '38px', height: '38px', background: bg, borderRadius: '50%' }}>
-                      {catObj.icon ? <Emoji size="18px">{catObj.icon}</Emoji> : (tx.title || '?').charAt(0)}
+                      {(catObj.name || tx.title || '?').charAt(0).toUpperCase()}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ font: '600 13px Manrope', color: 'var(--text-main)' }}>{tx.title}</div>

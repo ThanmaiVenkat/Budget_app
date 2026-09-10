@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import TallyMark from './TallyMark';
 import { generateId, MEMBER_AVATARS, MEMBER_COLORS } from '../utils/mockData';
-import Emoji from './Emoji';
 
 // Shown in place of the whole tabbed app whenever the household has no real
 // members yet — a true first run, or every member having been deleted. A
@@ -9,7 +8,7 @@ import Emoji from './Emoji';
 // showcase pre-loaded with a stranger's family and spending.
 export default function OnboardingScreen({ onComplete }) {
   const [name, setName] = useState('');
-  const [avatar, setAvatar] = useState(MEMBER_AVATARS[0]);
+  const [avatar, setAvatar] = useState(MEMBER_AVATARS[0].value);
   const [isEarner, setIsEarner] = useState(true);
 
   const handleSubmit = (e) => {
@@ -70,27 +69,30 @@ export default function OnboardingScreen({ onComplete }) {
 
         <div className="form-group">
           <label className="form-label">Pick an Avatar</label>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 0' }}>
-            {MEMBER_AVATARS.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => setAvatar(emoji)}
-                aria-label={`Choose ${emoji} avatar`}
-                aria-pressed={avatar === emoji}
-                style={{
-                  fontSize: '1.4rem',
-                  padding: '6px',
-                  borderRadius: '50%',
-                  flexShrink: 0,
-                  background: avatar === emoji ? 'var(--positive-tint)' : 'var(--bg-card-hover)',
-                  border: `2px solid ${avatar === emoji ? 'var(--positive)' : 'transparent'}`,
-                  cursor: 'pointer'
-                }}
-              >
-                <Emoji size="1.4rem">{emoji}</Emoji>
-              </button>
-            ))}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '4px 0' }}>
+            {MEMBER_AVATARS.map(({ value, label }) => {
+              const isSelected = avatar === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setAvatar(value)}
+                  aria-pressed={isSelected}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '999px',
+                    background: isSelected ? 'var(--positive-tint)' : 'var(--bg-card-hover)',
+                    border: `2px solid ${isSelected ? 'var(--positive)' : 'transparent'}`,
+                    color: isSelected ? 'var(--positive-strong)' : 'var(--text-muted)',
+                    fontWeight: isSelected ? '700' : '600',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

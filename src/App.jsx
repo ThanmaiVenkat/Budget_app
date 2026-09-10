@@ -1,6 +1,6 @@
 import React, { useState, useRef, Suspense, lazy } from 'react';
 import confetti from 'canvas-confetti';
-import { Smartphone, Monitor, LogOut } from 'lucide-react';
+import { Smartphone, Monitor, LogOut, Copy, Check } from 'lucide-react';
 import HeaderBar from './components/HeaderBar';
 import FamilyMemberBar from './components/FamilyMemberBar';
 import BottomNav from './components/BottomNav';
@@ -16,8 +16,10 @@ import HouseholdSetup from './components/HouseholdSetup';
 import HouseholdCreatedScreen from './components/HouseholdCreatedScreen';
 import DataAccessError from './components/DataAccessError';
 import FirebaseNotConfigured from './components/FirebaseNotConfigured';
+import ThemeToggle from './components/ThemeToggle';
 import { firebaseConfigured } from './firebase';
 import { useAppData } from './hooks/useAppData';
+import { useTheme } from './hooks/useTheme';
 
 // Lazy-loaded: pulls in recharts / xlsx, only needed once the user opens these views.
 const GraphsTab = lazy(() => import('./components/GraphsTab'));
@@ -41,11 +43,13 @@ const EMPTY_PERSONAL = { salary: 0, goals: [], transactions: [] };
 
 export default function App() {
   const app = useAppData();
+  const { theme, setTheme } = useTheme();
   // Held here, not derived from Firestore: the household document (and this
   // user's householdId) exist the instant createHousehold's writes land,
   // which would otherwise swap the confirmation screen out before the code
   // was ever readable.
   const [justCreatedCode, setJustCreatedCode] = useState(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   const [activeTab, setActiveTab] = useState('home');
   const [activeMemberId, setActiveMemberId] = useState('all');
@@ -147,6 +151,17 @@ export default function App() {
 
   const handleNavigateToBills = () => setActiveTab('members');
 
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(app.joinCode);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable (e.g. insecure context) — the code is
+      // still visible on screen to copy by hand.
+    }
+  };
+
   const hasRealMembers = members.some((m) => m.id !== 'all');
 
   // Decide which screen the frame holds: config error, loading, sign-in,
@@ -187,6 +202,7 @@ export default function App() {
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
           onOpenExcelModal={() => setShowExcelModal(true)}
+          showExcelImport={transactions.length === 0}
           onOpenPersonal={() => setActiveTab('personal')}
           isPersonalActive={activeTab === 'personal'}
           activeDirection={activeDirection}
@@ -267,6 +283,51 @@ export default function App() {
 
           {activeTab === 'members' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Account + household: where to find the code to add another
+                  device, how to switch appearance, and how to sign out.
+                  Replaces the old per-device "erase data" action, which no
+                  longer makes sense now that the data lives in the cloud,
+                  not this browser. */}
+              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: '700' }}>Settings</h3>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    Signed in as {app.authUser.email}
+                  </span>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Appearance</div>
+                  <ThemeToggle theme={theme} setTheme={setTheme} />
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px' }}>Household</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-tint)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '10px 14px' }}>
+                    <div>
+                      <div style={{ fontSize: '0.66rem', letterSpacing: '.1em', color: 'var(--text-dim)', fontWeight: '600' }}>HOUSEHOLD CODE</div>
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', letterSpacing: '.08em', color: 'var(--accent-strong)' }}>{app.joinCode}</div>
+                    </div>
+                    <button
+                      onClick={handleCopyCode}
+                      style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--bg-card)', border: '1px solid var(--accent-border)', borderRadius: '8px', padding: '6px 10px', color: 'var(--accent-strong)', font: '700 0.72rem Manrope', cursor: 'pointer' }}
+                    >
+                      {codeCopied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
+                    </button>
+                  </div>
+                  <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', display: 'block', marginTop: '6px' }}>
+                    Share this code so family can join on their own devices.
+                  </span>
+                </div>
+
+                <button
+                  onClick={app.logout}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'var(--danger-tint)', border: '1px solid var(--danger-border)', borderRadius: '10px', color: 'var(--danger)', font: '700 12px Manrope', cursor: 'pointer', padding: '10px' }}
+                >
+                  <LogOut size={13} /> Sign out
+                </button>
+              </div>
+
               <MembersTab
                 members={members}
                 transactions={transactions}
@@ -281,34 +342,6 @@ export default function App() {
                 onUpdateBill={handleUpdateBill}
                 onDeleteBill={handleDeleteBill}
               />
-
-              {/* Account + household: where to find the code to add another
-                  device, and how to sign out. Replaces the old per-device
-                  "erase data" action, which no longer makes sense now that the
-                  data lives in the cloud, not this browser. */}
-              <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div>
-                  <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>Account & Sync</h3>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                    Signed in as {app.authUser.email}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-tint)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '10px 14px' }}>
-                  <div>
-                    <div style={{ fontSize: '0.66rem', letterSpacing: '.1em', color: 'var(--text-dim)', fontWeight: '600' }}>HOUSEHOLD CODE</div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', letterSpacing: '.08em', color: 'var(--accent-strong)' }}>{app.joinCode}</div>
-                  </div>
-                  <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', maxWidth: '130px', textAlign: 'right' }}>
-                    Share to add family on their own devices
-                  </span>
-                </div>
-                <button
-                  onClick={app.logout}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--text-dim)', font: '600 12px Manrope', cursor: 'pointer', padding: '4px', alignSelf: 'center' }}
-                >
-                  <LogOut size={13} /> Sign out
-                </button>
-              </div>
             </div>
           )}
         </main>

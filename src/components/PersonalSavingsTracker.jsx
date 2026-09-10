@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, PiggyBank, Target, Sparkles, Trash2, Pencil } from 'lucide-react';
+import { ArrowLeft, PiggyBank, Target, Trash2, Pencil } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { formatRupees, generateId } from '../utils/mockData';
 import Emoji from './Emoji';
@@ -24,11 +24,6 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
   const [txAmount, setTxAmount] = useState('');
   const [txType, setTxType] = useState('expense');
 
-  // SIP Calculator State (String representation for glitch-free typing)
-  const [sipAmountStr, setSipAmountStr] = useState('15000');
-  const [sipReturnStr, setSipReturnStr] = useState('12');
-  const [sipYearsStr, setSipYearsStr] = useState('5');
-
   const totalPersonalIncome = (transactions || [])
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + (t.amount || 0), 0) || salary;
@@ -40,28 +35,6 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
   const totalPersonalSavings = totalPersonalIncome - totalPersonalExpense;
   const personalSavingsRate = totalPersonalIncome > 0 ? Math.round((totalPersonalSavings / totalPersonalIncome) * 100) : 0;
   const totalSavedInGoals = (goals || []).reduce((sum, g) => sum + (g.current || 0), 0);
-
-  // SAFE SIP MATH CALCULATION (Glitch-free, handles 0% return & empty inputs)
-  const numSipAmount = parseFloat(sipAmountStr) > 0 ? parseFloat(sipAmountStr) : 0;
-  const numSipReturn = parseFloat(sipReturnStr) >= 0 ? parseFloat(sipReturnStr) : 0;
-  const numSipYears = parseInt(sipYearsStr) > 0 ? parseInt(sipYearsStr) : 1;
-
-  const monthlyRate = (numSipReturn / 100) / 12;
-  const totalMonths = numSipYears * 12;
-
-  let rawProjectedWealth = 0;
-  if (monthlyRate === 0) {
-    rawProjectedWealth = numSipAmount * totalMonths;
-  } else {
-    rawProjectedWealth = Math.round(
-      numSipAmount * (((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate))
-    );
-  }
-
-  const projectedWealth = isNaN(rawProjectedWealth) || !isFinite(rawProjectedWealth) ? 0 : rawProjectedWealth;
-  const totalInvested = numSipAmount * totalMonths;
-  const estimatedReturns = Math.max(0, projectedWealth - totalInvested);
-  const returnsPercent = totalInvested > 0 ? Math.round((estimatedReturns / totalInvested) * 100) : 0;
 
   // Add Deposit to Goal
   const handleDepositToGoal = (e) => {
@@ -84,13 +57,11 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
     e.preventDefault();
     if (!goalTitle || !targetAmount) return;
 
-    const icon = category === 'Emergency' ? '🛡️' : category === 'Investment' ? '📈' : '🌴';
-
     if (editingGoalId) {
       setPersonalState(prev => ({
         ...prev,
         goals: (prev.goals || []).map(g => g.id === editingGoalId
-          ? { ...g, title: goalTitle, target: parseFloat(targetAmount), current: parseFloat(currentAmount) || 0, category, icon }
+          ? { ...g, title: goalTitle, target: parseFloat(targetAmount), current: parseFloat(currentAmount) || 0, category }
           : g)
       }));
     } else {
@@ -99,8 +70,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         title: goalTitle,
         target: parseFloat(targetAmount),
         current: parseFloat(currentAmount) || 0,
-        category,
-        icon
+        category
       };
 
       setPersonalState(prev => ({
@@ -250,125 +220,6 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         </div>
       </div>
 
-      {/* GLITCH-FREE SIP MUTUAL FUND WEALTH PROJECTION CALCULATOR */}
-      <div className="glass-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--violet)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={18} color="var(--violet)" />
-            <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>SIP Mutual Fund Wealth Projection</h3>
-          </div>
-          <span style={{ fontSize: '0.68rem', color: 'var(--violet)', background: 'var(--violet-tint)', padding: '2px 8px', borderRadius: '999px', fontWeight: '700' }}>
-            +{returnsPercent}% Growth
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Inputs Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" style={{ fontSize: '0.68rem' }}>Monthly SIP (₹)</label>
-              <input
-                type="number"
-                className="form-input"
-                style={{ padding: '8px', fontSize: '0.88rem', fontWeight: '700' }}
-                value={sipAmountStr}
-                onChange={(e) => setSipAmountStr(e.target.value)}
-                placeholder="15000"
-              />
-            </div>
-
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" style={{ fontSize: '0.68rem' }}>Return (% p.a.)</label>
-              <input
-                type="number"
-                step="0.5"
-                className="form-input"
-                style={{ padding: '8px', fontSize: '0.88rem', fontWeight: '700' }}
-                value={sipReturnStr}
-                onChange={(e) => setSipReturnStr(e.target.value)}
-                placeholder="12"
-              />
-            </div>
-
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label" style={{ fontSize: '0.68rem' }}>Years</label>
-              <input
-                type="number"
-                className="form-input"
-                style={{ padding: '8px', fontSize: '0.88rem', fontWeight: '700' }}
-                value={sipYearsStr}
-                onChange={(e) => setSipYearsStr(e.target.value)}
-                placeholder="5"
-              />
-            </div>
-          </div>
-
-          {/* Quick Presets for glitch-free 1-tap testing */}
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', overflowX: 'auto' }}>
-            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>SIP Presets:</span>
-            {['5000', '10000', '15000', '25000', '50000'].map(val => (
-              <button
-                key={val}
-                type="button"
-                onClick={() => setSipAmountStr(val)}
-                style={{
-                  fontSize: '0.68rem',
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--bg-card-border)',
-                  background: sipAmountStr === val ? 'var(--violet-tint)' : 'var(--hairline)',
-                  color: sipAmountStr === val ? 'var(--violet)' : 'var(--text-muted)',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                ₹{parseInt(val)/1000}k
-              </button>
-            ))}
-          </div>
-
-          {/* Projection Results Box */}
-          <div style={{ background: 'var(--violet-tint)', border: '1px solid var(--violet)', padding: '14px', borderRadius: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Estimated Future Wealth ({numSipYears} Years)</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--violet)', letterSpacing: '-0.5px' }}>
-                  {formatRupees(projectedWealth)}
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--positive)', fontWeight: '700' }}>
-                  +{formatRupees(estimatedReturns)}
-                </div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)' }}>Estimated Profit</div>
-              </div>
-            </div>
-
-            {/* Visual Bar Breakdown: Invested vs Wealth Gain */}
-            <div className="progress-bar-bg" style={{ height: '10px' }}>
-              <div
-                className="progress-bar-fill"
-                style={{
-                  width: `${projectedWealth > 0 ? Math.round((totalInvested / projectedWealth) * 100) : 100}%`,
-                  background: 'var(--info)'
-                }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--info)' }} />
-                Invested Capital: {formatRupees(totalInvested)}
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--positive)' }} />
-                Wealth Gain: {formatRupees(estimatedReturns)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* PERSONAL SAVINGS GOALS & TARGETS */}
       <div className="glass-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -407,12 +258,9 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
             return (
               <div key={goal.id} style={{ background: 'var(--hairline)', padding: '12px', borderRadius: '14px', border: '1px solid var(--bg-card-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Emoji size="1.2rem">{goal.icon || '🎯'}</Emoji>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{goal.title || 'Savings Goal'}</span>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{goal.category}</div>
-                    </div>
+                  <div>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{goal.title || 'Savings Goal'}</span>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{goal.category}</div>
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
@@ -584,9 +432,9 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
               <div className="form-group">
                 <label className="form-label">Category</label>
                 <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="Investment">📈 Investment / SIP</option>
-                  <option value="Emergency">🛡️ Emergency Fund</option>
-                  <option value="Vacation">🌴 Vacation / Dream Goal</option>
+                  <option value="Investment">Investment / SIP</option>
+                  <option value="Emergency">Emergency Fund</option>
+                  <option value="Vacation">Vacation / Dream Goal</option>
                 </select>
               </div>
 

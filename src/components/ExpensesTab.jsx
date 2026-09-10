@@ -90,7 +90,7 @@ export default function ExpensesTab({
         >
           <option value="all">All Categories</option>
           {safeCategories.map(c => (
-            <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+            <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
 
@@ -124,14 +124,14 @@ export default function ExpensesTab({
           </div>
         ) : (
           filtered.map(tx => {
-            const catObj = safeCategories.find(c => c.id === tx.category) || { icon: '💰', name: tx.category || 'Expense' };
+            const catObj = safeCategories.find(c => c.id === tx.category) || { name: tx.category || 'Expense', color: 'var(--text-muted)' };
             const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family' };
 
             return (
               <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--hairline)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--bg-card-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Emoji size="1.1rem">{catObj.icon}</Emoji>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: catObj.color || 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: '800', fontSize: '0.9rem' }}>
+                    {(catObj.name || '?').charAt(0).toUpperCase()}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)' }}>{tx.title || 'Expense'}</span>
