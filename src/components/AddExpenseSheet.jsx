@@ -209,7 +209,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
                         gap: '2px'
                       }}
                     >
-                      <Emoji size="1.2rem">{c.icon || '📦'}</Emoji>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: c.color || 'var(--text-muted)' }} />
                       <span style={{ fontWeight: isSelected ? '700' : '500' }}>{(c.name || 'Category').split(' ')[0]}</span>
                     </div>
                   );

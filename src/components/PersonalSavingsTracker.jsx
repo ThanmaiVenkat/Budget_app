@@ -57,13 +57,11 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
     e.preventDefault();
     if (!goalTitle || !targetAmount) return;
 
-    const icon = category === 'Emergency' ? '🛡️' : category === 'Investment' ? '📈' : '🌴';
-
     if (editingGoalId) {
       setPersonalState(prev => ({
         ...prev,
         goals: (prev.goals || []).map(g => g.id === editingGoalId
-          ? { ...g, title: goalTitle, target: parseFloat(targetAmount), current: parseFloat(currentAmount) || 0, category, icon }
+          ? { ...g, title: goalTitle, target: parseFloat(targetAmount), current: parseFloat(currentAmount) || 0, category }
           : g)
       }));
     } else {
@@ -72,8 +70,7 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
         title: goalTitle,
         target: parseFloat(targetAmount),
         current: parseFloat(currentAmount) || 0,
-        category,
-        icon
+        category
       };
 
       setPersonalState(prev => ({
@@ -261,12 +258,9 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
             return (
               <div key={goal.id} style={{ background: 'var(--hairline)', padding: '12px', borderRadius: '14px', border: '1px solid var(--bg-card-border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Emoji size="1.2rem">{goal.icon || '🎯'}</Emoji>
-                    <div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{goal.title || 'Savings Goal'}</span>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{goal.category}</div>
-                    </div>
+                  <div>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>{goal.title || 'Savings Goal'}</span>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{goal.category}</div>
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
@@ -438,9 +432,9 @@ export default function PersonalSavingsTracker({ personalState, setPersonalState
               <div className="form-group">
                 <label className="form-label">Category</label>
                 <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="Investment">📈 Investment / SIP</option>
-                  <option value="Emergency">🛡️ Emergency Fund</option>
-                  <option value="Vacation">🌴 Vacation / Dream Goal</option>
+                  <option value="Investment">Investment / SIP</option>
+                  <option value="Emergency">Emergency Fund</option>
+                  <option value="Vacation">Vacation / Dream Goal</option>
                 </select>
               </div>
 

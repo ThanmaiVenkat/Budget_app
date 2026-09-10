@@ -44,7 +44,6 @@ export default function GraphsTab({
       .reduce((sum, t) => sum + (t.amount || 0), 0);
     return {
       name: cat.name || cat.id,
-      icon: cat.icon || '📦',
       value: value,
       color: cat.color || 'var(--accent)'
     };

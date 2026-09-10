@@ -18,7 +18,21 @@ export const DEFAULT_CATEGORIES = [
 // OnboardingScreen). Persisted onto the member record and used as a Recharts
 // fill, so these stay literal hex rather than tokens.
 export const MEMBER_COLORS = ['#A8496B', '#4A6B8A', '#B07C2A', '#7B5EA7', '#4F7A5C', '#3F7C82', '#A8412A'];
-export const MEMBER_AVATARS = ['👩‍💼', '👨‍💻', '👦', '👧', '👵', '👴', '🧒', '🐶'];
+
+// The picker shows the label; `value` is what actually gets stored on the
+// member record and rendered everywhere else in the app (member badges,
+// the family bar, etc.), so nothing downstream of the picker needs to
+// change.
+export const MEMBER_AVATARS = [
+  { value: '👩‍💼', label: 'Mom' },
+  { value: '👨‍💻', label: 'Dad' },
+  { value: '👦', label: 'Son' },
+  { value: '👧', label: 'Daughter' },
+  { value: '👵', label: 'Grandma' },
+  { value: '👴', label: 'Grandpa' },
+  { value: '🧒', label: 'Kid' },
+  { value: '🐶', label: 'Pet' }
+];
 
 export const formatRupees = (amount) => {
   if (isNaN(amount) || amount === null || amount === undefined) return '₹0';

@@ -121,7 +121,7 @@ export default function BudgetsTab({
             <div key={cat.id} className="glass-card" style={{ padding: '14px 16px', opacity: hasSpending ? 1 : 0.6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Emoji size="1.4rem">{cat.icon || '📦'}</Emoji>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: cat.color || 'var(--text-muted)', flexShrink: 0 }} />
                   <div>
                     <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>{cat.name}</h4>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
