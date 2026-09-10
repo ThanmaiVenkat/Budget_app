@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Receipt, User, TrendingUp } from 'lucide-react';
+import { Home, Receipt, Settings, TrendingUp } from 'lucide-react';
 
 export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
   const tabs = [
@@ -7,7 +7,7 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
     { id: 'graphs', label: 'Insights', icon: TrendingUp },
     { id: 'add', label: 'Add', isFab: true },
     { id: 'budgets', label: 'Budgets', icon: Receipt },
-    { id: 'members', label: 'You', icon: User }
+    { id: 'members', label: 'Settings', icon: Settings }
   ];
 
   return (
