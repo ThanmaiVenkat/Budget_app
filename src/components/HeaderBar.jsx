@@ -11,6 +11,7 @@ export default function HeaderBar({
   selectedMonth = '2026-07',
   setSelectedMonth,
   onOpenExcelModal,
+  showExcelImport = false,
   onOpenPersonal,
   isPersonalActive = false,
   activeDirection = '2b',
@@ -108,16 +109,20 @@ export default function HeaderBar({
           <PiggyBank size={14} />
         </button>
 
-        {/* Upload Excel Button */}
-        <button
-          onClick={onOpenExcelModal}
-          className="header-icon-btn"
-          style={{ background: 'var(--accent-tint)', border: '1px solid var(--accent-border)', borderRadius: '50%', color: 'var(--accent-strong)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          title="Upload Excel / CSV Sheet"
-          aria-label="Upload Excel or CSV sheet"
-        >
-          <FileSpreadsheet size={14} />
-        </button>
+        {/* Upload Excel Button — only offered during first-time setup, before
+            any real data exists. Once transactions start flowing in through
+            normal use, a bulk historical import no longer makes sense. */}
+        {showExcelImport && (
+          <button
+            onClick={onOpenExcelModal}
+            className="header-icon-btn"
+            style={{ background: 'var(--accent-tint)', border: '1px solid var(--accent-border)', borderRadius: '50%', color: 'var(--accent-strong)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Upload Excel / CSV Sheet"
+            aria-label="Upload Excel or CSV sheet"
+          >
+            <FileSpreadsheet size={14} />
+          </button>
+        )}
 
         <button
           onClick={handleExport}

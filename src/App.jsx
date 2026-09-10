@@ -187,6 +187,7 @@ export default function App() {
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
           onOpenExcelModal={() => setShowExcelModal(true)}
+          showExcelImport={transactions.length === 0}
           onOpenPersonal={() => setActiveTab('personal')}
           isPersonalActive={activeTab === 'personal'}
           activeDirection={activeDirection}
