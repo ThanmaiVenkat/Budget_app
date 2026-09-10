@@ -226,7 +226,6 @@ export default function App() {
               selectedMonth={selectedMonth}
               activeDirection={activeDirection}
               onNavigateToExpenses={() => setActiveTab('expenses')}
-              onNavigateToBudgets={() => setActiveTab('budgets')}
               onNavigateToBills={handleNavigateToBills}
               onOpenAddModal={() => setShowAddModal(true)}
             />
