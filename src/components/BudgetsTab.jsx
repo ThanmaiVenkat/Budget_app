@@ -11,10 +11,11 @@ export default function BudgetsTab({
   setSelectedMonth,
   enableRollover = true,
   setEnableRollover,
-  onUpdateCategoryLimit
+  onUpdateCategory
 }) {
   const [editingId, setEditingId] = useState(null);
   const [editLimit, setEditLimit] = useState('');
+  const [editName, setEditName] = useState('');
 
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
@@ -22,12 +23,19 @@ export default function BudgetsTab({
   const handleStartEdit = (cat) => {
     setEditingId(cat.id);
     setEditLimit(cat.limit);
+    setEditName(cat.name || '');
   };
 
   const handleSaveEdit = (catId) => {
+    const updates = {};
     const val = parseFloat(editLimit);
-    if (!isNaN(val) && val >= 0 && typeof onUpdateCategoryLimit === 'function') {
-      onUpdateCategoryLimit(catId, val);
+    if (!isNaN(val) && val >= 0) updates.limit = val;
+    // An emptied name keeps the old one rather than saving a blank label —
+    // the id is what transactions reference, so renaming never orphans them.
+    const name = editName.trim();
+    if (name) updates.name = name;
+    if (Object.keys(updates).length && typeof onUpdateCategory === 'function') {
+      onUpdateCategory(catId, updates);
     }
     setEditingId(null);
   };
@@ -129,7 +137,23 @@ export default function BudgetsTab({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: cat.color || 'var(--text-muted)', flexShrink: 0 }} />
                   <div>
-                    <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>{cat.name}</h4>
+                    {editingId === cat.id ? (
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ width: '150px', padding: '4px 8px', height: '30px', fontSize: '0.85rem', fontWeight: '700' }}
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveEdit(cat.id);
+                          if (e.key === 'Escape') setEditingId(null);
+                        }}
+                        aria-label="Category name"
+                        autoFocus
+                      />
+                    ) : (
+                      <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>{cat.name}</h4>
+                    )}
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                       {hasSpending ? `${formatRupees(spent)} spent` : 'No spending yet'}
                     </span>

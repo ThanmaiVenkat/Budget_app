@@ -104,8 +104,8 @@ export default function App() {
     app.updateData({ transactions: transactions.filter((t) => t.id !== txId) });
   };
 
-  const handleUpdateCategoryLimit = (catId, newLimit) => {
-    app.updateData({ categories: categories.map((c) => (c.id === catId ? { ...c, limit: newLimit } : c)) });
+  const handleUpdateCategory = (catId, updates) => {
+    app.updateData({ categories: categories.map((c) => (c.id === catId ? { ...c, ...updates } : c)) });
   };
 
   const handleToggleBillPaid = (billId) => {
@@ -276,7 +276,7 @@ export default function App() {
               setSelectedMonth={setSelectedMonth}
               enableRollover={enableRollover}
               setEnableRollover={setEnableRollover}
-              onUpdateCategoryLimit={handleUpdateCategoryLimit}
+              onUpdateCategory={handleUpdateCategory}
             />
           )}
 
