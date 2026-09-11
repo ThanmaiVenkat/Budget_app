@@ -180,24 +180,30 @@ export default function GraphsTab({
           <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>Who Spent Most (Member Share)</h3>
         </div>
 
-        <div style={{ width: '100%', height: 180 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              layout="vertical"
-              data={memberChartData}
-              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-            >
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" stroke="#8A7A66" tick={{ fontSize: 12 }} width={55} />
-              <Tooltip formatter={(val) => formatRupees(val)} />
-              <Bar dataKey="spent" name="Spent" radius={[0, 6, 6, 0]} barSize={18}>
-                {memberChartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {memberChartData.every((m) => m.spent === 0) ? (
+          <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-dim)', fontSize: '0.8rem' }}>
+            No spending to compare for this filter.
+          </div>
+        ) : (
+          <div style={{ width: '100%', height: 180 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                layout="vertical"
+                data={memberChartData}
+                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              >
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" stroke="#8A7A66" tick={{ fontSize: 12 }} width={55} />
+                <Tooltip formatter={(val) => formatRupees(val)} />
+                <Bar dataKey="spent" name="Spent" radius={[0, 6, 6, 0]} barSize={18}>
+                  {memberChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
 
       {/* CHART 3: MONTHLY INCOME VS EXPENSE COMPARISON */}
@@ -207,18 +213,25 @@ export default function GraphsTab({
           <h3 style={{ fontSize: '0.9rem', fontWeight: '700' }}>Monthly Income vs Expenses</h3>
         </div>
 
-        <div style={{ width: '100%', height: 200 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <XAxis dataKey="month" stroke="#8A7A66" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#8A7A66" tick={{ fontSize: 10 }} tickFormatter={(val) => `₹${val/1000}k`} />
-              <Tooltip formatter={(val) => formatRupees(val)} />
-              <Legend formatter={(value) => <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>{value}</span>} />
-              <Bar dataKey="Income" fill="#4F7A5C" radius={[4, 4, 0, 0]} barSize={14} />
-              <Bar dataKey="Expense" fill="#A8412A" radius={[4, 4, 0, 0]} barSize={14} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {monthlyTrendData.every((m) => m.Income === 0 && m.Expense === 0) ? (
+          <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-dim)', fontSize: '0.8rem' }}>
+            No income or expenses recorded yet.
+          </div>
+        ) : (
+          <div style={{ width: '100%', height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis dataKey="month" stroke="#8A7A66" tick={{ fontSize: 12 }} />
+                {/* Dividing unconditionally by 1000 rendered small ticks as "₹0.004k". */}
+                <YAxis stroke="#8A7A66" tick={{ fontSize: 10 }} tickFormatter={(val) => (val >= 1000 ? `₹${Math.round(val / 1000)}k` : `₹${Math.round(val)}`)} />
+                <Tooltip formatter={(val) => formatRupees(val)} />
+                <Legend formatter={(value) => <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>{value}</span>} />
+                <Bar dataKey="Income" fill="#4F7A5C" radius={[4, 4, 0, 0]} barSize={14} />
+                <Bar dataKey="Expense" fill="#A8412A" radius={[4, 4, 0, 0]} barSize={14} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
 
     </div>

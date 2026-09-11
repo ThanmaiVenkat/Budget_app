@@ -40,6 +40,9 @@ export default function BudgetsTab({
 
   // Rollover calculation from the month before the selected one
   const lastMonthKey = selectedMonth === 'all' ? null : getPreviousMonthKey(selectedMonth);
+  const lastMonthLabel = lastMonthKey
+    ? new Date(lastMonthKey + '-01').toLocaleString('default', { month: 'long' })
+    : 'last month';
   const lastMonthTxs = lastMonthKey
     ? safeTxs.filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.date && t.date.startsWith(lastMonthKey))
     : [];
@@ -78,7 +81,7 @@ export default function BudgetsTab({
             <div>
               <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>Monthly Rollover Carry-Forward</h4>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                {enableRollover ? `Adding +${formatRupees(rolloverAmount)} leftover from June savings` : 'Rollover is disabled'}
+                {enableRollover ? `Adding +${formatRupees(rolloverAmount)} leftover from ${lastMonthLabel} savings` : 'Rollover is disabled'}
               </span>
             </div>
           </div>
@@ -112,9 +115,12 @@ export default function BudgetsTab({
             .filter(t => t.category === cat.id && t.type === 'expense' && (activeMemberId === 'all' || t.memberId === activeMemberId) && (selectedMonth === 'all' || (t.date && t.date.startsWith(selectedMonth))))
             .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-          const pct = cat.limit > 0 ? Math.min(100, Math.round((spent / cat.limit) * 100)) : 0;
-          const isOver = spent > cat.limit;
-          const isNear = pct >= 80 && !isOver;
+          const hasLimit = cat.limit > 0;
+          const pct = hasLimit ? Math.min(100, Math.round((spent / cat.limit) * 100)) : 0;
+          // No limit set is not the same as a limit of zero — without this
+          // every unbudgeted category with any spending reads "Over budget!".
+          const isOver = hasLimit && spent > cat.limit;
+          const isNear = hasLimit && pct >= 80 && !isOver;
           const hasSpending = spent > 0;
 
           return (
@@ -176,14 +182,16 @@ export default function BudgetsTab({
                 <span style={{ color: isOver ? 'var(--danger)' : isNear ? 'var(--gold)' : 'var(--text-dim)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   {!hasSpending
                     ? 'No spending recorded'
-                    : isOver
-                      ? <><Emoji size="0.85em">⚠️</Emoji> Over budget!</>
-                      : isNear
-                        ? <><Emoji size="0.85em">⚡</Emoji> Approaching limit</>
-                        : `${100 - pct}% remaining`}
+                    : !hasLimit
+                      ? 'No budget set'
+                      : isOver
+                        ? <><Emoji size="0.85em">⚠️</Emoji> Over budget!</>
+                        : isNear
+                          ? <><Emoji size="0.85em">⚡</Emoji> Approaching limit</>
+                          : `${100 - pct}% remaining`}
                 </span>
                 <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
-                  {pct}% Used
+                  {hasLimit ? `${pct}% Used` : '—'}
                 </span>
               </div>
             </div>
