@@ -147,7 +147,7 @@ export default function ExpensesTab({
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: '700', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: '700', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
                     {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
                   </span>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '2px' }}>

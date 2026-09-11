@@ -11,7 +11,6 @@ export default function HomeTab({
   selectedMonth = '2026-07',
   activeDirection = '2b',
   onNavigateToExpenses,
-  onNavigateToBudgets,
   onNavigateToBills,
   onOpenAddModal
 }) {
@@ -32,14 +31,22 @@ export default function HomeTab({
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   const totalBudgetLimit = safeCategories.reduce((sum, c) => sum + (c.limit || 0), 0);
+  // A limit of 0 means "not set", not "a budget of zero" — treating it as a real
+  // budget makes every rupee spent read as 100% over.
+  const hasBudget = totalBudgetLimit > 0;
   const remainingBudget = Math.max(0, totalBudgetLimit - totalExpense);
   const budgetUtilization = totalBudgetLimit > 0 ? Math.min(100, Math.round((totalExpense / totalBudgetLimit) * 100)) : 0;
 
-  // Daily average: real spend so far / days in the selected month (only meaningful for a specific month)
+  // Daily average: spend so far / days elapsed (current month) or days in month (past months)
   const daysInSelectedMonth = (() => {
     if (selectedMonth === 'all') return null;
     const [y, m] = selectedMonth.split('-').map(Number);
-    return y && m ? new Date(y, m, 0).getDate() : null;
+    if (!y || !m) return null;
+    const today = new Date();
+    const isCurrentMonth = y === today.getFullYear() && m === today.getMonth() + 1;
+    // Mid-month, dividing by the full month understates the burn rate ~3x;
+    // use the days elapsed so far instead. Past months use their full length.
+    return isCurrentMonth ? today.getDate() : new Date(y, m, 0).getDate();
   })();
   const dailyAverage = daysInSelectedMonth ? totalExpense / daysInSelectedMonth : null;
 
@@ -82,7 +89,7 @@ export default function HomeTab({
         {/* Header Greeting */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-main)' }}>Hey, {activeMember.name}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-main)' }}>{activeMemberId === 'all' ? 'Hey there' : `Hey, ${activeMember.name}`}</div>
             <div style={{ font: '500 12px Manrope', color: 'var(--text-muted)', marginTop: '2px' }}>Let's keep this month on budget</div>
           </div>
           <div className="member-avatar-wrapper" style={{ width: '42px', height: '42px', fontSize: '19px' }}>
@@ -93,7 +100,7 @@ export default function HomeTab({
         {/* Feature card: a solid ink-on-accent panel rather than a black gradient. */}
         <div style={{ background: 'var(--accent-strong)', borderRadius: '16px', padding: '20px 22px', border: '1px solid var(--accent-strong)' }}>
           <div style={{ font: '600 10px Manrope', color: 'var(--accent-tint)', letterSpacing: '.12em' }}>
-            TOTAL SPENT / {formatRupees(totalBudgetLimit)} BUDGET
+            {hasBudget ? `TOTAL SPENT / ${formatRupees(totalBudgetLimit)} BUDGET` : 'TOTAL SPENT · NO BUDGET SET'}
           </div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '44px', lineHeight: 1, color: 'var(--text-on-accent-strong)', marginTop: '8px' }}>
             {formatRupees(totalExpense)}
@@ -102,15 +109,13 @@ export default function HomeTab({
             <i style={{ display: 'block', height: '100%', width: `${budgetUtilization}%`, background: 'var(--text-on-accent-strong)', borderRadius: '2px' }} />
           </div>
           <div style={{ font: '500 11.5px Manrope', color: 'var(--accent-tint)', marginTop: '10px' }}>
-            {formatRupees(remainingBudget)} left to spend
+            {hasBudget ? `${formatRupees(remainingBudget)} left to spend` : 'Set category limits in Budgets to track this'}
           </div>
         </div>
 
         {/* Action Pills */}
         <div style={{ display: 'flex', gap: '9px', overflow: 'hidden' }}>
           <button className="action-pill" onClick={onOpenAddModal}>＋ Add expense</button>
-          <button className="action-pill secondary" onClick={onOpenAddModal}>Scan receipt</button>
-          <button className="action-pill secondary" onClick={onNavigateToBudgets}>Split</button>
         </div>
 
         {/* 2x2 Vivid Category Tiles */}
@@ -153,7 +158,7 @@ export default function HomeTab({
       <div style={{ background: 'var(--bg-hero)', border: '1px solid var(--bg-hero-border)', borderRadius: '16px', padding: '20px 22px 18px 22px', flex: 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '19px', color: 'var(--text-main)' }}>
-            Hi, {activeMember.name}
+            {activeMemberId === 'all' ? 'Hi there' : `Hi, ${activeMember.name}`}
           </div>
           <div style={{ font: '600 10px Manrope', letterSpacing: '.09em', color: 'var(--text-dim)' }}>
             {selectedMonth === 'all' ? 'ALL TIME' : new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long' }).toUpperCase()}
@@ -163,7 +168,9 @@ export default function HomeTab({
         <div style={{ font: '600 10px Manrope', color: 'var(--text-dim)', marginTop: '18px', letterSpacing: '.12em' }}>SPENT THIS MONTH</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '6px' }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '54px', lineHeight: 1, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>{formatRupees(totalExpense)}</div>
-          <div style={{ font: '500 12.5px Manrope', color: 'var(--text-dim)' }}>of {formatRupees(totalBudgetLimit)}</div>
+          {hasBudget && (
+            <div style={{ font: '500 12.5px Manrope', color: 'var(--text-dim)' }}>of {formatRupees(totalBudgetLimit)}</div>
+          )}
         </div>
 
         <div style={{ height: '4px', borderRadius: '2px', background: 'var(--track-hero)', overflow: 'hidden', marginTop: '20px' }}>
@@ -171,8 +178,14 @@ export default function HomeTab({
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', font: '500 11.5px Manrope', color: 'var(--text-muted)' }}>
-          <span>{budgetUtilization}% used</span>
-          <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{formatRupees(remainingBudget)} left</span>
+          {hasBudget ? (
+            <>
+              <span>{budgetUtilization}% used</span>
+              <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{formatRupees(remainingBudget)} left</span>
+            </>
+          ) : (
+            <span>Set category limits in Budgets to track spending</span>
+          )}
         </div>
       </div>
 
@@ -182,8 +195,6 @@ export default function HomeTab({
         {/* Action Pills */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
           <button className="action-pill" onClick={onOpenAddModal}>＋ Add expense</button>
-          <button className="action-pill secondary" onClick={onOpenAddModal}>Scan receipt</button>
-          <button className="action-pill secondary" onClick={onNavigateToBudgets}>Split</button>
         </div>
 
         {/* 2 Metric Cards */}
@@ -239,7 +250,7 @@ export default function HomeTab({
                       <div style={{ font: '600 13px Manrope', color: 'var(--text-main)' }}>{tx.title}</div>
                       <div style={{ font: '500 11px Manrope', color: 'var(--text-dim)', marginTop: '2px' }}>{catObj.name} · {tx.date}</div>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '17px', color: 'var(--text-main)' }}>−{formatRupees(tx.amount)}</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '17px', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>{tx.type === 'income' ? '+' : '−'}{formatRupees(tx.amount)}</div>
                   </div>
                 );
               })}

@@ -11,10 +11,11 @@ export default function BudgetsTab({
   setSelectedMonth,
   enableRollover = true,
   setEnableRollover,
-  onUpdateCategoryLimit
+  onUpdateCategory
 }) {
   const [editingId, setEditingId] = useState(null);
   const [editLimit, setEditLimit] = useState('');
+  const [editName, setEditName] = useState('');
 
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
@@ -22,12 +23,19 @@ export default function BudgetsTab({
   const handleStartEdit = (cat) => {
     setEditingId(cat.id);
     setEditLimit(cat.limit);
+    setEditName(cat.name || '');
   };
 
   const handleSaveEdit = (catId) => {
+    const updates = {};
     const val = parseFloat(editLimit);
-    if (!isNaN(val) && val >= 0 && typeof onUpdateCategoryLimit === 'function') {
-      onUpdateCategoryLimit(catId, val);
+    if (!isNaN(val) && val >= 0) updates.limit = val;
+    // An emptied name keeps the old one rather than saving a blank label —
+    // the id is what transactions reference, so renaming never orphans them.
+    const name = editName.trim();
+    if (name) updates.name = name;
+    if (Object.keys(updates).length && typeof onUpdateCategory === 'function') {
+      onUpdateCategory(catId, updates);
     }
     setEditingId(null);
   };
@@ -40,6 +48,9 @@ export default function BudgetsTab({
 
   // Rollover calculation from the month before the selected one
   const lastMonthKey = selectedMonth === 'all' ? null : getPreviousMonthKey(selectedMonth);
+  const lastMonthLabel = lastMonthKey
+    ? new Date(lastMonthKey + '-01').toLocaleString('default', { month: 'long' })
+    : 'last month';
   const lastMonthTxs = lastMonthKey
     ? safeTxs.filter(t => (activeMemberId === 'all' || t.memberId === activeMemberId) && t.date && t.date.startsWith(lastMonthKey))
     : [];
@@ -78,7 +89,7 @@ export default function BudgetsTab({
             <div>
               <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>Monthly Rollover Carry-Forward</h4>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                {enableRollover ? `Adding +${formatRupees(rolloverAmount)} leftover from June savings` : 'Rollover is disabled'}
+                {enableRollover ? `Adding +${formatRupees(rolloverAmount)} leftover from ${lastMonthLabel} savings` : 'Rollover is disabled'}
               </span>
             </div>
           </div>
@@ -112,9 +123,12 @@ export default function BudgetsTab({
             .filter(t => t.category === cat.id && t.type === 'expense' && (activeMemberId === 'all' || t.memberId === activeMemberId) && (selectedMonth === 'all' || (t.date && t.date.startsWith(selectedMonth))))
             .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-          const pct = cat.limit > 0 ? Math.min(100, Math.round((spent / cat.limit) * 100)) : 0;
-          const isOver = spent > cat.limit;
-          const isNear = pct >= 80 && !isOver;
+          const hasLimit = cat.limit > 0;
+          const pct = hasLimit ? Math.min(100, Math.round((spent / cat.limit) * 100)) : 0;
+          // No limit set is not the same as a limit of zero — without this
+          // every unbudgeted category with any spending reads "Over budget!".
+          const isOver = hasLimit && spent > cat.limit;
+          const isNear = hasLimit && pct >= 80 && !isOver;
           const hasSpending = spent > 0;
 
           return (
@@ -123,7 +137,23 @@ export default function BudgetsTab({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: cat.color || 'var(--text-muted)', flexShrink: 0 }} />
                   <div>
-                    <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>{cat.name}</h4>
+                    {editingId === cat.id ? (
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ width: '150px', padding: '4px 8px', height: '30px', fontSize: '0.85rem', fontWeight: '700' }}
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveEdit(cat.id);
+                          if (e.key === 'Escape') setEditingId(null);
+                        }}
+                        aria-label="Category name"
+                        autoFocus
+                      />
+                    ) : (
+                      <h4 style={{ fontSize: '0.88rem', fontWeight: '700' }}>{cat.name}</h4>
+                    )}
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                       {hasSpending ? `${formatRupees(spent)} spent` : 'No spending yet'}
                     </span>
@@ -176,14 +206,16 @@ export default function BudgetsTab({
                 <span style={{ color: isOver ? 'var(--danger)' : isNear ? 'var(--gold)' : 'var(--text-dim)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   {!hasSpending
                     ? 'No spending recorded'
-                    : isOver
-                      ? <><Emoji size="0.85em">⚠️</Emoji> Over budget!</>
-                      : isNear
-                        ? <><Emoji size="0.85em">⚡</Emoji> Approaching limit</>
-                        : `${100 - pct}% remaining`}
+                    : !hasLimit
+                      ? 'No budget set'
+                      : isOver
+                        ? <><Emoji size="0.85em">⚠️</Emoji> Over budget!</>
+                        : isNear
+                          ? <><Emoji size="0.85em">⚡</Emoji> Approaching limit</>
+                          : `${100 - pct}% remaining`}
                 </span>
                 <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
-                  {pct}% Used
+                  {hasLimit ? `${pct}% Used` : '—'}
                 </span>
               </div>
             </div>
