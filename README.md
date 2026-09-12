@@ -1,8 +1,19 @@
 # Tally
 
-A household budget tracker: shared expenses, bills, category budgets, and a
-per-person savings tracker. Installable as a PWA on Android/iOS. Data syncs
-across every device signed into the same household via Firebase.
+A household budget tracker: shared expenses, bills, category budgets, spending
+insights, and a per-person savings tracker. Installable as a PWA on Android/iOS.
+Data syncs across every device signed into the same household via Firebase.
+
+## Features
+
+- **Expenses & income** — logged per family member, filterable by month, member, category, and type.
+- **Category budgets** — a limit per category with progress bars, monthly rollover of leftover savings, and inline editing of both a category's name and its limit.
+- **Bill reminders** — recurring bills with a paid/unpaid toggle.
+- **Insights** — category breakdown, per-member comparison, and income-vs-expense trend charts.
+- **Family members** — profiles with an avatar, role, and an optional monthly spending limit; one member can be flagged as the household's income earner.
+- **Personal savings tracker** — private to each signed-in person, with its own goals and transactions, separate from the shared household data.
+- **Settings** — light/dark theme, the household's join code (to add another device or family member), and sign-out.
+- **Excel/CSV import** — bulk-load existing transactions during first-time household setup.
 
 ## Set up Firebase
 
