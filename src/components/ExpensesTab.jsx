@@ -129,12 +129,12 @@ export default function ExpensesTab({
 
             return (
               <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--hairline)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: catObj.color || 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: '800', fontSize: '0.9rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                  <div className="cat-chip" style={{ width: '38px', height: '38px', '--chip': catObj.color || 'var(--text-muted)' }}>
                     {(catObj.name || '?').charAt(0).toUpperCase()}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)' }}>{tx.title || 'Expense'}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.title || 'Expense'}</span>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span style={{ color: memberObj.color, fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
                         <Emoji size="0.85rem">{memberObj.avatar}</Emoji> {memberObj.name}
@@ -146,45 +146,48 @@ export default function ExpensesTab({
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: '700', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
-                    {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
-                  </span>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                    {confirmDeleteId === tx.id ? (
-                      <>
-                        <span style={{ fontSize: '0.65rem', color: 'var(--danger)', fontWeight: '700' }}>Delete?</span>
-                        <button
-                          onClick={() => {
-                            if (onDeleteTx) onDeleteTx(tx.id);
-                            setConfirmDeleteId(null);
-                          }}
-                          style={{ background: 'var(--danger-tint)', border: 'none', borderRadius: '6px', color: 'var(--danger)', cursor: 'pointer', padding: '3px', display: 'flex' }}
-                          title="Confirm delete"
-                          aria-label={`Confirm delete of ${tx.title || 'expense'}`}
-                        >
-                          <Check size={13} />
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          style={{ background: 'var(--bg-card-hover)', border: 'none', borderRadius: '6px', color: 'var(--text-dim)', cursor: 'pointer', padding: '3px', display: 'flex' }}
-                          title="Cancel"
-                          aria-label="Cancel delete"
-                        >
-                          <X size={13} />
-                        </button>
-                      </>
-                    ) : (
+                {/* Amount and delete sit on one baseline rather than stacked —
+                    stacking left every row a different height. Confirming takes
+                    the amount's place, so the controls never need to wrap. */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: '8px' }}>
+                  {confirmDeleteId === tx.id ? (
+                    <>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--danger)', fontWeight: '700' }}>Delete?</span>
+                      <button
+                        onClick={() => {
+                          if (onDeleteTx) onDeleteTx(tx.id);
+                          setConfirmDeleteId(null);
+                        }}
+                        style={{ background: 'var(--danger-tint)', border: 'none', borderRadius: '8px', color: 'var(--danger)', cursor: 'pointer', padding: '6px', display: 'flex' }}
+                        title="Confirm delete"
+                        aria-label={`Confirm delete of ${tx.title || 'expense'}`}
+                      >
+                        <Check size={14} />
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteId(null)}
+                        style={{ background: 'var(--bg-card-hover)', border: 'none', borderRadius: '8px', color: 'var(--text-dim)', cursor: 'pointer', padding: '6px', display: 'flex' }}
+                        title="Cancel"
+                        aria-label="Cancel delete"
+                      >
+                        <X size={14} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: '0.88rem', fontWeight: '700', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
+                        {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
+                      </span>
                       <button
                         onClick={() => setConfirmDeleteId(tx.id)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
                         title="Delete item"
                         aria-label={`Delete ${tx.title || 'expense'}`}
                       >
-                        <Trash2 size={13} color="var(--danger)" opacity={0.6} />
+                        <Trash2 size={14} color="var(--danger)" opacity={0.55} />
                       </button>
-                    )}
-                  </div>
+                    </>
+                  )}
                 </div>
               </div>
             );

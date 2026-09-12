@@ -252,12 +252,16 @@ export default function HomeTab({
 
                 return (
                   <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '13px 0', borderBottom: '1px solid var(--divider)' }}>
-                    <div className="catic" style={{ width: '38px', height: '38px', background: bg, borderRadius: '50%' }}>
+                    <div className="cat-chip" style={{ width: '38px', height: '38px', '--chip': bg }}>
                       {(catObj.name || tx.title || '?').charAt(0).toUpperCase()}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ font: '600 13px Manrope', color: 'var(--text-main)' }}>{tx.title}</div>
-                      <div style={{ font: '500 11px Manrope', color: 'var(--text-dim)', marginTop: '2px' }}>{catObj.name} · {tx.date}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ font: '600 13px Manrope', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.title}</div>
+                      {/* A title left at its default is the category name, so
+                          repeating it below would just say the same thing twice. */}
+                      <div style={{ font: '500 11px Manrope', color: 'var(--text-dim)', marginTop: '2px' }}>
+                        {tx.title === catObj.name ? tx.date : `${catObj.name} · ${tx.date}`}
+                      </div>
                     </div>
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: '17px', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>{tx.type === 'income' ? '+' : '−'}{formatRupees(tx.amount)}</div>
                   </div>
