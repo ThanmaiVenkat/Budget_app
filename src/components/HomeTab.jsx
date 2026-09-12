@@ -2,6 +2,15 @@ import React from 'react';
 import { formatRupees, getPreviousMonthKey } from '../utils/mockData';
 import Emoji from './Emoji';
 
+const greetingFor = (name) => {
+  const hour = new Date().getHours();
+  const salutation = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  // First name only — "Good afternoon, Grandma Sunita" crowds the month label
+  // off the hero row on a phone.
+  const firstName = (name || '').trim().split(' ')[0];
+  return firstName ? `${salutation}, ${firstName}` : salutation;
+};
+
 export default function HomeTab({
   transactions = [],
   categories = [],
@@ -89,7 +98,7 @@ export default function HomeTab({
         {/* Header Greeting */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-main)' }}>{activeMemberId === 'all' ? 'Hey there' : `Hey, ${activeMember.name}`}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-main)' }}>{greetingFor(activeMemberId === 'all' ? 'everyone' : activeMember.name)}</div>
             <div style={{ font: '500 12px Manrope', color: 'var(--text-muted)', marginTop: '2px' }}>Let's keep this month on budget</div>
           </div>
           <div className="member-avatar-wrapper" style={{ width: '42px', height: '42px', fontSize: '19px' }}>
@@ -158,7 +167,7 @@ export default function HomeTab({
       <div style={{ background: 'var(--bg-hero)', border: '1px solid var(--bg-hero-border)', borderRadius: '16px', padding: '20px 22px 18px 22px', flex: 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '19px', color: 'var(--text-main)' }}>
-            {activeMemberId === 'all' ? 'Hi there' : `Hi, ${activeMember.name}`}
+            {greetingFor(activeMemberId === 'all' ? 'everyone' : activeMember.name)}
           </div>
           <div style={{ font: '600 10px Manrope', letterSpacing: '.09em', color: 'var(--text-dim)' }}>
             {selectedMonth === 'all' ? 'ALL TIME' : new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long' }).toUpperCase()}
