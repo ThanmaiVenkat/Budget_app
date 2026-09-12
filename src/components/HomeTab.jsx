@@ -2,6 +2,15 @@ import React from 'react';
 import { formatRupees, getPreviousMonthKey } from '../utils/mockData';
 import Emoji from './Emoji';
 
+const greetingFor = (name) => {
+  const hour = new Date().getHours();
+  const salutation = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  // First name only — "Good afternoon, Grandma Sunita" crowds the month label
+  // off the hero row on a phone.
+  const firstName = (name || '').trim().split(' ')[0];
+  return firstName ? `${salutation}, ${firstName}` : salutation;
+};
+
 export default function HomeTab({
   transactions = [],
   categories = [],
@@ -89,7 +98,7 @@ export default function HomeTab({
         {/* Header Greeting */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-main)' }}>{activeMemberId === 'all' ? 'Hey there' : `Hey, ${activeMember.name}`}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-main)' }}>{greetingFor(activeMemberId === 'all' ? 'everyone' : activeMember.name)}</div>
             <div style={{ font: '500 12px Manrope', color: 'var(--text-muted)', marginTop: '2px' }}>Let's keep this month on budget</div>
           </div>
           <div className="member-avatar-wrapper" style={{ width: '42px', height: '42px', fontSize: '19px' }}>
@@ -158,7 +167,7 @@ export default function HomeTab({
       <div style={{ background: 'var(--bg-hero)', border: '1px solid var(--bg-hero-border)', borderRadius: '16px', padding: '20px 22px 18px 22px', flex: 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '19px', color: 'var(--text-main)' }}>
-            {activeMemberId === 'all' ? 'Hi there' : `Hi, ${activeMember.name}`}
+            {greetingFor(activeMemberId === 'all' ? 'everyone' : activeMember.name)}
           </div>
           <div style={{ font: '600 10px Manrope', letterSpacing: '.09em', color: 'var(--text-dim)' }}>
             {selectedMonth === 'all' ? 'ALL TIME' : new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long' }).toUpperCase()}
@@ -243,12 +252,16 @@ export default function HomeTab({
 
                 return (
                   <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '13px 0', borderBottom: '1px solid var(--divider)' }}>
-                    <div className="catic" style={{ width: '38px', height: '38px', background: bg, borderRadius: '50%' }}>
+                    <div className="cat-chip" style={{ width: '38px', height: '38px', '--chip': bg }}>
                       {(catObj.name || tx.title || '?').charAt(0).toUpperCase()}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ font: '600 13px Manrope', color: 'var(--text-main)' }}>{tx.title}</div>
-                      <div style={{ font: '500 11px Manrope', color: 'var(--text-dim)', marginTop: '2px' }}>{catObj.name} · {tx.date}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ font: '600 13px Manrope', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.title}</div>
+                      {/* A title left at its default is the category name, so
+                          repeating it below would just say the same thing twice. */}
+                      <div style={{ font: '500 11px Manrope', color: 'var(--text-dim)', marginTop: '2px' }}>
+                        {tx.title === catObj.name ? tx.date : `${catObj.name} · ${tx.date}`}
+                      </div>
                     </div>
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: '17px', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>{tx.type === 'income' ? '+' : '−'}{formatRupees(tx.amount)}</div>
                   </div>
