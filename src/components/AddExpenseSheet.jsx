@@ -186,8 +186,11 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           {type === 'expense' && (
             <div className="form-group" style={{ marginBottom: '4px' }}>
               <label className="form-label" style={{ fontSize: '0.72rem' }}>3. CATEGORY</label>
+              {/* Every category, not the first six: the tail of the default
+                  list was already unreachable here, and a category added in
+                  Budgets could never be spent against. The sheet scrolls. */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                {categories.slice(0, 6).map((c) => {
+                {categories.map((c) => {
                   const isSelected = category === c.id;
                   return (
                     <div

@@ -19,6 +19,14 @@ export const DEFAULT_CATEGORIES = [
 // fill, so these stay literal hex rather than tokens.
 export const MEMBER_COLORS = ['#A8496B', '#4A6B8A', '#B07C2A', '#7B5EA7', '#4F7A5C', '#3F7C82', '#A8412A'];
 
+// Colours a new budget category can be given. Same literal-hex reasoning as
+// MEMBER_COLORS: the value is stored on the record and handed to Recharts and
+// to color-mix(), neither of which can resolve a CSS custom property here.
+export const CATEGORY_COLORS = [
+  '#4F7A5C', '#4A6B8A', '#B07C2A', '#A8496B', '#7B5EA7',
+  '#3F7C82', '#6B6A9E', '#A8412A', '#C2661F'
+];
+
 // The picker shows the label; `value` is what actually gets stored on the
 // member record and rendered everywhere else in the app (member badges,
 // the family bar, etc.), so nothing downstream of the picker needs to

@@ -103,6 +103,17 @@ export default function App() {
     app.updateData({ transactions: transactions.filter((t) => t.id !== txId) });
   };
 
+  const handleAddCategory = (newCategory) => {
+    app.updateData({ categories: [...categories, newCategory] });
+  };
+
+  // Past transactions keep their category id, and the tabs already fall back
+  // to showing that id when no category matches, so removing one loses the
+  // label but never the spending. BudgetsTab warns before it comes to that.
+  const handleDeleteCategory = (catId) => {
+    app.updateData({ categories: categories.filter((c) => c.id !== catId) });
+  };
+
   const handleUpdateCategory = (catId, updates) => {
     app.updateData({
       categories: categories.map((c) => {
@@ -285,6 +296,8 @@ export default function App() {
               enableRollover={enableRollover}
               setEnableRollover={setEnableRollover}
               onUpdateCategory={handleUpdateCategory}
+              onAddCategory={handleAddCategory}
+              onDeleteCategory={handleDeleteCategory}
             />
           )}
 
