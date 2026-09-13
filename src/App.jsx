@@ -57,10 +57,9 @@ export default function App() {
   const [activeDirection, setActiveDirection] = useState('2b');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExcelModal, setShowExcelModal] = useState(false);
-  const [isFrameMode, setIsFrameMode] = useState(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return true;
-    return window.matchMedia('(min-width: 700px)').matches;
-  });
+  // Desktop opens in the real layout; the phone frame stays available behind
+  // the toggle for previewing the mobile design.
+  const [isFrameMode, setIsFrameMode] = useState(false);
 
   const isStandalone =
     typeof window !== 'undefined' &&

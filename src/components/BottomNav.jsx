@@ -17,6 +17,9 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
           return (
             <button key={tab.id} className="fab" onClick={onOpenAddModal} title="Add Expense" aria-label="Add expense">
               <span>+</span>
+              {/* Shown only once the nav becomes a desktop sidebar, where a
+                  bare circular glyph would read as an orphan. */}
+              <span className="fab-label">Add expense</span>
             </button>
           );
         }
@@ -31,8 +34,11 @@ export default function BottomNav({ activeTab, setActiveTab, onOpenAddModal }) {
             onClick={() => setActiveTab(tab.id)}
             style={{ color: isActive ? 'var(--text-main)' : 'var(--text-dim)' }}
           >
-            <div className="ic" style={{ background: isActive ? 'var(--accent)' : 'var(--bg-card-hover)' }}>
-              <Icon size={14} color="var(--text-on-accent-strong)" />
+            {/* The glyph inherits the button's colour. Pinning it to
+                --text-on-accent-strong left it near-white on the inactive
+                tile, so four of the five icons were invisible. */}
+            <div className="ic">
+              <Icon size={16} />
             </div>
             <span>{tab.label}</span>
           </button>
