@@ -596,6 +596,12 @@ body {
   margin-top: -2px;
 }
 
+/* Hidden until the nav becomes a sidebar. Declared here, ahead of the desktop
+   block, so source order lets that block's `display: inline` win. */
+.fab-label {
+  display: none;
+}
+
 @media (hover: hover) {
   .fab:hover {
     background: var(--accent-bright);
@@ -777,12 +783,139 @@ body {
 
 /* Desktop-only preview aid. It is position:fixed, so at phone widths it
    overlays the header's own controls; the app already defaults to full-screen
-   below this breakpoint, so there is nothing here for it to toggle. This must
+   below this breakpoint, so there is nothing here for it to toggle. Hidden on
+   touch devices at any width too — previewing a phone frame on a phone is
+   pointless, and a tablet or landscape handset clears 700px easily. This must
    follow the base rule: both are single-class selectors, so source order is
    what decides the `display` value. */
-@media (max-width: 699px) {
+@media (max-width: 699px), (pointer: coarse) {
   .frame-toggle-btn {
     display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Desktop layout.
+   The app is authored mobile-first and every tab renders a single column, so
+   widening the container alone would just stretch each card across the screen.
+   Instead the bottom nav — already absolutely positioned — becomes a left
+   rail, and the content column keeps a readable measure inside the space that
+   frees up. No component markup changes shape; only the nav and the wrapper's
+   padding do.
+
+   Width alone does not identify a laptop: a phone in landscape clears 900px
+   and would take the sidebar, thumbs and all. `pointer: fine` asks what the
+   primary input actually is — a mouse or trackpad, not a finger — so the rail
+   is reserved for real pointer devices. This is deliberately not user-agent
+   sniffing: UA strings are spoofable, increasingly frozen by browsers, and
+   say nothing about a window being resized or a phone being rotated, whereas
+   these queries re-evaluate live. A browser too old to support them simply
+   keeps the mobile layout, which is the safe direction to fail.
+--------------------------------------------------------------------------- */
+@media (min-width: 900px) and (pointer: fine) {
+  .mobile-full-wrapper {
+    max-width: 1180px;
+    padding-left: 232px;
+    border-left: 1px solid var(--bg-card-border);
+    border-right: 1px solid var(--bg-card-border);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .tab {
+    top: 0;
+    bottom: 0;
+    right: auto;
+    width: 232px;
+    height: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 22px 16px;
+    border-top: none;
+    border-right: 1px solid var(--bg-card-border);
+  }
+
+  .tbtn {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 13px;
+  }
+
+  .tbtn:active {
+    transform: scale(0.98);
+  }
+
+  .tbtn.active {
+    background: var(--accent-tint);
+  }
+
+  /* The glyph lift reads as a wobble once the items are a vertical list. */
+  .tbtn.active .ic {
+    transform: none;
+  }
+
+  .ic {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Primary action belongs at the top of a sidebar, not floating mid-list. */
+  .fab {
+    order: -1;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .fab span {
+    font: 300 20px Manrope;
+    margin-top: 0;
+  }
+
+  .fab-label {
+    display: inline;
+    font: 700 13px Manrope !important;
+    color: var(--text-on-accent);
+  }
+
+  .fab:active {
+    transform: scale(0.98);
+  }
+
+  .app-content {
+    max-width: 880px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 26px 34px 40px 34px;
+  }
+
+  .header-bar {
+    padding: 22px 34px 14px 34px;
+  }
+
+  /* Written for a 390px frame, so it hides itself unconditionally; there is
+     room for it once the header spans a desktop width. */
+  .header-subtitle {
+    display: inline;
+  }
+
+  .frame-toggle-btn:hover {
+    background: var(--bg-card-hover);
+  }
+}
+
+/* The member strip and content share the header's desktop gutter. */
+@media (min-width: 900px) and (pointer: fine) {
+  .member-story-scroll {
+    padding-left: 34px;
+    padding-right: 34px;
   }
 }
 
