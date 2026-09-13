@@ -104,7 +104,16 @@ export default function App() {
   };
 
   const handleUpdateCategory = (catId, updates) => {
-    app.updateData({ categories: categories.map((c) => (c.id === catId ? { ...c, ...updates } : c)) });
+    app.updateData({
+      categories: categories.map((c) => {
+        if (c.id !== catId) return c;
+        const merged = { ...c, ...updates };
+        // `limits` is a per-month map and callers send only the month they
+        // edited, so a plain spread would drop every other month's budget.
+        if (updates.limits) merged.limits = { ...(c.limits || {}), ...updates.limits };
+        return merged;
+      })
+    });
   };
 
   const handleToggleBillPaid = (billId) => {

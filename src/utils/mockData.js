@@ -79,6 +79,50 @@ export const getPreviousMonthKey = (monthKey) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
+const monthLabel = (key) =>
+  new Date(key + '-01').toLocaleString('default', { month: 'long', year: 'numeric' });
+
+// Months offered by the Budgets picker. Unlike getAvailableMonths — which is
+// for *filtering* existing data and so only lists months that have any — a
+// budget can be set for a month with nothing recorded in it yet, which is the
+// whole point of filling in one you missed. So this walks back a fixed number
+// of calendar months from today, then unions in any month that already holds
+// transactions or a saved budget, so nothing previously reachable drops out of
+// the list.
+export const getBudgetMonths = (transactions = [], categories = [], lookback = 3) => {
+  const keys = new Set();
+
+  const now = new Date();
+  for (let i = 0; i <= lookback; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    keys.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+
+  (transactions || []).forEach((t) => {
+    if (t.date && t.date.length >= 7) keys.add(t.date.slice(0, 7));
+  });
+  (categories || []).forEach((c) => {
+    Object.keys(c?.limits || {}).forEach((k) => keys.add(k));
+  });
+
+  return Array.from(keys)
+    .sort((a, b) => (a < b ? 1 : -1))
+    .map((key) => ({ value: key, label: monthLabel(key) }));
+};
+
+// A category's budget for one month. `limits` holds per-month overrides and
+// `limit` is the standing default, so a month nobody has touched still shows
+// the household's usual budget rather than zero.
+export const limitFor = (category, monthKey) => {
+  if (!category) return 0;
+  const override = monthKey && monthKey !== 'all' ? category.limits?.[monthKey] : undefined;
+  return Number(override ?? category.limit ?? 0) || 0;
+};
+
+// Whether this month carries its own budget rather than inheriting the default.
+export const hasMonthOverride = (category, monthKey) =>
+  Boolean(monthKey && monthKey !== 'all' && category?.limits?.[monthKey] !== undefined);
+
 export const getBillBadgeStatus = (daysUntilDue, paid) => {
   if (paid) return { text: 'Paid', bg: 'var(--positive-tint)', border: 'var(--positive-border)', color: 'var(--positive)' };
   if (daysUntilDue < 3) return { text: `Due in ${daysUntilDue}d (Urgent)`, bg: 'var(--danger-tint)', border: 'var(--danger-border)', color: 'var(--danger)' };

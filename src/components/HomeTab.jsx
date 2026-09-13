@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatRupees, getPreviousMonthKey } from '../utils/mockData';
+import { formatRupees, getPreviousMonthKey, limitFor } from '../utils/mockData';
 import Emoji from './Emoji';
 
 const greetingFor = (name) => {
@@ -39,7 +39,9 @@ export default function HomeTab({
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const totalBudgetLimit = safeCategories.reduce((sum, c) => sum + (c.limit || 0), 0);
+  // Budgets are per-month, so Home has to total the months's own limits or it
+  // would disagree with the Budgets tab for any month with its own budget.
+  const totalBudgetLimit = safeCategories.reduce((sum, c) => sum + limitFor(c, selectedMonth), 0);
   // A limit of 0 means "not set", not "a budget of zero" — treating it as a real
   // budget makes every rupee spent read as 100% over.
   const hasBudget = totalBudgetLimit > 0;
@@ -135,7 +137,8 @@ export default function HomeTab({
               const spent = filteredTxs
                 .filter(t => t.category === cat.id && t.type === 'expense')
                 .reduce((sum, t) => sum + (t.amount || 0), 0);
-              const pct = cat.limit > 0 ? Math.min(100, Math.round((spent / cat.limit) * 100)) : 0;
+              const catLimit = limitFor(cat, selectedMonth);
+              const pct = catLimit > 0 ? Math.min(100, Math.round((spent / catLimit) * 100)) : 0;
               const bg = categoryColors[cat.id] || cat.color || 'var(--accent)';
 
               return (
@@ -145,7 +148,7 @@ export default function HomeTab({
                   </div>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', lineHeight: 1.1, marginTop: '12px' }}>{formatRupees(spent)}</div>
                   <div style={{ font: '500 11px Manrope', color: 'rgba(255,250,243,0.85)', marginTop: '2px' }}>
-                    {pct}% of {formatRupees(cat.limit)}
+                    {pct}% of {formatRupees(catLimit)}
                   </div>
                 </div>
               );
