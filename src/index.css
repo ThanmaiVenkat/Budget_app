@@ -783,10 +783,12 @@ body {
 
 /* Desktop-only preview aid. It is position:fixed, so at phone widths it
    overlays the header's own controls; the app already defaults to full-screen
-   below this breakpoint, so there is nothing here for it to toggle. This must
+   below this breakpoint, so there is nothing here for it to toggle. Hidden on
+   touch devices at any width too — previewing a phone frame on a phone is
+   pointless, and a tablet or landscape handset clears 700px easily. This must
    follow the base rule: both are single-class selectors, so source order is
    what decides the `display` value. */
-@media (max-width: 699px) {
+@media (max-width: 699px), (pointer: coarse) {
   .frame-toggle-btn {
     display: none;
   }
@@ -800,8 +802,17 @@ body {
    rail, and the content column keeps a readable measure inside the space that
    frees up. No component markup changes shape; only the nav and the wrapper's
    padding do.
+
+   Width alone does not identify a laptop: a phone in landscape clears 900px
+   and would take the sidebar, thumbs and all. `pointer: fine` asks what the
+   primary input actually is — a mouse or trackpad, not a finger — so the rail
+   is reserved for real pointer devices. This is deliberately not user-agent
+   sniffing: UA strings are spoofable, increasingly frozen by browsers, and
+   say nothing about a window being resized or a phone being rotated, whereas
+   these queries re-evaluate live. A browser too old to support them simply
+   keeps the mobile layout, which is the safe direction to fail.
 --------------------------------------------------------------------------- */
-@media (min-width: 900px) {
+@media (min-width: 900px) and (pointer: fine) {
   .mobile-full-wrapper {
     max-width: 1180px;
     padding-left: 232px;
@@ -901,7 +912,7 @@ body {
 }
 
 /* The member strip and content share the header's desktop gutter. */
-@media (min-width: 900px) {
+@media (min-width: 900px) and (pointer: fine) {
   .member-story-scroll {
     padding-left: 34px;
     padding-right: 34px;
