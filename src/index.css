@@ -811,6 +811,11 @@ body {
    say nothing about a window being resized or a phone being rotated, whereas
    these queries re-evaluate live. A browser too old to support them simply
    keeps the mobile layout, which is the safe direction to fail.
+
+   Every rule below is scoped to .mobile-full-wrapper. The phone-frame
+   simulator renders the same markup inside a 390px shell that never gets the
+   232px offset, so unscoped rules turned the nav into a sidebar laid straight
+   over the frame's own content.
 --------------------------------------------------------------------------- */
 @media (min-width: 900px) and (pointer: fine) {
   .mobile-full-wrapper {
@@ -821,7 +826,7 @@ body {
     box-shadow: var(--shadow-lg);
   }
 
-  .tab {
+  .mobile-full-wrapper .tab {
     top: 0;
     bottom: 0;
     right: auto;
@@ -836,7 +841,7 @@ body {
     border-right: 1px solid var(--bg-card-border);
   }
 
-  .tbtn {
+  .mobile-full-wrapper .tbtn {
     flex-direction: row;
     justify-content: flex-start;
     gap: 12px;
@@ -845,26 +850,26 @@ body {
     font-size: 13px;
   }
 
-  .tbtn:active {
+  .mobile-full-wrapper .tbtn:active {
     transform: scale(0.98);
   }
 
-  .tbtn.active {
+  .mobile-full-wrapper .tbtn.active {
     background: var(--accent-tint);
   }
 
   /* The glyph lift reads as a wobble once the items are a vertical list. */
-  .tbtn.active .ic {
+  .mobile-full-wrapper .tbtn.active .ic {
     transform: none;
   }
 
-  .ic {
+  .mobile-full-wrapper .ic {
     width: 18px;
     height: 18px;
   }
 
   /* Primary action belongs at the top of a sidebar, not floating mid-list. */
-  .fab {
+  .mobile-full-wrapper .fab {
     order: -1;
     width: 100%;
     height: auto;
@@ -874,35 +879,35 @@ body {
     margin-bottom: 10px;
   }
 
-  .fab span {
+  .mobile-full-wrapper .fab span {
     font: 300 20px Manrope;
     margin-top: 0;
   }
 
-  .fab-label {
+  .mobile-full-wrapper .fab .fab-label {
     display: inline;
-    font: 700 13px Manrope !important;
+    font: 700 13px Manrope;
     color: var(--text-on-accent);
   }
 
-  .fab:active {
+  .mobile-full-wrapper .fab:active {
     transform: scale(0.98);
   }
 
-  .app-content {
+  .mobile-full-wrapper .app-content {
     max-width: 880px;
     width: 100%;
     margin: 0 auto;
     padding: 26px 34px 40px 34px;
   }
 
-  .header-bar {
+  .mobile-full-wrapper .header-bar {
     padding: 22px 34px 14px 34px;
   }
 
   /* Written for a 390px frame, so it hides itself unconditionally; there is
      room for it once the header spans a desktop width. */
-  .header-subtitle {
+  .mobile-full-wrapper .header-subtitle {
     display: inline;
   }
 
@@ -913,7 +918,7 @@ body {
 
 /* The member strip and content share the header's desktop gutter. */
 @media (min-width: 900px) and (pointer: fine) {
-  .member-story-scroll {
+  .mobile-full-wrapper .member-story-scroll {
     padding-left: 34px;
     padding-right: 34px;
   }
