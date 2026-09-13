@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Edit2, Check, Calendar, ArrowRightLeft } from 'lucide-react';
-import { formatRupees, getBudgetMonths, getPreviousMonthKey, limitFor, hasMonthOverride } from '../utils/mockData';
+import { Edit2, Check, Calendar, ArrowRightLeft, Trash2 } from 'lucide-react';
+import {
+  formatRupees, getBudgetMonths, getPreviousMonthKey, limitFor, hasMonthOverride,
+  generateId, CATEGORY_COLORS
+} from '../utils/mockData';
 import Emoji from './Emoji';
 
 export default function BudgetsTab({
@@ -11,16 +14,63 @@ export default function BudgetsTab({
   setSelectedMonth,
   enableRollover = true,
   setEnableRollover,
-  onUpdateCategory
+  onUpdateCategory,
+  onAddCategory,
+  onDeleteCategory
 }) {
   const [editingId, setEditingId] = useState(null);
   const [editLimit, setEditLimit] = useState('');
   const [editName, setEditName] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newLimit, setNewLimit] = useState('');
+  const [newColor, setNewColor] = useState(CATEGORY_COLORS[0]);
 
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
 
   const editingMonth = selectedMonth !== 'all';
+
+  const handleCreateCategory = (e) => {
+    e.preventDefault();
+    const name = newName.trim();
+    if (!name || typeof onAddCategory !== 'function') return;
+
+    const amount = parseFloat(newLimit);
+    const limit = !isNaN(amount) && amount >= 0 ? amount : 0;
+
+    // A generated id rather than one derived from the name: transactions
+    // reference categories by id, so two categories that normalise to the same
+    // slug would collide and silently merge each other's spending.
+    onAddCategory({
+      id: generateId('cat'),
+      name,
+      color: newColor,
+      limit,
+      // Entered while a month is in view, the amount is that month's budget —
+      // matching what editing an existing category does here.
+      ...(editingMonth && limit > 0 ? { limits: { [selectedMonth]: limit } } : {})
+    });
+
+    setNewName('');
+    setNewLimit('');
+    setNewColor(CATEGORY_COLORS[0]);
+    setShowAdd(false);
+  };
+
+  const handleRemoveCategory = (cat) => {
+    const spent = safeTxs
+      .filter((t) => t.category === cat.id && t.type === 'expense')
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    const warning = spent > 0
+      ? `Remove "${cat.name}"? Its ${formatRupees(spent)} of past expenses stay in your history, but they will no longer show a category name.`
+      : `Remove "${cat.name}"?`;
+
+    if (window.confirm(warning) && typeof onDeleteCategory === 'function') {
+      onDeleteCategory(cat.id);
+    }
+  };
 
   const handleStartEdit = (cat) => {
     setEditingId(cat.id);
@@ -123,16 +173,90 @@ export default function BudgetsTab({
 
       {/* Category List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div>
-          <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>
-            Full Category Breakdown ({monthDisplayLabel})
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>
+              Full Category Breakdown ({monthDisplayLabel})
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>
+              {editingMonth
+                ? `Edits apply to ${monthDisplayLabel} only — pick an earlier month above to fill one in.`
+                : 'Editing here changes the default budget used by every month.'}
+            </div>
           </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>
-            {editingMonth
-              ? `Edits apply to ${monthDisplayLabel} only — pick an earlier month above to fill one in.`
-              : 'Editing here changes the default budget used by every month.'}
-          </div>
+          <button
+            onClick={() => setShowAdd(!showAdd)}
+            aria-expanded={showAdd}
+            style={{
+              background: showAdd ? 'transparent' : 'var(--positive-tint)',
+              border: `1px solid ${showAdd ? 'var(--bg-card-border)' : 'var(--positive-border)'}`,
+              color: showAdd ? 'var(--text-muted)' : 'var(--positive-strong)',
+              padding: '5px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700',
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0
+            }}
+          >
+            {showAdd ? 'Close' : '+ Add category'}
+          </button>
         </div>
+
+        {showAdd && (
+          <form onSubmit={handleCreateCategory} className="glass-card" style={{ background: 'var(--hairline)' }}>
+            <h4 style={{ fontSize: '0.88rem', fontWeight: '700', marginBottom: '10px' }}>New budget category</h4>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="new-cat-name">Category name</label>
+              <input
+                id="new-cat-name"
+                type="text"
+                className="form-input"
+                placeholder="e.g. Gym & Fitness"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                autoFocus
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="new-cat-limit">
+                {editingMonth ? `Budget for ${monthDisplayLabel} (₹)` : 'Monthly budget (₹)'}
+              </label>
+              <input
+                id="new-cat-limit"
+                type="number"
+                min="0"
+                className="form-input"
+                placeholder="0 — you can set this later"
+                value={newLimit}
+                onChange={(e) => setNewLimit(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Colour</label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', padding: '2px 0' }}>
+                {CATEGORY_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setNewColor(c)}
+                    aria-label={`Use colour ${c}`}
+                    aria-pressed={newColor === c}
+                    style={{
+                      width: '28px', height: '28px', borderRadius: '8px', background: c, cursor: 'pointer',
+                      border: newColor === c ? '2px solid var(--text-main)' : '2px solid transparent',
+                      outline: newColor === c ? '2px solid var(--bg-card)' : 'none', outlineOffset: '-4px'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <button type="submit" className="btn-primary" style={{ padding: '10px', fontSize: '0.88rem', marginTop: '4px' }}>
+              Add category
+            </button>
+          </form>
+        )}
 
         {safeCategories.map((cat) => {
           const spent = safeTxs
@@ -242,13 +366,36 @@ export default function BudgetsTab({
                           ? <><Emoji size="0.85em">⚡</Emoji> Approaching limit</>
                           : `${100 - pct}% remaining`}
                 </span>
-                <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
-                  {hasLimit ? `${pct}% Used` : '—'}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>
+                    {hasLimit ? `${pct}% Used` : '—'}
+                  </span>
+                  {/* Only while the add form is open: removing a category is
+                      rare next to editing one, and a delete icon on every card
+                      invites the mis-tap it cannot undo. */}
+                  {showAdd && (
+                    <button
+                      onClick={() => handleRemoveCategory(cat)}
+                      title={`Remove ${cat.name}`}
+                      aria-label={`Remove ${cat.name}`}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', display: 'flex', borderRadius: '6px' }}
+                    >
+                      <Trash2 size={13} color="var(--danger)" opacity={0.6} />
+                    </button>
+                  )}
                 </span>
               </div>
             </div>
           );
         })}
+
+        {safeCategories.length === 0 && (
+          <div className="glass-card" style={{ textAlign: 'center', padding: '28px 16px', color: 'var(--text-dim)' }}>
+            <p style={{ marginBottom: '6px' }}><Emoji size="1.6rem">🗂️</Emoji></p>
+            <p style={{ font: '700 13px Manrope', color: 'var(--text-muted)' }}>No categories yet</p>
+            <p style={{ font: '600 11.5px Manrope', marginTop: '2px' }}>Add one above to start budgeting.</p>
+          </div>
+        )}
       </div>
 
     </div>
