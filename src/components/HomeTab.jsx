@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatRupees, getPreviousMonthKey, limitFor } from '../utils/mockData';
+import { formatRupees, getPreviousMonthKey, limitFor, resolveTxCategory } from '../utils/mockData';
 import Emoji from './Emoji';
 
 const greetingFor = (name) => {
@@ -250,8 +250,11 @@ export default function HomeTab({
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {recentTxs.map((tx) => {
-                const catObj = safeCategories.find(c => c.id === tx.category) || { name: tx.category };
-                const bg = categoryColors[tx.category] || 'var(--accent)';
+                // Income resolves to its source name here too, not a raw id.
+                const catObj = resolveTxCategory(tx, safeCategories);
+                // categoryColors only maps the seeded expense ids, so an income
+                // source (or an added category) falls through to its own colour.
+                const bg = categoryColors[tx.category] || catObj.color || 'var(--accent)';
 
                 return (
                   <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '13px 0', borderBottom: '1px solid var(--divider)' }}>

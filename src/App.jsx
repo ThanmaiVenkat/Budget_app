@@ -56,6 +56,8 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [activeDirection, setActiveDirection] = useState('2b');
   const [showAddModal, setShowAddModal] = useState(false);
+  // The transaction the sheet is editing, or null when it is adding one.
+  const [editingTx, setEditingTx] = useState(null);
   const [showExcelModal, setShowExcelModal] = useState(false);
   // Desktop opens in the real layout; the phone frame stays available behind
   // the toggle for previewing the mobile design.
@@ -84,6 +86,13 @@ export default function App() {
   // (the same reducer logic as before) and writes it; the snapshot listener
   // then repaints the UI. Handlers are redefined each render, so they always
   // close over the latest data.
+  const handleUpdateTransaction = (updatedTx) => {
+    app.updateData({
+      transactions: transactions.map((t) => (t.id === updatedTx.id ? updatedTx : t))
+    });
+    setEditingTx(null);
+  };
+
   const handleAddTransaction = (newTx) => {
     app.updateData({ transactions: [newTx, ...transactions] });
     if (newTx.type === 'income') {
@@ -259,6 +268,7 @@ export default function App() {
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}
               onDeleteTx={handleDeleteTransaction}
+              onEditTx={setEditingTx}
               onOpenAddModal={() => setShowAddModal(true)}
             />
           )}
@@ -368,12 +378,17 @@ export default function App() {
 
         <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} onOpenAddModal={() => setShowAddModal(true)} />
 
-        {showAddModal && (
+        {(showAddModal || editingTx) && (
           <AddExpenseSheet
+            // Remounts between records, so the form re-seeds from whichever
+            // transaction is being edited rather than keeping the last one's
+            // values in state.
+            key={editingTx ? editingTx.id : 'new'}
             categories={categories}
             members={members}
-            onClose={() => setShowAddModal(false)}
-            onSave={handleAddTransaction}
+            editingTx={editingTx}
+            onClose={() => { setShowAddModal(false); setEditingTx(null); }}
+            onSave={editingTx ? handleUpdateTransaction : handleAddTransaction}
           />
         )}
 

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { generateId } from '../utils/mockData';
+import { generateId, INCOME_SOURCES } from '../utils/mockData';
 import Emoji from './Emoji';
 
-export default function AddExpenseSheet({ categories, members, onClose, onSave }) {
+export default function AddExpenseSheet({ categories, members, onClose, onSave, editingTx = null }) {
+  const isEditing = Boolean(editingTx);
   const realMembers = members.filter(m => m.id !== 'all');
   const earners = realMembers.filter(m => m.isEarner);
   // Only when exactly one member is flagged as the earner is there an
@@ -12,14 +13,22 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
   const singleEarner = earners.length === 1 ? earners[0] : null;
   const defaultSpenderId = (realMembers.find(m => !m.isEarner) || realMembers[0])?.id || '';
 
-  const [type, setType] = useState('expense');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState(categories[0]?.id || '');
-  const [memberId, setMemberId] = useState(defaultSpenderId);
-  const [title, setTitle] = useState('');
-  const [showMore, setShowMore] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('UPI');
-  const [notes, setNotes] = useState('');
+  // Editing starts from the record as saved; adding starts from the defaults.
+  const [type, setType] = useState(editingTx?.type || 'expense');
+  const [amount, setAmount] = useState(editingTx ? String(editingTx.amount ?? '') : '');
+  const [category, setCategory] = useState(
+    editingTx?.type === 'expense' ? (editingTx.category || categories[0]?.id || '') : (categories[0]?.id || '')
+  );
+  const [incomeSource, setIncomeSource] = useState(
+    editingTx?.type === 'income' && INCOME_SOURCES.some((s) => s.id === editingTx.category)
+      ? editingTx.category
+      : INCOME_SOURCES[0].id
+  );
+  const [memberId, setMemberId] = useState(editingTx?.memberId || defaultSpenderId);
+  const [title, setTitle] = useState(editingTx?.title || '');
+  const [showMore, setShowMore] = useState(Boolean(editingTx?.notes));
+  const [paymentMethod, setPaymentMethod] = useState(editingTx?.paymentMethod || 'UPI');
+  const [notes, setNotes] = useState(editingTx?.notes || '');
   const [amountError, setAmountError] = useState('');
 
   const handleTypeChange = (newType) => {
@@ -31,7 +40,6 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
     }
   };
 
-  const selectedMember = members.find(m => m.id === memberId);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,17 +51,21 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
     setAmountError('');
 
     const catObj = categories.find(c => c.id === category);
-    const firstName = (selectedMember?.name || 'Household').split(' ')[0];
-    const defaultTitle = type === 'income' ? `${firstName} Income` : (catObj ? catObj.name : 'Expense');
+    const sourceObj = INCOME_SOURCES.find(s => s.id === incomeSource);
+    const defaultTitle = type === 'income'
+      ? (sourceObj ? sourceObj.name : 'Income')
+      : (catObj ? catObj.name : 'Expense');
 
     onSave({
-      id: generateId('tx'),
+      // Editing keeps the record's identity and its original date; only what
+      // the form covers is replaced.
+      id: editingTx?.id || generateId('tx'),
+      date: editingTx?.date || new Date().toISOString().split('T')[0],
       type,
       title: title.trim() || defaultTitle,
       amount: parsedAmount,
-      category: type === 'income' ? 'income' : category,
+      category: type === 'income' ? incomeSource : category,
       memberId,
-      date: new Date().toISOString().split('T')[0],
       paymentMethod,
       notes
     });
@@ -182,6 +194,40 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
             )}
           </div>
 
+          {/* FIELD 3a: INCOME SOURCE. Income used to be filed under one
+              undifferentiated 'income' bucket, so a salary and a rent receipt
+              were indistinguishable once saved. */}
+          {type === 'income' && (
+            <div className="form-group" style={{ marginBottom: '4px' }}>
+              <label className="form-label" style={{ fontSize: '0.72rem' }}>3. INCOME SOURCE</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                {INCOME_SOURCES.map((s) => {
+                  const isSelected = incomeSource === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setIncomeSource(s.id)}
+                      aria-pressed={isSelected}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                        padding: '10px 6px', borderRadius: '12px',
+                        background: isSelected ? 'var(--positive-tint)' : 'var(--hairline)',
+                        border: `1px solid ${isSelected ? 'var(--positive)' : 'var(--bg-card-border)'}`,
+                        color: isSelected ? 'var(--positive-strong)' : 'var(--text-muted)',
+                        cursor: 'pointer', fontSize: '0.75rem',
+                        fontWeight: isSelected ? '700' : '500'
+                      }}
+                    >
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                      {s.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* FIELD 3: CATEGORY GRID (FOR EXPENSES) */}
           {type === 'expense' && (
             <div className="form-group" style={{ marginBottom: '4px' }}>
@@ -265,7 +311,9 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave }
           )}
 
           <button type="submit" className="btn-primary" style={{ marginTop: '6px' }}>
-            {type === 'income' ? 'Log Income (₹)' : 'Add Expense Entry (₹)'}
+            {isEditing
+              ? 'Save changes (₹)'
+              : type === 'income' ? 'Log Income (₹)' : 'Add Expense Entry (₹)'}
           </button>
         </form>
       </div>
