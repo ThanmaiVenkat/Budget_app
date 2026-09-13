@@ -27,6 +27,29 @@ export const CATEGORY_COLORS = [
   '#3F7C82', '#6B6A9E', '#A8412A', '#C2661F'
 ];
 
+// Where income comes from. Ids are prefixed so they can live in a
+// transaction's `category` field — the same field expenses use — without ever
+// colliding with a budget category id, seeded or user-created.
+export const INCOME_SOURCES = [
+  { id: 'income-salary', name: 'Salary', color: '#4F7A5C' },
+  { id: 'income-rent', name: 'Rent Received', color: '#4A6B8A' },
+  { id: 'income-interest', name: 'Interest & Returns', color: '#B07C2A' },
+  { id: 'income-other', name: 'Other Income', color: '#6B6A9E' }
+];
+
+// The display name and colour for whatever a transaction is filed under,
+// whichever side of the ledger it sits on. Income used to be written as the
+// bare string 'income', so that still resolves rather than showing the raw id.
+export const resolveTxCategory = (tx, categories = []) => {
+  if (!tx) return { name: 'Expense', color: 'var(--text-muted)' };
+  if (tx.type === 'income') {
+    return INCOME_SOURCES.find((s) => s.id === tx.category)
+      || { name: 'Income', color: '#4F7A5C' };
+  }
+  return (categories || []).find((c) => c.id === tx.category)
+    || { name: tx.category || 'Expense', color: 'var(--text-muted)' };
+};
+
 // The picker shows the label; `value` is what actually gets stored on the
 // member record and rendered everywhere else in the app (member badges,
 // the family bar, etc.), so nothing downstream of the picker needs to

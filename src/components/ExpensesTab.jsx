@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Trash2, Plus, Check, X } from 'lucide-react';
-import { formatRupees, getAvailableMonths } from '../utils/mockData';
+import { Search, Trash2, Plus, Check, X, Pencil } from 'lucide-react';
+import { formatRupees, getAvailableMonths, resolveTxCategory, INCOME_SOURCES } from '../utils/mockData';
 import Emoji from './Emoji';
 
 export default function ExpensesTab({
@@ -11,6 +11,7 @@ export default function ExpensesTab({
   selectedMonth = '2026-07',
   setSelectedMonth,
   onDeleteTx,
+  onEditTx,
   onOpenAddModal
 }) {
   const [search, setSearch] = useState('');
@@ -92,6 +93,12 @@ export default function ExpensesTab({
           {safeCategories.map(c => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
+          {/* Income is filed by source now, so those are filterable too. */}
+          <optgroup label="Income">
+            {INCOME_SOURCES.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </optgroup>
         </select>
 
         <select
@@ -124,7 +131,9 @@ export default function ExpensesTab({
           </div>
         ) : (
           filtered.map(tx => {
-            const catObj = safeCategories.find(c => c.id === tx.category) || { name: tx.category || 'Expense', color: 'var(--text-muted)' };
+            // Resolves income sources as well as expense categories, so an
+            // income row shows "Salary" rather than its raw id.
+            const catObj = resolveTxCategory(tx, safeCategories);
             const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family' };
 
             return (
@@ -178,6 +187,14 @@ export default function ExpensesTab({
                       <span style={{ fontSize: '0.88rem', fontWeight: '700', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
                         {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
                       </span>
+                      <button
+                        onClick={() => onEditTx && onEditTx(tx)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
+                        title="Edit item"
+                        aria-label={`Edit ${tx.title || 'expense'}`}
+                      >
+                        <Pencil size={14} />
+                      </button>
                       <button
                         onClick={() => setConfirmDeleteId(tx.id)}
                         style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
