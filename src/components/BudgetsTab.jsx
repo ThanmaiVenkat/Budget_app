@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Edit2, Check, Calendar, ArrowRightLeft } from 'lucide-react';
-import { formatRupees, getAvailableMonths, getPreviousMonthKey } from '../utils/mockData';
+import { formatRupees, getBudgetMonths, getPreviousMonthKey, limitFor, hasMonthOverride } from '../utils/mockData';
 import Emoji from './Emoji';
 
 export default function BudgetsTab({
@@ -20,16 +20,25 @@ export default function BudgetsTab({
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
 
+  const editingMonth = selectedMonth !== 'all';
+
   const handleStartEdit = (cat) => {
     setEditingId(cat.id);
-    setEditLimit(cat.limit);
+    setEditLimit(limitFor(cat, selectedMonth));
     setEditName(cat.name || '');
   };
 
   const handleSaveEdit = (catId) => {
     const updates = {};
     const val = parseFloat(editLimit);
-    if (!isNaN(val) && val >= 0) updates.limit = val;
+    if (!isNaN(val) && val >= 0) {
+      // With a month in view the edit belongs to that month alone, which is
+      // what makes filling in a month you missed possible without disturbing
+      // the others. On "All Time" there is no month to attach it to, so it
+      // moves the standing default instead.
+      if (editingMonth) updates.limits = { [selectedMonth]: val };
+      else updates.limit = val;
+    }
     // An emptied name keeps the old one rather than saving a blank label —
     // the id is what transactions reference, so renaming never orphans them.
     const name = editName.trim();
@@ -44,7 +53,7 @@ export default function BudgetsTab({
     ? 'All Months'
     : new Date(selectedMonth + '-01').toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  const availableMonths = getAvailableMonths(safeTxs);
+  const availableMonths = getBudgetMonths(safeTxs, safeCategories);
 
   // Rollover calculation from the month before the selected one
   const lastMonthKey = selectedMonth === 'all' ? null : getPreviousMonthKey(selectedMonth);
@@ -114,8 +123,15 @@ export default function BudgetsTab({
 
       {/* Category List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>
-          Full Category Breakdown ({monthDisplayLabel})
+        <div>
+          <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>
+            Full Category Breakdown ({monthDisplayLabel})
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>
+            {editingMonth
+              ? `Edits apply to ${monthDisplayLabel} only — pick an earlier month above to fill one in.`
+              : 'Editing here changes the default budget used by every month.'}
+          </div>
         </div>
 
         {safeCategories.map((cat) => {
@@ -123,11 +139,13 @@ export default function BudgetsTab({
             .filter(t => t.category === cat.id && t.type === 'expense' && (activeMemberId === 'all' || t.memberId === activeMemberId) && (selectedMonth === 'all' || (t.date && t.date.startsWith(selectedMonth))))
             .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-          const hasLimit = cat.limit > 0;
-          const pct = hasLimit ? Math.min(100, Math.round((spent / cat.limit) * 100)) : 0;
+          const monthLimit = limitFor(cat, selectedMonth);
+          const isOwnBudget = hasMonthOverride(cat, selectedMonth);
+          const hasLimit = monthLimit > 0;
+          const pct = hasLimit ? Math.min(100, Math.round((spent / monthLimit) * 100)) : 0;
           // No limit set is not the same as a limit of zero — without this
           // every unbudgeted category with any spending reads "Over budget!".
-          const isOver = hasLimit && spent > cat.limit;
+          const isOver = hasLimit && spent > monthLimit;
           const isNear = hasLimit && pct >= 80 && !isOver;
           const hasSpending = spent > 0;
 
@@ -179,14 +197,24 @@ export default function BudgetsTab({
                       </button>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '0.9rem', fontWeight: '800' }}>{formatRupees(cat.limit || 0)}</span>
-                      <button
-                        onClick={() => handleStartEdit(cat)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}
-                      >
-                        <Edit2 size={13} />
-                      </button>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: '800' }}>{formatRupees(monthLimit)}</span>
+                        <button
+                          onClick={() => handleStartEdit(cat)}
+                          aria-label={`Edit ${cat.name || 'category'} budget`}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px' }}
+                        >
+                          <Edit2 size={13} />
+                        </button>
+                      </div>
+                      {/* Without this you cannot tell a budget actually set for
+                          this month from one merely inherited from the default. */}
+                      {editingMonth && (
+                        <span style={{ fontSize: '0.62rem', color: isOwnBudget ? 'var(--accent-strong)' : 'var(--text-dim)', fontWeight: '700', letterSpacing: '.02em' }}>
+                          {isOwnBudget ? 'THIS MONTH' : 'DEFAULT'}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>

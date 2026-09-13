@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download, FileSpreadsheet, Layers, PiggyBank } from 'lucide-react';
 import { exportTransactionsToCSV } from '../utils/storage';
-import { getAvailableMonths } from '../utils/mockData';
+import { getBudgetMonths } from '../utils/mockData';
 import TallyMark from './TallyMark';
 
 export default function HeaderBar({
@@ -21,7 +21,11 @@ export default function HeaderBar({
     exportTransactionsToCSV(transactions || [], members || [], categories || []);
   };
 
-  const availableMonths = getAvailableMonths(transactions);
+  // Same month set the Budgets picker offers. Both write the one
+  // selectedMonth, so listing only months with transactions here left the
+  // header unable to represent a past month chosen for a budget — and
+  // touching it would have snapped the user back off that month.
+  const availableMonths = getBudgetMonths(transactions, categories);
 
   const toggleDirection = () => {
     if (typeof setActiveDirection === 'function') {
