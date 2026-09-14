@@ -154,9 +154,67 @@ export const limitFor = (category, monthKey) => {
 export const hasMonthOverride = (category, monthKey) =>
   Boolean(monthKey && monthKey !== 'all' && category?.limits?.[monthKey] !== undefined);
 
+// Whole days from today until an ISO (YYYY-MM-DD) date: negative if it has
+// passed, 0 for today. Null when there is no real date to count from.
+//
+// Both ends are built at local midnight from the date's own parts. `new
+// Date('2026-09-17')` would instead parse as UTC midnight, leaving the two
+// ends offset by the timezone rather than a whole number of days — survivable
+// here only because the result is rounded, which is a thin thing to rely on.
+//
+// The rounding is load-bearing for a different reason: across a DST change the
+// two local midnights are 23 or 25 hours apart, so flooring drops a day.
+// Measured in America/Los_Angeles, 2026-03-07 to 2026-03-09 floors to 1 and
+// rounds to 2.
+export const daysUntil = (isoDate) => {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const due = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((due - today) / 86400000);
+};
+
+// Today as YYYY-MM-DD in the user's own timezone. toISOString() would convert
+// to UTC first and hand back yesterday's date for anyone behind it.
+export const todayISO = () => {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+// Shifts an ISO date by whole days, staying on local midnight so month and
+// year roll over correctly.
+export const addDaysISO = (isoDate, days) => {
+  const [y, m, d] = (isoDate || todayISO()).split('-').map(Number);
+  const next = new Date(y, m - 1, d + days);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}`;
+};
+
+// A bill's live days-until, or null for one saved before due dates were real
+// dates. Those carry a frozen number and the literal string "In 5 days", which
+// never counted down — they need a date set rather than a number believed.
+export const billDaysUntil = (bill) => daysUntil(bill?.dueDate);
+
+const DANGER = { bg: 'var(--danger-tint)', border: 'var(--danger-border)', color: 'var(--danger)' };
+const WARN = { bg: 'var(--accent-tint)', border: 'var(--accent-border)', color: 'var(--accent-strong)' };
+const CALM = { bg: 'var(--positive-tint)', border: 'var(--positive-border)', color: 'var(--positive)' };
+const MUTED = { bg: 'var(--bg-card-hover)', border: 'var(--bg-card-border)', color: 'var(--text-muted)' };
+
 export const getBillBadgeStatus = (daysUntilDue, paid) => {
-  if (paid) return { text: 'Paid', bg: 'var(--positive-tint)', border: 'var(--positive-border)', color: 'var(--positive)' };
-  if (daysUntilDue < 3) return { text: `Due in ${daysUntilDue}d (Urgent)`, bg: 'var(--danger-tint)', border: 'var(--danger-border)', color: 'var(--danger)' };
-  if (daysUntilDue <= 7) return { text: `Due in ${daysUntilDue}d`, bg: 'var(--accent-tint)', border: 'var(--accent-border)', color: 'var(--accent-strong)' };
-  return { text: `Due in ${daysUntilDue}d`, bg: 'var(--positive-tint)', border: 'var(--positive-border)', color: 'var(--positive)' };
+  if (paid) return { text: 'Paid', ...CALM };
+  // No real date to count from — a bill saved before due dates were dates.
+  // Saying "Due in 5d" for it would be inventing a deadline.
+  if (daysUntilDue === null || daysUntilDue === undefined) return { text: 'Set a due date', ...MUTED };
+  // Overdue used to fall through the `< 3` branch and render "Due in -2d".
+  if (daysUntilDue < 0) {
+    const late = Math.abs(daysUntilDue);
+    return { text: `Overdue by ${late}d`, ...DANGER };
+  }
+  if (daysUntilDue === 0) return { text: 'Due today', ...DANGER };
+  if (daysUntilDue === 1) return { text: 'Due tomorrow', ...DANGER };
+  if (daysUntilDue < 3) return { text: `Due in ${daysUntilDue}d (Urgent)`, ...DANGER };
+  if (daysUntilDue <= 7) return { text: `Due in ${daysUntilDue}d`, ...WARN };
+  return { text: `Due in ${daysUntilDue}d`, ...CALM };
 };

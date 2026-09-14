@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatRupees, getPreviousMonthKey, limitFor, resolveTxCategory } from '../utils/mockData';
+import { formatRupees, getPreviousMonthKey, limitFor, resolveTxCategory, billDaysUntil } from '../utils/mockData';
 import Emoji from './Emoji';
 
 const greetingFor = (name) => {
@@ -88,7 +88,15 @@ export default function HomeTab({
   };
 
   const recentTxs = [...filteredTxs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
-  const upcomingBills = safeBills.filter(b => !b.paid && (b.daysUntilDue || 0) <= 7);
+  // Days are computed from the due date, not read from a stored number that
+  // never changed. `|| 0` also used to sweep in every bill with no due info
+  // at all, since 0 <= 7. Overdue bills count as due — they are the ones
+  // that most need surfacing.
+  const upcomingBills = safeBills.filter((b) => {
+    if (b.paid) return false;
+    const days = billDaysUntil(b);
+    return days !== null && days <= 7;
+  });
 
   // =========================================================================
   // DIRECTION 2c: PLAYFUL DARK (VIVID CATEGORY TILES)

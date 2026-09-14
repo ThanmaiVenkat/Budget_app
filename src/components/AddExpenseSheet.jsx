@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { generateId, INCOME_SOURCES } from '../utils/mockData';
+import { generateId, INCOME_SOURCES, todayISO } from '../utils/mockData';
 import Emoji from './Emoji';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave, editingTx = null }) {
@@ -24,6 +24,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
       ? editingTx.category
       : INCOME_SOURCES[0].id
   );
+  const [date, setDate] = useState(editingTx?.date || todayISO());
   const [memberId, setMemberId] = useState(editingTx?.memberId || defaultSpenderId);
   const [title, setTitle] = useState(editingTx?.title || '');
   const [showMore, setShowMore] = useState(Boolean(editingTx?.notes));
@@ -57,10 +58,10 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
       : (catObj ? catObj.name : 'Expense');
 
     onSave({
-      // Editing keeps the record's identity and its original date; only what
-      // the form covers is replaced.
+      // Editing keeps the record's identity; the date is now the form's, so a
+      // wrong one can be corrected and an entry can be logged for a past day.
       id: editingTx?.id || generateId('tx'),
-      date: editingTx?.date || new Date().toISOString().split('T')[0],
+      date: date || todayISO(),
       type,
       title: title.trim() || defaultTitle,
       amount: parsedAmount,
@@ -266,6 +267,24 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
               </div>
             </div>
           )}
+
+          {/* FIELD 4: DATE. Defaults to today, so the common case is still one
+              tap, but a forgotten entry can be logged against the day it
+              actually happened rather than the day it was typed. */}
+          <div className="form-group" style={{ marginBottom: '4px' }}>
+            <label className="form-label" htmlFor="tx-date" style={{ fontSize: '0.72rem' }}>
+              {type === 'income' ? '4. DATE RECEIVED' : '4. DATE'}
+            </label>
+            <input
+              id="tx-date"
+              type="date"
+              className="form-input"
+              value={date}
+              max={todayISO()}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+          </div>
 
           {/* OPTIONAL EXPANDABLE DETAILS */}
           {!showMore ? (
