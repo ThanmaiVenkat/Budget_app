@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Circle, Calculator, Users, Pencil, Trash2 } from 'lucide-react';
-import { formatRupees, getBillBadgeStatus, generateId } from '../utils/mockData';
+import { formatRupees, getBillBadgeStatus, generateId, billDaysUntil, todayISO, addDaysISO } from '../utils/mockData';
 import Emoji from './Emoji';
 
 export default function BillRemindersTab({ bills, members, onToggleBillPaid, onAddBill, onUpdateBill, onDeleteBill }) {
@@ -8,7 +8,8 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
   const [editingBillId, setEditingBillId] = useState(null);
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
-  const [daysUntilDue, setDaysUntilDue] = useState('5');
+  // A real calendar date, not a frozen "days from now" count.
+  const [dueDate, setDueDate] = useState(() => addDaysISO(todayISO(), 5));
   const realMembers = members.filter(m => m.id !== 'all');
   const [payer, setPayer] = useState(realMembers[0]?.id || '');
 
@@ -19,7 +20,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
   const resetForm = () => {
     setTitle('');
     setAmount('');
-    setDaysUntilDue('5');
+    setDueDate(addDaysISO(todayISO(), 5));
     setPayer(realMembers[0]?.id || '');
     setEditingBillId(null);
     setShowAdd(false);
@@ -29,7 +30,8 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
     setEditingBillId(bill.id);
     setTitle(bill.title);
     setAmount(String(bill.amount));
-    setDaysUntilDue(String(bill.daysUntilDue ?? 5));
+    // Legacy bills have no real date; start them at today so saving fixes them.
+    setDueDate(/^\d{4}-\d{2}-\d{2}$/.test(bill.dueDate || '') ? bill.dueDate : todayISO());
     setPayer(bill.payer);
     setShowAdd(true);
   };
@@ -44,15 +46,16 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
     e.preventDefault();
     if (!title || !amount) return;
 
-    const days = parseInt(daysUntilDue) || 5;
+    if (!dueDate) return;
 
+    // daysUntilDue is deliberately not stored any more: a saved number goes
+    // stale the moment the day turns. It is derived from dueDate on render.
     if (editingBillId) {
       if (onUpdateBill) {
         onUpdateBill(editingBillId, {
           title,
           amount: parseFloat(amount),
-          daysUntilDue: days,
-          dueDate: `In ${days} days`,
+          dueDate,
           payer
         });
       }
@@ -61,8 +64,7 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
         id: generateId('b'),
         title,
         amount: parseFloat(amount),
-        daysUntilDue: days,
-        dueDate: `In ${days} days`,
+        dueDate,
         paid: false,
         payer
       });
@@ -106,8 +108,8 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
                 <input type="number" step="0.01" className="form-input" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} required />
               </div>
               <div className="form-group">
-                <label className="form-label">Due in (Days)</label>
-                <input type="number" className="form-input" placeholder="e.g. 5" value={daysUntilDue} onChange={(e) => setDaysUntilDue(e.target.value)} />
+                <label className="form-label">Due date</label>
+                <input type="date" className="form-input" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
               </div>
             </div>
 
@@ -154,7 +156,9 @@ export default function BillRemindersTab({ bills, members, onToggleBillPaid, onA
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {bills.map((b) => {
             const memberObj = members.find(m => m.id === b.payer) || { avatar: '👤', name: 'Family' };
-            const badge = getBillBadgeStatus(b.daysUntilDue, b.paid);
+            // Computed from the stored date every render, so it counts down as
+            // days pass instead of showing whatever was typed at creation.
+            const badge = getBillBadgeStatus(billDaysUntil(b), b.paid);
 
             return (
               <div
