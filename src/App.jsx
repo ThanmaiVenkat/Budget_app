@@ -19,7 +19,7 @@ import DataAccessError from './components/DataAccessError';
 import FirebaseNotConfigured from './components/FirebaseNotConfigured';
 import ThemeToggle from './components/ThemeToggle';
 import SkeletonScreen, { SkeletonList } from './components/SkeletonLoader';
-import { myMember, canEditTx } from './utils/mockData';
+import { myMember, canEditTx, isHouseholdOwner } from './utils/mockData';
 import { firebaseConfigured } from './firebase';
 import { useAppData } from './hooks/useAppData';
 import { useTheme } from './hooks/useTheme';
@@ -96,7 +96,7 @@ export default function App() {
   // left open when a profile changes hands must not still write.
   const handleUpdateTransaction = (updatedTx) => {
     const existing = transactions.find((t) => t.id === updatedTx.id);
-    if (!canEditTx(existing, members, app.authUser?.uid)) {
+    if (!canEditTx(existing, members, app.authUser?.uid, app.household?.ownerUid)) {
       setEditingTx(null);
       return;
     }
@@ -126,7 +126,7 @@ export default function App() {
 
   const handleDeleteTransaction = (txId) => {
     const existing = transactions.find((t) => t.id === txId);
-    if (!canEditTx(existing, members, app.authUser?.uid)) return;
+    if (!canEditTx(existing, members, app.authUser?.uid, app.household?.ownerUid)) return;
     app.updateData({ transactions: transactions.filter((t) => t.id !== txId) });
   };
 
@@ -205,10 +205,12 @@ export default function App() {
 
   const handleDeleteMember = (memberId) => {
     if (memberId === 'all') return;
-    // A profile someone else signed in as is not yours to remove; unclaimed
-    // ones (a child with no account) stay removable by anybody.
+    // A profile someone else signed in as is not yours to remove — unless you
+    // created the household, or nobody could ever remove a member who left.
+    // Unclaimed profiles (a child with no account) stay removable by anybody.
     const target = members.find((m) => m.id === memberId);
-    if (target?.ownerUid && target.ownerUid !== app.authUser?.uid) return;
+    const isOwner = isHouseholdOwner(app.authUser?.uid, app.household?.ownerUid);
+    if (!isOwner && target?.ownerUid && target.ownerUid !== app.authUser?.uid) return;
     app.updateData({ members: members.filter((m) => m.id !== memberId) });
     if (activeMemberId === memberId) setActiveMemberId('all');
   };
@@ -332,6 +334,7 @@ export default function App() {
               onEditTx={setEditingTx}
               onUpdateTx={handleUpdateTransaction}
               currentUid={app.authUser?.uid}
+              householdOwnerUid={app.household?.ownerUid}
               onOpenAddModal={() => setShowAddModal(true)}
             />
           )}
@@ -431,6 +434,7 @@ export default function App() {
                 onDeleteMember={handleDeleteMember}
                 onUpdateMember={handleUpdateMember}
                 currentUid={app.authUser?.uid}
+                householdOwnerUid={app.household?.ownerUid}
               />
               <BillRemindersTab
                 bills={bills}

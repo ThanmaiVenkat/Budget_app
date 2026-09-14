@@ -38,17 +38,25 @@ export const myMember = (members = [], uid) =>
 export const unclaimedMembers = (members = []) =>
   (members || []).filter((m) => m.id !== 'all' && !m.ownerUid);
 
-// Who may change a transaction. Ownership is the profile it is filed under, so
-// history logged before this existed becomes editable by whoever claims that
-// profile. createdByUid is the second half: logging an expense on behalf of
-// someone without an account would otherwise produce an entry its own author
-// could not correct.
-export const canEditTx = (tx, members = [], uid) => {
+// Who may change a transaction.
+//
+// Three ways in: you created the household, it is filed under your profile, or
+// you are the one who entered it. The profile rule is what carries history
+// across, since entries were filed under profiles that predate ownership.
+// createdByUid covers logging on behalf of a family member who has no account
+// — without it that entry's own author could not correct it.
+export const canEditTx = (tx, members = [], uid, householdOwnerUid = null) => {
   if (!tx || !uid) return false;
+  // Whoever created the household keeps the run of it, so a wrong entry is
+  // always fixable by somebody.
+  if (householdOwnerUid && uid === householdOwnerUid) return true;
   if (tx.createdByUid && tx.createdByUid === uid) return true;
   const mine = myMember(members, uid);
   return Boolean(mine && tx.memberId === mine.id);
 };
+
+export const isHouseholdOwner = (uid, householdOwnerUid) =>
+  Boolean(uid && householdOwnerUid && uid === householdOwnerUid);
 
 // Where income comes from. Ids are prefixed so they can live in a
 // transaction's `category` field — the same field expenses use — without ever

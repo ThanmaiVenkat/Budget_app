@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Trash2, Plus, Check, X, Pencil, Receipt } from 'lucide-react';
-import { formatRupees, getAvailableMonths, resolveTxCategory, INCOME_SOURCES, canEditTx } from '../utils/mockData';
+import { formatRupees, getAvailableMonths, resolveTxCategory, INCOME_SOURCES, canEditTx, isHouseholdOwner } from '../utils/mockData';
 import Emoji from './Emoji';
 import SwipeableRow from './SwipeableRow';
 import ReceiptModal from './ReceiptModal';
@@ -16,7 +16,8 @@ export default function ExpensesTab({
   onEditTx,
   onUpdateTx,
   onOpenAddModal,
-  currentUid
+  currentUid,
+  householdOwnerUid
 }) {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
@@ -118,6 +119,14 @@ export default function ExpensesTab({
         </select>
       </div>
 
+      {/* Says why this account can touch rows filed under other people —
+          otherwise the owner's wider reach reads as the limit being broken. */}
+      {isHouseholdOwner(currentUid, householdOwnerUid) && (
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', padding: '0 4px' }}>
+          You created this household, so you can edit anyone's entries. Everyone else edits only their own.
+        </div>
+      )}
+
       {/* Summary Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', padding: '0 4px' }}>
         <span>Showing {filtered.length} transactions</span>
@@ -140,7 +149,7 @@ export default function ExpensesTab({
             // income row shows "Salary" rather than its raw id.
             const catObj = resolveTxCategory(tx, safeCategories);
             // Someone else's entry is readable but not touchable.
-            const mayEdit = canEditTx(tx, safeMembers, currentUid);
+            const mayEdit = canEditTx(tx, safeMembers, currentUid, householdOwnerUid);
             const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family' };
 
             return (
@@ -257,7 +266,7 @@ export default function ExpensesTab({
           date={activeReceiptTx.date}
           onClose={() => setActiveReceiptTx(null)}
           onRemoveReceipt={
-            onUpdateTx && canEditTx(activeReceiptTx, safeMembers, currentUid)
+            onUpdateTx && canEditTx(activeReceiptTx, safeMembers, currentUid, householdOwnerUid)
               ? () => {
                   const updated = { ...activeReceiptTx };
                   delete updated.receipt;

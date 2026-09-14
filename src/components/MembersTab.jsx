@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Trash2, Pencil, Check, X } from 'lucide-react';
-import { formatRupees, MEMBER_AVATARS, MEMBER_COLORS } from '../utils/mockData';
+import { formatRupees, MEMBER_AVATARS, MEMBER_COLORS, isHouseholdOwner } from '../utils/mockData';
 import Emoji from './Emoji';
 
-export default function MembersTab({ members = [], transactions = [], onAddMember, onDeleteMember, onUpdateMember, currentUid }) {
+export default function MembersTab({ members = [], transactions = [], onAddMember, onDeleteMember, onUpdateMember, currentUid, householdOwnerUid }) {
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
   const [editAllowance, setEditAllowance] = useState('');
@@ -198,9 +198,12 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
 
           const allowancePct = m.allowance > 0 ? Math.min(100, Math.round((spent / m.allowance) * 100)) : 0;
           const isMe = Boolean(currentUid && m.ownerUid === currentUid);
-          // Claimed by a different account. Unclaimed profiles — a child with
-          // no login of their own — stay managed by the household.
-          const belongsToSomeoneElse = Boolean(m.ownerUid && m.ownerUid !== currentUid);
+          // Claimed by a different account, and so not yours to remove —
+          // unless you created the household, since a member who leaves has to
+          // be removable by somebody. Unclaimed profiles (a child with no login
+          // of their own) stay managed by the household.
+          const iOwnHousehold = isHouseholdOwner(currentUid, householdOwnerUid);
+          const belongsToSomeoneElse = Boolean(m.ownerUid && m.ownerUid !== currentUid) && !iOwnHousehold;
 
           return (
             <div key={m.id} className="glass-card" style={{ padding: '14px 16px' }}>
