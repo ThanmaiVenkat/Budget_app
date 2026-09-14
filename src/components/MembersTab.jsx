@@ -1,9 +1,30 @@
 import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil, Check, X } from 'lucide-react';
 import { formatRupees, MEMBER_AVATARS, MEMBER_COLORS } from '../utils/mockData';
 import Emoji from './Emoji';
 
-export default function MembersTab({ members = [], transactions = [], onAddMember, onDeleteMember }) {
+export default function MembersTab({ members = [], transactions = [], onAddMember, onDeleteMember, onUpdateMember, currentUid }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editAllowance, setEditAllowance] = useState('');
+  const [editAvatar, setEditAvatar] = useState('');
+
+  const startEditProfile = (m) => {
+    setEditingId(m.id);
+    setEditName(m.name || '');
+    setEditAllowance(String(m.allowance || ''));
+    setEditAvatar(m.avatar || '👤');
+  };
+
+  const saveProfile = (memberId) => {
+    const name = editName.trim();
+    const updates = { avatar: editAvatar };
+    if (name) updates.name = name;
+    const limit = parseFloat(editAllowance);
+    updates.allowance = !isNaN(limit) && limit >= 0 ? limit : 0;
+    if (typeof onUpdateMember === 'function') onUpdateMember(memberId, updates);
+    setEditingId(null);
+  };
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('🧒');
@@ -176,6 +197,10 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
             .reduce((sum, t) => sum + (t.amount || 0), 0);
 
           const allowancePct = m.allowance > 0 ? Math.min(100, Math.round((spent / m.allowance) * 100)) : 0;
+          const isMe = Boolean(currentUid && m.ownerUid === currentUid);
+          // Claimed by a different account. Unclaimed profiles — a child with
+          // no login of their own — stay managed by the household.
+          const belongsToSomeoneElse = Boolean(m.ownerUid && m.ownerUid !== currentUid);
 
           return (
             <div key={m.id} className="glass-card" style={{ padding: '14px 16px' }}>
@@ -187,6 +212,7 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <h4 style={{ fontSize: '0.9rem', fontWeight: '700' }}>{m.name}</h4>
+                      {isMe && <span style={{ fontSize: '0.6rem', background: 'var(--positive-tint)', color: 'var(--positive-strong)', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>You</span>}
                       {m.isEarner && <span style={{ fontSize: '0.6rem', background: 'var(--accent-tint)', color: 'var(--accent-strong)', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>Earner</span>}
                     </div>
                     <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{m.role || (m.isEarner ? 'Primary Earner' : 'Spending Member')}</span>
@@ -221,15 +247,72 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                <button
-                  onClick={() => handleDeleteMember(m)}
-                  aria-label={`Remove ${m.name}`}
-                  title="Remove member"
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', fontSize: '0.68rem' }}
-                >
-                  <Trash2 size={12} color="var(--danger)" opacity={0.6} /> Remove
-                </button>
+              {editingId === m.id && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--hairline)' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Your name</label>
+                    <input type="text" className="form-input" value={editName} onChange={(e) => setEditName(e.target.value)} autoFocus />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Monthly limit (₹)</label>
+                    <input type="number" min="0" className="form-input" value={editAllowance} onChange={(e) => setEditAllowance(e.target.value)} placeholder="0" />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Avatar</label>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {MEMBER_AVATARS.map(({ value, label }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setEditAvatar(value)}
+                          aria-pressed={editAvatar === value}
+                          style={{
+                            padding: '6px 12px', borderRadius: '999px', cursor: 'pointer', fontSize: '0.75rem',
+                            background: editAvatar === value ? 'var(--positive-tint)' : 'var(--bg-card-hover)',
+                            border: `2px solid ${editAvatar === value ? 'var(--positive)' : 'transparent'}`,
+                            color: editAvatar === value ? 'var(--positive-strong)' : 'var(--text-muted)',
+                            fontWeight: editAvatar === value ? '700' : '600'
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => saveProfile(m.id)} className="btn-primary" style={{ padding: '9px', fontSize: '0.82rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                      <Check size={14} /> Save profile
+                    </button>
+                    <button onClick={() => setEditingId(null)} style={{ background: 'var(--bg-card-hover)', border: '1px solid var(--bg-card-border)', borderRadius: '12px', padding: '9px 14px', color: 'var(--text-muted)', font: '700 0.82rem Manrope', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <X size={14} /> Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
+                {/* Your own profile is yours to edit; nobody else's is. */}
+                {isMe && editingId !== m.id && (
+                  <button
+                    onClick={() => startEditProfile(m)}
+                    aria-label={`Edit ${m.name}`}
+                    title="Edit my profile"
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: 'var(--accent-strong)', cursor: 'pointer', padding: '2px', fontSize: '0.68rem', fontWeight: '700' }}
+                  >
+                    <Pencil size={12} /> Edit my profile
+                  </button>
+                )}
+                {/* A profile another account signed in as is not yours to delete. */}
+                {!belongsToSomeoneElse && (
+                  <button
+                    onClick={() => handleDeleteMember(m)}
+                    aria-label={`Remove ${m.name}`}
+                    title="Remove member"
+                    style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '2px', fontSize: '0.68rem' }}
+                  >
+                    <Trash2 size={12} color="var(--danger)" opacity={0.6} /> Remove
+                  </button>
+                )}
               </div>
             </div>
           );

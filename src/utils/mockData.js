@@ -27,6 +27,29 @@ export const CATEGORY_COLORS = [
   '#3F7C82', '#6B6A9E', '#A8412A', '#C2661F'
 ];
 
+// The member profile belonging to a signed-in account. Members created before
+// profiles were claimable have no ownerUid and so belong to nobody yet — the
+// claim screen is what attaches one.
+export const myMember = (members = [], uid) =>
+  (uid ? (members || []).find((m) => m.ownerUid === uid) : null) || null;
+
+// Profiles nobody has claimed, offered on the claim screen. The 'all' pseudo
+// member is a filter, not a person.
+export const unclaimedMembers = (members = []) =>
+  (members || []).filter((m) => m.id !== 'all' && !m.ownerUid);
+
+// Who may change a transaction. Ownership is the profile it is filed under, so
+// history logged before this existed becomes editable by whoever claims that
+// profile. createdByUid is the second half: logging an expense on behalf of
+// someone without an account would otherwise produce an entry its own author
+// could not correct.
+export const canEditTx = (tx, members = [], uid) => {
+  if (!tx || !uid) return false;
+  if (tx.createdByUid && tx.createdByUid === uid) return true;
+  const mine = myMember(members, uid);
+  return Boolean(mine && tx.memberId === mine.id);
+};
+
 // Where income comes from. Ids are prefixed so they can live in a
 // transaction's `category` field — the same field expenses use — without ever
 // colliding with a budget category id, seeded or user-created.

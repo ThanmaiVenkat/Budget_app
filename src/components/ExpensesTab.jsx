@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Trash2, Plus, Check, X, Pencil, Receipt } from 'lucide-react';
-import { formatRupees, getAvailableMonths, resolveTxCategory, INCOME_SOURCES } from '../utils/mockData';
+import { formatRupees, getAvailableMonths, resolveTxCategory, INCOME_SOURCES, canEditTx } from '../utils/mockData';
 import Emoji from './Emoji';
 import SwipeableRow from './SwipeableRow';
 import ReceiptModal from './ReceiptModal';
@@ -15,7 +15,8 @@ export default function ExpensesTab({
   onDeleteTx,
   onEditTx,
   onUpdateTx,
-  onOpenAddModal
+  onOpenAddModal,
+  currentUid
 }) {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
@@ -138,13 +139,16 @@ export default function ExpensesTab({
             // Resolves income sources as well as expense categories, so an
             // income row shows "Salary" rather than its raw id.
             const catObj = resolveTxCategory(tx, safeCategories);
+            // Someone else's entry is readable but not touchable.
+            const mayEdit = canEditTx(tx, safeMembers, currentUid);
             const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family' };
 
             return (
               <SwipeableRow
                 key={tx.id}
-                onEdit={() => onEditTx && onEditTx(tx)}
-                onDelete={() => setConfirmDeleteId(tx.id)}
+                canSwipe={mayEdit}
+                onEdit={() => mayEdit && onEditTx && onEditTx(tx)}
+                onDelete={() => mayEdit && setConfirmDeleteId(tx.id)}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 4px', borderBottom: '1px solid var(--hairline)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
@@ -186,7 +190,7 @@ export default function ExpensesTab({
 
                   {/* Amount and delete controls */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
-                    {confirmDeleteId === tx.id ? (
+                    {confirmDeleteId === tx.id && mayEdit ? (
                       <>
                         <span style={{ fontSize: '0.7rem', color: 'var(--danger)', fontWeight: '700' }}>Delete?</span>
                         <button
@@ -214,22 +218,26 @@ export default function ExpensesTab({
                         <span style={{ fontSize: '0.88rem', fontWeight: '700', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
                           {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
                         </span>
-                        <button
-                          onClick={() => onEditTx && onEditTx(tx)}
-                          style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
-                          title="Edit item"
-                          aria-label={`Edit ${tx.title || 'expense'}`}
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(tx.id)}
-                          style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
-                          title="Delete item"
-                          aria-label={`Delete ${tx.title || 'expense'}`}
-                        >
-                          <Trash2 size={14} color="var(--danger)" opacity={0.55} />
-                        </button>
+                        {mayEdit && (
+                          <>
+                            <button
+                              onClick={() => onEditTx && onEditTx(tx)}
+                              style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
+                              title="Edit item"
+                              aria-label={`Edit ${tx.title || 'expense'}`}
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(tx.id)}
+                              style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
+                              title="Delete item"
+                              aria-label={`Delete ${tx.title || 'expense'}`}
+                            >
+                              <Trash2 size={14} color="var(--danger)" opacity={0.55} />
+                            </button>
+                          </>
+                        )}
                       </>
                     )}
                   </div>
@@ -249,7 +257,7 @@ export default function ExpensesTab({
           date={activeReceiptTx.date}
           onClose={() => setActiveReceiptTx(null)}
           onRemoveReceipt={
-            onUpdateTx
+            onUpdateTx && canEditTx(activeReceiptTx, safeMembers, currentUid)
               ? () => {
                   const updated = { ...activeReceiptTx };
                   delete updated.receipt;
