@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Trash2, Plus, Check, X, Pencil } from 'lucide-react';
+import { Search, Trash2, Plus, Check, X, Pencil, Receipt } from 'lucide-react';
 import { formatRupees, getAvailableMonths, resolveTxCategory, INCOME_SOURCES } from '../utils/mockData';
 import Emoji from './Emoji';
+import SwipeableRow from './SwipeableRow';
+import ReceiptModal from './ReceiptModal';
 
 export default function ExpensesTab({
   transactions = [],
@@ -12,12 +14,14 @@ export default function ExpensesTab({
   setSelectedMonth,
   onDeleteTx,
   onEditTx,
+  onUpdateTx,
   onOpenAddModal
 }) {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [activeReceiptTx, setActiveReceiptTx] = useState(null);
 
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
@@ -137,80 +141,125 @@ export default function ExpensesTab({
             const memberObj = safeMembers.find(m => m.id === tx.memberId) || { avatar: '👤', name: 'Family' };
 
             return (
-              <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--hairline)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
-                  <div className="cat-chip" style={{ width: '38px', height: '38px', '--chip': catObj.color || 'var(--text-muted)' }}>
-                    {(catObj.name || '?').charAt(0).toUpperCase()}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.title || 'Expense'}</span>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ color: memberObj.color, fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <Emoji size="0.85rem">{memberObj.avatar}</Emoji> {memberObj.name}
-                      </span>
-                      <span>•</span>
-                      <span>{tx.date || 'N/A'}</span>
+              <SwipeableRow
+                key={tx.id}
+                onEdit={() => onEditTx && onEditTx(tx)}
+                onDelete={() => setConfirmDeleteId(tx.id)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 4px', borderBottom: '1px solid var(--hairline)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                    <div className="cat-chip" style={{ width: '38px', height: '38px', '--chip': catObj.color || 'var(--text-muted)' }}>
+                      {(catObj.name || '?').charAt(0).toUpperCase()}
                     </div>
-                    {tx.notes && <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>"{tx.notes}"</span>}
+                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gap: '2px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {tx.title || 'Expense'}
+                        </span>
+                        {tx.receipt && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setActiveReceiptTx(tx); }}
+                            className="receipt-thumbnail-btn"
+                            title="View receipt attachment"
+                          >
+                            <Receipt size={11} /> Receipt
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ color: memberObj.color, fontWeight: '600', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <Emoji size="0.85rem">{memberObj.avatar}</Emoji> {memberObj.name}
+                        </span>
+                        <span>•</span>
+                        <span>{tx.date || 'N/A'}</span>
+                        {tx.paymentMethod && (
+                          <>
+                            <span>•</span>
+                            <span style={{ color: 'var(--text-dim)' }}>{tx.paymentMethod}</span>
+                          </>
+                        )}
+                      </div>
+                      {tx.notes && <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>"{tx.notes}"</span>}
+                    </div>
+                  </div>
+
+                  {/* Amount and delete controls */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, marginLeft: '8px' }}>
+                    {confirmDeleteId === tx.id ? (
+                      <>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--danger)', fontWeight: '700' }}>Delete?</span>
+                        <button
+                          onClick={() => {
+                            if (onDeleteTx) onDeleteTx(tx.id);
+                            setConfirmDeleteId(null);
+                          }}
+                          style={{ background: 'var(--danger-tint)', border: 'none', borderRadius: '8px', color: 'var(--danger)', cursor: 'pointer', padding: '6px', display: 'flex' }}
+                          title="Confirm delete"
+                          aria-label={`Confirm delete of ${tx.title || 'expense'}`}
+                        >
+                          <Check size={14} />
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          style={{ background: 'var(--bg-card-hover)', border: 'none', borderRadius: '8px', color: 'var(--text-dim)', cursor: 'pointer', padding: '6px', display: 'flex' }}
+                          title="Cancel"
+                          aria-label="Cancel delete"
+                        >
+                          <X size={14} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '0.88rem', fontWeight: '700', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
+                          {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
+                        </span>
+                        <button
+                          onClick={() => onEditTx && onEditTx(tx)}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
+                          title="Edit item"
+                          aria-label={`Edit ${tx.title || 'expense'}`}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(tx.id)}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
+                          title="Delete item"
+                          aria-label={`Delete ${tx.title || 'expense'}`}
+                        >
+                          <Trash2 size={14} color="var(--danger)" opacity={0.55} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-
-                {/* Amount and delete sit on one baseline rather than stacked —
-                    stacking left every row a different height. Confirming takes
-                    the amount's place, so the controls never need to wrap. */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: '8px' }}>
-                  {confirmDeleteId === tx.id ? (
-                    <>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--danger)', fontWeight: '700' }}>Delete?</span>
-                      <button
-                        onClick={() => {
-                          if (onDeleteTx) onDeleteTx(tx.id);
-                          setConfirmDeleteId(null);
-                        }}
-                        style={{ background: 'var(--danger-tint)', border: 'none', borderRadius: '8px', color: 'var(--danger)', cursor: 'pointer', padding: '6px', display: 'flex' }}
-                        title="Confirm delete"
-                        aria-label={`Confirm delete of ${tx.title || 'expense'}`}
-                      >
-                        <Check size={14} />
-                      </button>
-                      <button
-                        onClick={() => setConfirmDeleteId(null)}
-                        style={{ background: 'var(--bg-card-hover)', border: 'none', borderRadius: '8px', color: 'var(--text-dim)', cursor: 'pointer', padding: '6px', display: 'flex' }}
-                        title="Cancel"
-                        aria-label="Cancel delete"
-                      >
-                        <X size={14} />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <span style={{ fontSize: '0.88rem', fontWeight: '700', whiteSpace: 'nowrap', color: tx.type === 'income' ? 'var(--positive)' : 'var(--text-main)' }}>
-                        {tx.type === 'income' ? '+' : '-'}{formatRupees(tx.amount || 0)}
-                      </span>
-                      <button
-                        onClick={() => onEditTx && onEditTx(tx)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
-                        title="Edit item"
-                        aria-label={`Edit ${tx.title || 'expense'}`}
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() => setConfirmDeleteId(tx.id)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '4px', display: 'flex', borderRadius: '6px' }}
-                        title="Delete item"
-                        aria-label={`Delete ${tx.title || 'expense'}`}
-                      >
-                        <Trash2 size={14} color="var(--danger)" opacity={0.55} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
+              </SwipeableRow>
             );
           })
         )}
       </div>
+
+      {/* Receipt Modal Preview */}
+      {activeReceiptTx && (
+        <ReceiptModal
+          receiptUrl={activeReceiptTx.receipt}
+          title={activeReceiptTx.title}
+          amount={activeReceiptTx.amount}
+          date={activeReceiptTx.date}
+          onClose={() => setActiveReceiptTx(null)}
+          onRemoveReceipt={
+            onUpdateTx
+              ? () => {
+                  const updated = { ...activeReceiptTx };
+                  delete updated.receipt;
+                  onUpdateTx(updated);
+                  setActiveReceiptTx(null);
+                }
+              : null
+          }
+        />
+      )}
 
     </div>
   );

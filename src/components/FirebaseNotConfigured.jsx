@@ -1,21 +1,41 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { Sparkles, CloudOff } from 'lucide-react';
 
-// Shown when the app was built without Firebase config (no VITE_FIREBASE_*
-// values). Better than a blank screen: it says exactly what's missing.
-export default function FirebaseNotConfigured() {
+export default function FirebaseNotConfigured({ onStartDemo }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '32px 24px', textAlign: 'center', gap: '14px' }}>
-      <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--danger-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)' }}>
-        <AlertTriangle size={24} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '32px 24px', textAlign: 'center', gap: '16px' }}>
+      <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'var(--accent-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-strong)' }}>
+        <CloudOff size={26} />
       </div>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', color: 'var(--text-main)' }}>
-        Sync isn't configured yet
+
+      <div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', color: 'var(--text-main)' }}>
+          Sync Isn't Configured Yet
+        </div>
+        <div style={{ font: '500 13px Manrope', color: 'var(--text-muted)', maxWidth: '310px', lineHeight: 1.5, marginTop: '6px' }}>
+          This build doesn't have live Firebase credentials yet, but you can explore and test all features right now in <b>Local Demo Mode</b>!
+        </div>
       </div>
-      <div style={{ font: '500 13px Manrope', color: 'var(--text-muted)', maxWidth: '300px', lineHeight: 1.5 }}>
-        This build has no Firebase project connected, so accounts and cross-device
-        sync can't run. Add the <code>VITE_FIREBASE_*</code> values from your
-        Firebase project and rebuild — see <code>README.md</code> for the steps.
+
+      {onStartDemo && (
+        <button
+          onClick={onStartDemo}
+          className="btn-primary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 24px',
+            fontSize: '0.9rem',
+            marginTop: '4px'
+          }}
+        >
+          <Sparkles size={16} /> Explore Demo Mode
+        </button>
+      )}
+
+      <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', maxWidth: '280px', marginTop: '8px' }}>
+        To enable multi-device sync later, add your <code>VITE_FIREBASE_*</code> values in <code>.env.local</code>.
       </div>
     </div>
   );

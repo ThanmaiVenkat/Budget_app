@@ -17,6 +17,7 @@ import {
   updateHouseholdData,
   updatePersonalState
 } from '../data/householdRepo';
+import { getInitialDemoData } from '../utils/mockData';
 
 // Firebase surfaces errors as codes like "auth/invalid-credential"; these are
 // the ones a person can actually act on, phrased for them.
@@ -38,12 +39,6 @@ const AUTH_MESSAGES = {
 };
 const friendlyAuthError = (e) => AUTH_MESSAGES[e?.code] || e?.message || 'Something went wrong.';
 
-// A failure here almost always means the Firestore security rules haven't
-// been published yet (see README "Set up Firebase" step 5) — the project and
-// its config can be entirely correct and this still happens, since Firestore
-// defaults to denying everything until firestore.rules is deployed. Worth
-// naming specifically rather than a generic "something went wrong": it's the
-// most likely gap for anyone following the setup steps out of order.
 const describeDataError = (e) => {
   if (e?.code === 'permission-denied') {
     return "Can't reach your budget data — this usually means the Firestore security rules haven't been published yet. See README.md, \"Set up Firebase\" step 5.";
@@ -51,10 +46,21 @@ const describeDataError = (e) => {
   return e?.message || 'Something went wrong loading your data.';
 };
 
-// Single source of truth for auth + synced data. Drives the whole app: which
-// screen shows (loading / signed-out / no-household / ready) and the live
-// household data every tab reads.
 export function useAppData() {
+  const [isDemoMode, setIsDemoMode] = useState(() => {
+    return localStorage.getItem('tally_demo_mode') === 'true';
+  });
+
+  const [demoState, setDemoState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tally_demo_state');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback to initial
+    }
+    return getInitialDemoData();
+  });
+
   const [authUser, setAuthUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [userDoc, setUserDoc] = useState(null);
@@ -66,8 +72,27 @@ export function useAppData() {
 
   const householdUnsubRef = useRef(null);
 
+  const enableDemoMode = useCallback(() => {
+    localStorage.setItem('tally_demo_mode', 'true');
+    setIsDemoMode(true);
+  }, []);
+
+  const exitDemoMode = useCallback(() => {
+    localStorage.removeItem('tally_demo_mode');
+    setIsDemoMode(false);
+  }, []);
+
   // Auth session → user document subscription.
   useEffect(() => {
+    if (isDemoMode) {
+      setAuthUser({ email: 'demo@tally.app', uid: 'demo-user-1', displayName: 'Demo Family' });
+      setUserDoc(demoState.userDoc);
+      setHousehold(demoState.household);
+      setAuthReady(true);
+      setHouseholdReady(true);
+      return;
+    }
+
     if (!auth) { setAuthReady(true); return; }
     const unsub = onAuthStateChanged(auth, async (user) => {
       setAuthUser(user);
@@ -80,14 +105,11 @@ export function useAppData() {
       }
     });
     return unsub;
-  }, []);
+  }, [isDemoMode, demoState]);
 
-  // Once signed in, make sure the user doc exists, then follow it live. Both
-  // steps can fail — most likely on unpublished security rules — and that
-  // failure is reported through dataError rather than left to hang the
-  // loading screen forever or vanish as an unhandled rejection.
+  // Sync user doc from Firestore
   useEffect(() => {
-    if (!authUser) return;
+    if (isDemoMode || !authUser) return;
     let unsub = null;
     let cancelled = false;
     (async () => {
@@ -104,16 +126,17 @@ export function useAppData() {
       }
     })();
     return () => { cancelled = true; if (unsub) unsub(); };
-  }, [authUser, retryToken]);
+  }, [authUser, retryToken, isDemoMode]);
 
   // Follow the household named by the user doc; re-subscribe if it changes.
   useEffect(() => {
+    if (isDemoMode) return;
     const householdId = userDoc?.householdId || null;
     if (householdUnsubRef.current) { householdUnsubRef.current(); householdUnsubRef.current = null; }
 
     if (!householdId) {
       setHousehold(null);
-      setHouseholdReady(Boolean(userDoc)); // user doc loaded, simply no household yet
+      setHouseholdReady(Boolean(userDoc));
       return;
     }
     setHouseholdReady(false);
@@ -123,7 +146,7 @@ export function useAppData() {
       (err) => setDataError(describeDataError(err))
     );
     return () => { if (householdUnsubRef.current) { householdUnsubRef.current(); householdUnsubRef.current = null; } };
-  }, [userDoc, retryToken]);
+  }, [userDoc, retryToken, isDemoMode]);
 
   const signup = useCallback(async (email, password) => {
     try { await createUserWithEmailAndPassword(auth, email, password); }
@@ -139,40 +162,80 @@ export function useAppData() {
     try {
       await signInWithPopup(auth, new GoogleAuthProvider());
     } catch (e) {
-      // Closing the picker isn't an error worth surfacing — the person just
-      // changed their mind, so leave them back on the sign-in screen quietly.
       if (e?.code === 'auth/popup-closed-by-user' || e?.code === 'auth/cancelled-popup-request') return;
       throw new Error(friendlyAuthError(e));
     }
   }, []);
 
-  const logout = useCallback(() => signOut(auth), []);
+  const logout = useCallback(() => {
+    if (isDemoMode) {
+      exitDemoMode();
+      return Promise.resolve();
+    }
+    return signOut(auth);
+  }, [isDemoMode, exitDemoMode]);
 
   const createHousehold = useCallback((name) => repoCreateHousehold(authUser.uid, name), [authUser]);
   const joinHousehold = useCallback((code) => repoJoinHousehold(authUser.uid, code), [authUser]);
 
   const householdId = userDoc?.householdId || null;
   const updateData = useCallback((patch) => {
+    if (isDemoMode) {
+      setDemoState((prev) => {
+        const next = {
+          ...prev,
+          household: {
+            ...prev.household,
+            data: {
+              ...prev.household.data,
+              ...patch
+            }
+          }
+        };
+        try { localStorage.setItem('tally_demo_state', JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return Promise.resolve();
+    }
+
     if (!householdId) return Promise.resolve();
     return updateHouseholdData(householdId, patch);
-  }, [householdId]);
+  }, [householdId, isDemoMode]);
 
   const updatePersonal = useCallback((personalState) => {
+    if (isDemoMode) {
+      setDemoState((prev) => {
+        const next = {
+          ...prev,
+          userDoc: {
+            ...prev.userDoc,
+            personalState
+          }
+        };
+        try { localStorage.setItem('tally_demo_state', JSON.stringify(next)); } catch {}
+        return next;
+      });
+      return Promise.resolve();
+    }
+
     if (!authUser) return Promise.resolve();
     return updatePersonalState(authUser.uid, personalState);
-  }, [authUser]);
+  }, [authUser, isDemoMode]);
 
   return {
-    authUser,
-    authReady,
-    userDoc,
-    household,
-    householdReady,
-    dataError,
+    authUser: isDemoMode ? { email: 'demo@tally.app', uid: 'demo-user-1', displayName: 'Demo Family' } : authUser,
+    authReady: isDemoMode ? true : authReady,
+    userDoc: isDemoMode ? demoState.userDoc : userDoc,
+    household: isDemoMode ? demoState.household : household,
+    householdReady: isDemoMode ? true : householdReady,
+    dataError: isDemoMode ? null : dataError,
     retry,
-    data: household?.data || null,
-    personalState: userDoc?.personalState || null,
-    joinCode: household?.joinCode || householdId,
+    data: (isDemoMode ? demoState.household?.data : household?.data) || null,
+    personalState: (isDemoMode ? demoState.userDoc?.personalState : userDoc?.personalState) || null,
+    joinCode: (isDemoMode ? demoState.household?.joinCode : (household?.joinCode || householdId)) || 'DEMO77',
+    isDemoMode,
+    enableDemoMode,
+    exitDemoMode,
     signup,
     login,
     loginWithGoogle,

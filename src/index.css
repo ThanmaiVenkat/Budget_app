@@ -933,3 +933,97 @@ body {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+@keyframes skeletonShimmer {
+  0% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0.45; }
+}
+
+.skeleton-pulse {
+  background: var(--divider);
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+[data-theme="dark"] .skeleton-pulse {
+  background: var(--track);
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+}
+
+.pulsate-overrun {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes heatmapTooltipIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.96); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Swipeable Transaction Row */
+.swipeable-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 2px;
+  touch-action: pan-y;
+}
+
+.swipe-action-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.swipe-action-bg.edit-bg {
+  background: var(--positive-tint);
+  color: var(--positive-strong);
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.swipe-action-bg.delete-bg {
+  background: var(--danger-tint);
+  color: var(--danger);
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.swipeable-content {
+  position: relative;
+  background: var(--bg-card);
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+  will-change: transform;
+}
+
+.receipt-thumbnail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-strong);
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.receipt-thumbnail-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+

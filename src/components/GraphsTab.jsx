@@ -1,4 +1,5 @@
 import React from 'react';
+import SpendingHeatmap from './SpendingHeatmap';
 import {
   PieChart,
   Pie,
@@ -115,6 +116,14 @@ export default function GraphsTab({
           <option value="all">📅 All Time</option>
         </select>
       </div>
+
+      {/* CHART 0: SPENDING HEATMAP */}
+      <SpendingHeatmap
+        transactions={safeTxs}
+        activeMemberId={activeMemberId}
+        selectedMonth={selectedMonth}
+        categories={safeCategories}
+      />
 
       {/* CHART 1: RECHARTS DONUT CATEGORY BREAKDOWN */}
       <div className="glass-card">

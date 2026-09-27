@@ -192,6 +192,26 @@ export const addDaysISO = (isoDate, days) => {
   return `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}`;
 };
 
+// Calculates the next due date based on recurrence frequency
+export const getNextRecurrenceDate = (isoDate, frequency = 'monthly') => {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return todayISO();
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const pad = (n) => String(n).padStart(2, '0');
+
+  if (frequency === 'weekly') {
+    return addDaysISO(isoDate, 7);
+  }
+  if (frequency === 'yearly') {
+    return `${y + 1}-${pad(m)}-${pad(d)}`;
+  }
+  if (frequency === 'monthly') {
+    // Increment month, handling month boundary overflow (e.g. Jan 31 -> Feb 28)
+    const nextMonth = new Date(y, m, d);
+    return `${nextMonth.getFullYear()}-${pad(nextMonth.getMonth() + 1)}-${pad(nextMonth.getDate())}`;
+  }
+  return isoDate;
+};
+
 // A bill's live days-until, or null for one saved before due dates were real
 // dates. Those carry a frozen number and the literal string "In 5 days", which
 // never counted down — they need a date set rather than a number believed.
@@ -218,3 +238,134 @@ export const getBillBadgeStatus = (daysUntilDue, paid) => {
   if (daysUntilDue <= 7) return { text: `Due in ${daysUntilDue}d`, ...WARN };
   return { text: `Due in ${daysUntilDue}d`, ...CALM };
 };
+
+export const getInitialDemoData = () => {
+  const curDate = todayISO();
+
+  const demoCategories = DEFAULT_CATEGORIES.map(c => {
+    if (c.id === 'groceries') return { ...c, limit: 15000 };
+    if (c.id === 'housing') return { ...c, limit: 25000 };
+    if (c.id === 'utilities') return { ...c, limit: 6000 };
+    if (c.id === 'dining') return { ...c, limit: 5000 };
+    if (c.id === 'shopping') return { ...c, limit: 8000 };
+    if (c.id === 'transport') return { ...c, limit: 4000 };
+    return { ...c, limit: 3000 };
+  });
+
+  const demoMembers = [
+    { id: 'all', name: 'All Family', avatar: '👨‍👩‍👧‍👦', color: '#C2661F', role: 'Household Pool' },
+    { id: 'dad', name: 'Dad (Rajesh)', avatar: '👨‍💻', color: '#4A6B8A', role: 'Father', isEarner: true, allowance: 0 },
+    { id: 'mom', name: 'Mom (Pooja)', avatar: '👩‍💼', color: '#4F7A5C', role: 'Mother', isEarner: false, allowance: 10000 },
+    { id: 'son', name: 'Aarav', avatar: '👦', color: '#B07C2A', role: 'Son', isEarner: false, allowance: 2500 }
+  ];
+
+  const demoTransactions = [
+    {
+      id: 'tx-demo-1',
+      date: curDate,
+      type: 'income',
+      title: 'Monthly Salary',
+      amount: 85000,
+      category: 'income-salary',
+      memberId: 'dad',
+      paymentMethod: 'Transfer',
+      notes: 'Direct deposit'
+    },
+    {
+      id: 'tx-demo-2',
+      date: curDate,
+      type: 'expense',
+      title: 'Nature Basket Organic Groceries',
+      amount: 3450,
+      category: 'groceries',
+      memberId: 'mom',
+      paymentMethod: 'UPI',
+      notes: 'Monthly staples & veggies'
+    },
+    {
+      id: 'tx-demo-3',
+      date: addDaysISO(curDate, -2),
+      type: 'expense',
+      title: 'Swiggy Weekend Dinner',
+      amount: 1120,
+      category: 'dining',
+      memberId: 'dad',
+      paymentMethod: 'UPI',
+      notes: 'Family pizza night'
+    },
+    {
+      id: 'tx-demo-4',
+      date: addDaysISO(curDate, -4),
+      type: 'expense',
+      title: 'Fuel & Highway Toll',
+      amount: 2200,
+      category: 'transport',
+      memberId: 'dad',
+      paymentMethod: 'Card',
+      notes: 'Weekend trip'
+    }
+  ];
+
+  const demoBills = [
+    {
+      id: 'b-demo-1',
+      title: 'Airtel Fiber Broadband',
+      amount: 1199,
+      dueDate: addDaysISO(curDate, 4),
+      paid: false,
+      payer: 'dad',
+      frequency: 'monthly',
+      category: 'utilities',
+      autoRecordExpense: true
+    },
+    {
+      id: 'b-demo-2',
+      title: 'Electricity & Maintenance',
+      amount: 3450,
+      dueDate: addDaysISO(curDate, 2),
+      paid: false,
+      payer: 'mom',
+      frequency: 'monthly',
+      category: 'utilities',
+      autoRecordExpense: true
+    },
+    {
+      id: 'b-demo-3',
+      title: 'Netflix Premium Subscription',
+      amount: 649,
+      dueDate: addDaysISO(curDate, 8),
+      paid: false,
+      payer: 'dad',
+      frequency: 'monthly',
+      category: 'entertainment',
+      autoRecordExpense: true
+    }
+  ];
+
+  return {
+    household: {
+      name: 'Our Family Household',
+      joinCode: 'DEMO77',
+      data: {
+        transactions: demoTransactions,
+        members: demoMembers,
+        categories: demoCategories,
+        bills: demoBills,
+        enableRollover: true
+      }
+    },
+    userDoc: {
+      email: 'demo@tally.app',
+      householdId: 'DEMO77',
+      personalState: {
+        salary: 85000,
+        goals: [
+          { id: 'g-demo-1', title: 'Emergency Fund', target: 100000, current: 45000, category: 'Savings' },
+          { id: 'g-demo-2', title: 'Diwali Gold & Gifts', target: 50000, current: 28000, category: 'Festival' }
+        ],
+        transactions: []
+      }
+    }
+  };
+};
+

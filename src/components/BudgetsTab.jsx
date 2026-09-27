@@ -5,6 +5,7 @@ import {
   generateId, CATEGORY_COLORS
 } from '../utils/mockData';
 import Emoji from './Emoji';
+import RadialGauge from './RadialGauge';
 
 export default function BudgetsTab({
   categories = [],
@@ -274,10 +275,20 @@ export default function BudgetsTab({
           const hasSpending = spent > 0;
 
           return (
-            <div key={cat.id} className="glass-card" style={{ padding: '14px 16px', opacity: hasSpending ? 1 : 0.6 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div key={cat.id} className="glass-card" style={{ padding: '14px 16px', opacity: hasSpending ? 1 : 0.7 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: cat.color || 'var(--text-muted)', flexShrink: 0 }} />
+                  {hasLimit ? (
+                    <RadialGauge
+                      percent={monthLimit > 0 ? (spent / monthLimit) * 100 : 0}
+                      size={40}
+                      strokeWidth={4}
+                      accentColor={cat.color || 'var(--accent)'}
+                      labelSize="0.62rem"
+                    />
+                  ) : (
+                    <div style={{ width: '12px', height: '12px', borderRadius: '4px', background: cat.color || 'var(--text-muted)', flexShrink: 0 }} />
+                  )}
                   <div>
                     {editingId === cat.id ? (
                       <input

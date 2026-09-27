@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Receipt } from 'lucide-react';
 import { formatRupees, getPreviousMonthKey, limitFor, resolveTxCategory, billDaysUntil } from '../utils/mockData';
 import Emoji from './Emoji';
+import RadialGauge from './RadialGauge';
+import ReceiptModal from './ReceiptModal';
 
 const greetingFor = (name) => {
   const hour = new Date().getHours();
@@ -23,6 +26,7 @@ export default function HomeTab({
   onNavigateToBills,
   onOpenAddModal
 }) {
+  const [activeReceiptTx, setActiveReceiptTx] = useState(null);
   const safeTxs = Array.isArray(transactions) ? transactions : [];
   const safeCategories = Array.isArray(categories) ? categories : [];
   const safeMembers = Array.isArray(members) ? members : [];
@@ -185,23 +189,40 @@ export default function HomeTab({
           </div>
         </div>
 
-        <div style={{ font: '600 10px Manrope', color: 'var(--text-dim)', marginTop: '18px', letterSpacing: '.12em' }}>SPENT THIS MONTH</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '6px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '54px', lineHeight: 1, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>{formatRupees(totalExpense)}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+          <div>
+            <div style={{ font: '600 10px Manrope', color: 'var(--text-dim)', letterSpacing: '.12em' }}>SPENT THIS MONTH</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginTop: '4px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '48px', lineHeight: 1, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>{formatRupees(totalExpense)}</div>
+              {hasBudget && (
+                <div style={{ font: '500 12.5px Manrope', color: 'var(--text-dim)' }}>of {formatRupees(totalBudgetLimit)}</div>
+              )}
+            </div>
+          </div>
+
           {hasBudget && (
-            <div style={{ font: '500 12.5px Manrope', color: 'var(--text-dim)' }}>of {formatRupees(totalBudgetLimit)}</div>
+            <RadialGauge
+              percent={(totalExpense / totalBudgetLimit) * 100}
+              size={56}
+              strokeWidth={5}
+              accentColor="var(--accent)"
+            />
           )}
         </div>
 
-        <div style={{ height: '4px', borderRadius: '2px', background: 'var(--track-hero)', overflow: 'hidden', marginTop: '20px' }}>
-          <i style={{ display: 'block', height: '100%', width: `${budgetUtilization}%`, background: 'var(--accent)', borderRadius: '2px' }} />
+        <div style={{ height: '4px', borderRadius: '2px', background: 'var(--track-hero)', overflow: 'hidden', marginTop: '16px' }}>
+          <i style={{ display: 'block', height: '100%', width: `${budgetUtilization}%`, background: budgetUtilization > 100 ? 'var(--danger)' : 'var(--accent)', borderRadius: '2px' }} />
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', font: '500 11.5px Manrope', color: 'var(--text-muted)' }}>
           {hasBudget ? (
             <>
               <span>{budgetUtilization}% used</span>
-              <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{formatRupees(remainingBudget)} left</span>
+              <span style={{ color: budgetUtilization > 100 ? 'var(--danger)' : 'var(--text-main)', fontWeight: '700' }}>
+                {budgetUtilization > 100
+                  ? `${formatRupees(totalExpense - totalBudgetLimit)} over budget`
+                  : `${formatRupees(remainingBudget)} left`}
+              </span>
             </>
           ) : (
             <span>Set category limits in Budgets to track spending</span>
@@ -260,8 +281,6 @@ export default function HomeTab({
               {recentTxs.map((tx) => {
                 // Income resolves to its source name here too, not a raw id.
                 const catObj = resolveTxCategory(tx, safeCategories);
-                // categoryColors only maps the seeded expense ids, so an income
-                // source (or an added category) falls through to its own colour.
                 const bg = categoryColors[tx.category] || catObj.color || 'var(--accent)';
 
                 return (
@@ -270,9 +289,18 @@ export default function HomeTab({
                       {(catObj.name || tx.title || '?').charAt(0).toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ font: '600 13px Manrope', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.title}</div>
-                      {/* A title left at its default is the category name, so
-                          repeating it below would just say the same thing twice. */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ font: '600 13px Manrope', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.title}</span>
+                        {tx.receipt && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setActiveReceiptTx(tx); }}
+                            className="receipt-thumbnail-btn"
+                          >
+                            <Receipt size={10} />
+                          </button>
+                        )}
+                      </div>
                       <div style={{ font: '500 11px Manrope', color: 'var(--text-dim)', marginTop: '2px' }}>
                         {tx.title === catObj.name ? tx.date : `${catObj.name} · ${tx.date}`}
                       </div>
@@ -286,6 +314,17 @@ export default function HomeTab({
         </div>
 
       </div>
+
+      {/* Receipt Preview Modal */}
+      {activeReceiptTx && (
+        <ReceiptModal
+          receiptUrl={activeReceiptTx.receipt}
+          title={activeReceiptTx.title}
+          amount={activeReceiptTx.amount}
+          date={activeReceiptTx.date}
+          onClose={() => setActiveReceiptTx(null)}
+        />
+      )}
     </div>
   );
 }

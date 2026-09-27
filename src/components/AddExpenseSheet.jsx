@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Camera, Paperclip, Trash2 } from 'lucide-react';
 import { generateId, INCOME_SOURCES, todayISO } from '../utils/mockData';
+import { compressImageFile } from '../utils/imageCompressor';
 import Emoji from './Emoji';
 
 export default function AddExpenseSheet({ categories, members, onClose, onSave, editingTx = null }) {
@@ -27,10 +28,13 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
   const [date, setDate] = useState(editingTx?.date || todayISO());
   const [memberId, setMemberId] = useState(editingTx?.memberId || defaultSpenderId);
   const [title, setTitle] = useState(editingTx?.title || '');
-  const [showMore, setShowMore] = useState(Boolean(editingTx?.notes));
+  const [showMore, setShowMore] = useState(Boolean(editingTx?.notes || editingTx?.receipt));
   const [paymentMethod, setPaymentMethod] = useState(editingTx?.paymentMethod || 'UPI');
   const [notes, setNotes] = useState(editingTx?.notes || '');
+  const [receipt, setReceipt] = useState(editingTx?.receipt || null);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [amountError, setAmountError] = useState('');
+  const fileInputRef = useRef(null);
 
   const handleTypeChange = (newType) => {
     setType(newType);
@@ -41,6 +45,26 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
     }
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsCompressing(true);
+    try {
+      const compressedDataUrl = await compressImageFile(file, 900, 0.75);
+      setReceipt(compressedDataUrl);
+      setShowMore(true);
+    } catch {
+      alert('Could not attach receipt image. Please try another photo.');
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
+  const addPresetAmount = (increment) => {
+    const current = parseFloat(amount) || 0;
+    setAmount(String(current + increment));
+    if (amountError) setAmountError('');
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -68,7 +92,8 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
       category: type === 'income' ? incomeSource : category,
       memberId,
       paymentMethod,
-      notes
+      notes,
+      ...(receipt ? { receipt } : {})
     });
 
     onClose();
@@ -141,6 +166,30 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
                 autoFocus
               />
             </div>
+            {/* Quick Presets */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', marginTop: '6px', paddingBottom: '2px' }}>
+              {[50, 100, 200, 500, 1000, 2000].map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => addPresetAmount(val)}
+                  style={{
+                    padding: '3px 9px',
+                    borderRadius: '999px',
+                    background: 'var(--bg-card-hover)',
+                    border: '1px solid var(--bg-card-border)',
+                    fontSize: '0.68rem',
+                    fontWeight: '700',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                  }}
+                >
+                  +{val}
+                </button>
+              ))}
+            </div>
             {amountError && (
               <div style={{ color: 'var(--danger)', fontSize: '0.72rem', fontWeight: '600', marginTop: '4px' }}>
                 {amountError}
@@ -195,9 +244,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
             )}
           </div>
 
-          {/* FIELD 3a: INCOME SOURCE. Income used to be filed under one
-              undifferentiated 'income' bucket, so a salary and a rent receipt
-              were indistinguishable once saved. */}
+          {/* FIELD 3a: INCOME SOURCE */}
           {type === 'income' && (
             <div className="form-group" style={{ marginBottom: '4px' }}>
               <label className="form-label" style={{ fontSize: '0.72rem' }}>3. INCOME SOURCE</label>
@@ -233,9 +280,6 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
           {type === 'expense' && (
             <div className="form-group" style={{ marginBottom: '4px' }}>
               <label className="form-label" style={{ fontSize: '0.72rem' }}>3. CATEGORY</label>
-              {/* Every category, not the first six: the tail of the default
-                  list was already unreachable here, and a category added in
-                  Budgets could never be spent against. The sheet scrolls. */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                 {categories.map((c) => {
                   const isSelected = category === c.id;
@@ -268,9 +312,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
             </div>
           )}
 
-          {/* FIELD 4: DATE. Defaults to today, so the common case is still one
-              tap, but a forgotten entry can be logged against the day it
-              actually happened rather than the day it was typed. */}
+          {/* FIELD 4: DATE */}
           <div className="form-group" style={{ marginBottom: '4px' }}>
             <label className="form-label" htmlFor="tx-date" style={{ fontSize: '0.72rem' }}>
               {type === 'income' ? '4. DATE RECEIVED' : '4. DATE'}
@@ -286,17 +328,17 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
             />
           </div>
 
-          {/* OPTIONAL EXPANDABLE DETAILS */}
+          {/* OPTIONAL EXPANDABLE DETAILS & RECEIPT */}
           {!showMore ? (
             <button
               type="button"
               onClick={() => setShowMore(true)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.72rem', textAlign: 'center', cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', color: 'var(--accent-strong)', fontSize: '0.75rem', fontWeight: '600', textAlign: 'center', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', padding: '6px' }}
             >
-              + Add item details or payment method (optional)
+              <Paperclip size={13} /> Add receipt photo, item title, or notes
             </button>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--bg-hero)', padding: '12px', borderRadius: '14px', border: '1px solid var(--bg-hero-border)' }}>
               <input
                 type="text"
                 className="form-input"
@@ -305,6 +347,7 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
+              
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <select
                   className="form-select"
@@ -325,6 +368,65 @@ export default function AddExpenseSheet({ categories, members, onClose, onSave, 
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                 />
+              </div>
+
+              {/* Receipt Attachment Section */}
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+                
+                {receipt ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-card)', border: '1px solid var(--accent-border)', borderRadius: '10px', padding: '8px 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img
+                        src={receipt}
+                        alt="Receipt thumbnail"
+                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--bg-card-border)' }}
+                      />
+                      <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-main)' }}>Receipt attached</div>
+                        <div style={{ fontSize: '0.65rem', color: 'var(--positive)' }}>Ready to save</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setReceipt(null)}
+                      style={{ background: 'var(--danger-tint)', border: 'none', borderRadius: '6px', color: 'var(--danger)', padding: '6px', cursor: 'pointer', display: 'flex' }}
+                      title="Remove receipt"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isCompressing}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '7px',
+                      background: 'var(--bg-card)',
+                      border: '1px dashed var(--accent-border)',
+                      borderRadius: '10px',
+                      padding: '10px',
+                      color: 'var(--accent-strong)',
+                      fontSize: '0.75rem',
+                      fontWeight: '700',
+                      cursor: isCompressing ? 'default' : 'pointer'
+                    }}
+                  >
+                    <Camera size={15} />
+                    <span>{isCompressing ? 'Compressing photo…' : 'Attach Receipt Photo'}</span>
+                  </button>
+                )}
               </div>
             </div>
           )}

@@ -17,6 +17,7 @@ import HouseholdCreatedScreen from './components/HouseholdCreatedScreen';
 import DataAccessError from './components/DataAccessError';
 import FirebaseNotConfigured from './components/FirebaseNotConfigured';
 import ThemeToggle from './components/ThemeToggle';
+import SkeletonScreen, { SkeletonList } from './components/SkeletonLoader';
 import { firebaseConfigured } from './firebase';
 import { useAppData } from './hooks/useAppData';
 import { useTheme } from './hooks/useTheme';
@@ -27,14 +28,14 @@ const PersonalSavingsTracker = lazy(() => import('./components/PersonalSavingsTr
 const ExcelImportModal = lazy(() => import('./components/ExcelImportModal'));
 
 const TabLoadingFallback = () => (
-  <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
-    Loading…
+  <div style={{ padding: '20px 0' }}>
+    <SkeletonList count={3} />
   </div>
 );
 
 const FullScreenLoading = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
-    Loading…
+  <div style={{ padding: '20px', height: '100%', overflowY: 'hidden' }}>
+    <SkeletonScreen />
   </div>
 );
 
@@ -195,7 +196,9 @@ export default function App() {
   // Decide which screen the frame holds: config error, loading, sign-in,
   // household setup, first-run onboarding, or the app itself.
   const renderInner = () => {
-    if (!firebaseConfigured) return <FirebaseNotConfigured />;
+    if (!firebaseConfigured && !app.isDemoMode) {
+      return <FirebaseNotConfigured onStartDemo={app.enableDemoMode} />;
+    }
     if (!app.authReady) return <FullScreenLoading />;
     if (!app.authUser) return <AuthScreen onLogin={app.login} onSignup={app.signup} onGoogleLogin={app.loginWithGoogle} />;
     if (app.dataError) {
@@ -269,6 +272,7 @@ export default function App() {
               setSelectedMonth={setSelectedMonth}
               onDeleteTx={handleDeleteTransaction}
               onEditTx={setEditingTx}
+              onUpdateTx={handleUpdateTransaction}
               onOpenAddModal={() => setShowAddModal(true)}
             />
           )}
@@ -367,10 +371,12 @@ export default function App() {
               <BillRemindersTab
                 bills={bills}
                 members={members}
+                categories={categories}
                 onToggleBillPaid={handleToggleBillPaid}
                 onAddBill={handleAddBill}
                 onUpdateBill={handleUpdateBill}
                 onDeleteBill={handleDeleteBill}
+                onRecordExpense={handleAddTransaction}
               />
             </div>
           )}
