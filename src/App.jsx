@@ -304,6 +304,7 @@ export default function App() {
             <BudgetsTab
               categories={categories}
               transactions={transactions}
+              members={members}
               activeMemberId={activeMemberId}
               selectedMonth={selectedMonth}
               setSelectedMonth={setSelectedMonth}

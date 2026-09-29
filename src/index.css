@@ -963,6 +963,11 @@ body {
   to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
+@keyframes budgetDetailSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Swipeable Transaction Row */
 .swipeable-wrapper {
   position: relative;

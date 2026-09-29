@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { Flame, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { Flame, TrendingUp, TrendingDown } from 'lucide-react';
 import { formatRupees } from '../utils/mockData';
 
 // ---------------------------------------------------------------------------
