@@ -295,6 +295,8 @@ export default function App() {
               <PersonalSavingsTracker
                 personalState={personalState}
                 setPersonalState={setPersonalState}
+                selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
                 onBack={() => setActiveTab('home')}
               />
             </Suspense>

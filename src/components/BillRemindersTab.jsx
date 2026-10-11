@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
-import { CheckCircle2, Circle, RefreshCw, Pencil, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  CheckCircle2, Circle, RefreshCw, Pencil, Trash2,
+  Bell, BellRing, Camera, FileText
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
   formatRupees, getBillBadgeStatus, generateId, billDaysUntil,
   todayISO, addDaysISO, getNextRecurrenceDate
 } from '../utils/mockData';
+import { compressImageFile } from '../utils/imageCompressor';
+import {
+  getNotificationPermissionStatus,
+  requestNotificationPermission,
+  scheduleBillReminders,
+  sendInstantNotification
+} from '../utils/notificationService';
 import Emoji from './Emoji';
+import ReceiptModal from './ReceiptModal';
 
 export default function BillRemindersTab({
   bills = [],
@@ -27,6 +38,63 @@ export default function BillRemindersTab({
   const [frequency, setFrequency] = useState('monthly');
   const [category, setCategory] = useState(categories[0]?.id || 'utilities');
   const [autoRecordExpense, setAutoRecordExpense] = useState(true);
+  const [receipt, setReceipt] = useState(null);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [activeReceiptBill, setActiveReceiptBill] = useState(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Check notification status on mount
+  useEffect(() => {
+    let mounted = true;
+    getNotificationPermissionStatus().then((status) => {
+      if (mounted) {
+        setNotificationsEnabled(status === 'granted');
+      }
+    });
+    return () => { mounted = false; };
+  }, []);
+
+  // Auto-schedule bill reminders whenever bills or notification status change
+  useEffect(() => {
+    if (notificationsEnabled) {
+      scheduleBillReminders(bills);
+    }
+  }, [bills, notificationsEnabled]);
+
+  const handleToggleNotifications = async () => {
+    if (notificationsEnabled) {
+      alert('Due date reminders are currently active. You can manage notifications in device settings.');
+      return;
+    }
+
+    const granted = await requestNotificationPermission();
+    setNotificationsEnabled(granted);
+    if (granted) {
+      await scheduleBillReminders(bills);
+      await sendInstantNotification(
+        '🔔 Bill Reminders Enabled!',
+        "You'll receive alerts 3 days and 1 day before your bills are due."
+      );
+      confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 } });
+    } else {
+      alert('Notification permissions are required to receive 1-day and 3-day bill due date alerts.');
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsCompressing(true);
+    try {
+      const compressedDataUrl = await compressImageFile(file, 900, 0.75);
+      setReceipt(compressedDataUrl);
+    } catch {
+      alert('Could not attach bill photo. Please try another image.');
+    } finally {
+      setIsCompressing(false);
+    }
+  };
 
   const resetForm = () => {
     setTitle('');
@@ -36,6 +104,7 @@ export default function BillRemindersTab({
     setFrequency('monthly');
     setCategory(categories[0]?.id || 'utilities');
     setAutoRecordExpense(true);
+    setReceipt(null);
     setEditingBillId(null);
     setShowAdd(false);
   };
@@ -49,6 +118,7 @@ export default function BillRemindersTab({
     setFrequency(bill.frequency || 'monthly');
     setCategory(bill.category || categories[0]?.id || 'utilities');
     setAutoRecordExpense(bill.autoRecordExpense ?? true);
+    setReceipt(bill.receipt || null);
     setShowAdd(true);
   };
 
@@ -74,7 +144,8 @@ export default function BillRemindersTab({
           payer,
           frequency,
           category,
-          autoRecordExpense
+          autoRecordExpense,
+          ...(receipt ? { receipt } : { receipt: null })
         });
       }
     } else {
@@ -87,7 +158,8 @@ export default function BillRemindersTab({
         payer,
         frequency,
         category,
-        autoRecordExpense
+        autoRecordExpense,
+        ...(receipt ? { receipt } : {})
       });
     }
 
@@ -109,7 +181,8 @@ export default function BillRemindersTab({
           category: bill.category || 'utilities',
           memberId: bill.payer || realMembers[0]?.id || '',
           paymentMethod: 'UPI',
-          notes: `Auto-logged from bill reminder (${bill.frequency || 'monthly'})`
+          notes: `Auto-logged from bill reminder (${bill.frequency || 'monthly'})`,
+          ...(bill.receipt ? { receipt: bill.receipt } : {})
         });
       }
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
@@ -133,7 +206,56 @@ export default function BillRemindersTab({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      
+
+      {/* NOTIFICATION STATUS BANNER */}
+      <div
+        className="glass-card"
+        style={{
+          padding: '12px 14px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: notificationsEnabled ? 'var(--positive-tint)' : 'var(--bg-card)',
+          border: `1px solid ${notificationsEnabled ? 'var(--positive-border)' : 'var(--bg-card-border)'}`
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {notificationsEnabled ? (
+            <BellRing size={18} color="var(--positive)" />
+          ) : (
+            <Bell size={18} color="var(--accent-strong)" />
+          )}
+          <div>
+            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)' }}>
+              {notificationsEnabled ? 'Due Date Push Alerts Active' : 'Due Date Alerts (1 & 3 Days)'}
+            </div>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>
+              {notificationsEnabled
+                ? 'Alerts scheduled 3 days & 1 day before bill deadlines.'
+                : 'Get reminded 1 & 3 days before bills are due.'}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleToggleNotifications}
+          style={{
+            background: notificationsEnabled ? 'var(--bg-page)' : 'var(--accent-tint)',
+            border: `1px solid ${notificationsEnabled ? 'var(--positive-border)' : 'var(--accent-border)'}`,
+            color: notificationsEnabled ? 'var(--positive)' : 'var(--accent-strong)',
+            padding: '5px 12px',
+            borderRadius: '999px',
+            fontSize: '0.72rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {notificationsEnabled ? 'Active ✓' : 'Enable Alerts'}
+        </button>
+      </div>
+
       {/* RECURRING BILL REMINDERS CARD */}
       <div className="glass-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -161,21 +283,23 @@ export default function BillRemindersTab({
           </button>
         </div>
 
+        {/* Bill Entry/Edit Form */}
         {showAdd && (
-          <form onSubmit={handleCreateBill} style={{ background: 'var(--bg-hero)', border: '1px solid var(--bg-hero-border)', padding: '14px', borderRadius: '14px', marginBottom: '16px' }}>
-            <h4 style={{ fontSize: '0.88rem', fontWeight: '700', marginBottom: '10px' }}>
-              {editingBillId ? 'Edit Bill / Subscription' : 'Add Bill / Subscription'}
+          <form onSubmit={handleCreateBill} style={{ background: 'var(--hairline)', padding: '14px', borderRadius: '16px', marginBottom: '16px', border: '1px solid var(--bg-card-border)' }}>
+            <h4 style={{ fontSize: '0.85rem', fontWeight: '700', marginBottom: '12px' }}>
+              {editingBillId ? 'Edit Bill Reminder' : 'Add Bill Reminder'}
             </h4>
 
             <div className="form-group" style={{ marginBottom: '10px' }}>
-              <label className="form-label" style={{ fontSize: '0.72rem' }}>Bill / Service Name</label>
+              <label className="form-label" style={{ fontSize: '0.72rem' }}>Bill / Subscription Title</label>
               <input
                 type="text"
                 className="form-input"
-                placeholder="e.g. Electricity, Netflix, Wifi, Maid"
+                placeholder="e.g. WiFi Bill / Netflix / Rent / Electricity"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
+                autoFocus
               />
             </div>
 
@@ -184,16 +308,16 @@ export default function BillRemindersTab({
                 <label className="form-label" style={{ fontSize: '0.72rem' }}>Amount (₹)</label>
                 <input
                   type="number"
-                  step="0.01"
                   className="form-input"
-                  placeholder="0.00"
+                  placeholder="999"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label className="form-label" style={{ fontSize: '0.72rem' }}>Due Date</label>
+                <label className="form-label" style={{ fontSize: '0.72rem' }}>Next Due Date</label>
                 <input
                   type="date"
                   className="form-input"
@@ -268,6 +392,65 @@ export default function BillRemindersTab({
               </div>
             </div>
 
+            {/* Invoice / Bill Photo Attachment */}
+            <div className="form-group" style={{ marginBottom: '12px' }}>
+              <label className="form-label" style={{ fontSize: '0.72rem' }}>Invoice / Bill Photo (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+              {receipt ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-card)', border: '1px solid var(--accent-border)', borderRadius: '10px', padding: '8px 10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img
+                      src={receipt}
+                      alt="Invoice thumbnail"
+                      style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--bg-card-border)' }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-main)' }}>Invoice attached</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--positive)' }}>Will auto-forward when paid</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setReceipt(null)}
+                    style={{ background: 'var(--danger-tint)', border: 'none', borderRadius: '6px', color: 'var(--danger)', padding: '6px', cursor: 'pointer', display: 'flex' }}
+                    title="Remove invoice"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isCompressing}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '7px',
+                    background: 'var(--bg-card)',
+                    border: '1px dashed var(--accent-border)',
+                    borderRadius: '10px',
+                    padding: '8px',
+                    color: 'var(--accent-strong)',
+                    fontSize: '0.75rem',
+                    fontWeight: '700',
+                    cursor: isCompressing ? 'default' : 'pointer'
+                  }}
+                >
+                  <Camera size={14} />
+                  <span>{isCompressing ? 'Compressing invoice photo…' : 'Attach Bill / Invoice Photo'}</span>
+                </button>
+              )}
+            </div>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', cursor: 'pointer' }} onClick={() => setAutoRecordExpense(!autoRecordExpense)}>
               <input
                 type="checkbox"
@@ -334,6 +517,31 @@ export default function BillRemindersTab({
                             {b.frequency}
                           </span>
                         )}
+                        {b.receipt && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveReceiptBill(b);
+                            }}
+                            title="View attached bill invoice"
+                            style={{
+                              background: 'var(--accent-tint)',
+                              border: '1px solid var(--accent-border)',
+                              borderRadius: '4px',
+                              padding: '2px 4px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '2px',
+                              fontSize: '0.6rem',
+                              color: 'var(--accent-strong)',
+                              fontWeight: '700'
+                            }}
+                          >
+                            <FileText size={10} /> Bill
+                          </button>
+                        )}
                       </div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                         <span>Paid by</span>
@@ -350,7 +558,7 @@ export default function BillRemindersTab({
                     <span style={{ fontSize: '0.92rem', fontWeight: '800', color: b.paid ? 'var(--text-muted)' : 'var(--text-main)' }}>
                       {formatRupees(b.amount)}
                     </span>
-                    
+
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <span
                         style={{
@@ -414,6 +622,23 @@ export default function BillRemindersTab({
           </div>
         )}
       </div>
+
+      {/* Bill Invoice Viewer Modal */}
+      {activeReceiptBill && (
+        <ReceiptModal
+          receiptUrl={activeReceiptBill.receipt}
+          title={activeReceiptBill.title}
+          amount={activeReceiptBill.amount}
+          date={activeReceiptBill.dueDate}
+          onClose={() => setActiveReceiptBill(null)}
+          onRemoveReceipt={() => {
+            if (onUpdateBill) {
+              onUpdateBill(activeReceiptBill.id, { receipt: null });
+            }
+            setActiveReceiptBill(null);
+          }}
+        />
+      )}
 
     </div>
   );
