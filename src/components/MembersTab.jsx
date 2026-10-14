@@ -204,6 +204,8 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
           // of their own) stay managed by the household.
           const iOwnHousehold = isHouseholdOwner(currentUid, householdOwnerUid);
           const belongsToSomeoneElse = Boolean(m.ownerUid && m.ownerUid !== currentUid) && !iOwnHousehold;
+          // Same reach as Remove, so the two controls never disagree.
+          const mayEditProfile = isMe || iOwnHousehold || !m.ownerUid;
 
           return (
             <div key={m.id} className="glass-card" style={{ padding: '14px 16px' }}>
@@ -294,15 +296,17 @@ export default function MembersTab({ members = [], transactions = [], onAddMembe
               )}
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
-                {/* Your own profile is yours to edit; nobody else's is. */}
-                {isMe && editingId !== m.id && (
+                {/* Mirrors Remove below: your own profile, or anyone's if you
+                    created the household. Otherwise the same card would offer
+                    to delete a member it would not let you rename. */}
+                {mayEditProfile && editingId !== m.id && (
                   <button
                     onClick={() => startEditProfile(m)}
                     aria-label={`Edit ${m.name}`}
-                    title="Edit my profile"
+                    title={isMe ? 'Edit my profile' : `Edit ${m.name}'s profile`}
                     style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: 'var(--accent-strong)', cursor: 'pointer', padding: '2px', fontSize: '0.68rem', fontWeight: '700' }}
                   >
-                    <Pencil size={12} /> Edit my profile
+                    <Pencil size={12} /> {isMe ? 'Edit my profile' : 'Edit profile'}
                   </button>
                 )}
                 {/* A profile another account signed in as is not yours to delete. */}

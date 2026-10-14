@@ -117,10 +117,15 @@ export default function App() {
   };
 
   const handleExcelImportSuccess = (result) => {
+    // Stamped like a hand-typed entry: an import files rows under whichever
+    // member the sheet names, so without this the importer could not correct
+    // the rows they had just created for everybody else.
+    const uid = app.authUser?.uid || null;
+    const imported = result.transactions.map((t) => ({ ...t, createdByUid: uid }));
     app.updateData({
       categories: result.newCategories.length ? [...categories, ...result.newCategories] : categories,
       members: result.newMembers.length ? [...members, ...result.newMembers] : members,
-      transactions: [...result.transactions, ...transactions]
+      transactions: [...imported, ...transactions]
     });
   };
 
@@ -196,10 +201,16 @@ export default function App() {
   };
 
   const handleUpdateMember = (memberId, updates) => {
-    // Your own profile only: the whole point of claiming one is that it is
-    // yours, which cuts both ways.
+    // Your own profile, or anyone's if you created the household — the same
+    // reach removal already grants, so that editing and removing a member do
+    // not disagree about who is in charge. An unclaimed profile (a child with
+    // no login) stays editable by the household.
     const mine = myMember(members, app.authUser?.uid);
-    if (!mine || mine.id !== memberId) return;
+    const target = members.find((m) => m.id === memberId);
+    const isOwner = isHouseholdOwner(app.authUser?.uid, app.household?.ownerUid);
+    const isMine = Boolean(mine && mine.id === memberId);
+    const unclaimed = Boolean(target && !target.ownerUid);
+    if (!isMine && !isOwner && !unclaimed) return;
     app.updateData({ members: members.map((m) => (m.id === memberId ? { ...m, ...updates } : m)) });
   };
 
