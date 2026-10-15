@@ -27,6 +27,37 @@ export const CATEGORY_COLORS = [
   '#3F7C82', '#6B6A9E', '#A8412A', '#C2661F'
 ];
 
+// The member profile belonging to a signed-in account. Members created before
+// profiles were claimable have no ownerUid and so belong to nobody yet — the
+// claim screen is what attaches one.
+export const myMember = (members = [], uid) =>
+  (uid ? (members || []).find((m) => m.ownerUid === uid) : null) || null;
+
+// Profiles nobody has claimed, offered on the claim screen. The 'all' pseudo
+// member is a filter, not a person.
+export const unclaimedMembers = (members = []) =>
+  (members || []).filter((m) => m.id !== 'all' && !m.ownerUid);
+
+// Who may change a transaction.
+//
+// Three ways in: you created the household, it is filed under your profile, or
+// you are the one who entered it. The profile rule is what carries history
+// across, since entries were filed under profiles that predate ownership.
+// createdByUid covers logging on behalf of a family member who has no account
+// — without it that entry's own author could not correct it.
+export const canEditTx = (tx, members = [], uid, householdOwnerUid = null) => {
+  if (!tx || !uid) return false;
+  // Whoever created the household keeps the run of it, so a wrong entry is
+  // always fixable by somebody.
+  if (householdOwnerUid && uid === householdOwnerUid) return true;
+  if (tx.createdByUid && tx.createdByUid === uid) return true;
+  const mine = myMember(members, uid);
+  return Boolean(mine && tx.memberId === mine.id);
+};
+
+export const isHouseholdOwner = (uid, householdOwnerUid) =>
+  Boolean(uid && householdOwnerUid && uid === householdOwnerUid);
+
 // Where income comes from. Ids are prefixed so they can live in a
 // transaction's `category` field — the same field expenses use — without ever
 // colliding with a budget category id, seeded or user-created.

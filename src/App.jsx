@@ -11,6 +11,7 @@ import MembersTab from './components/MembersTab';
 import BillRemindersTab from './components/BillRemindersTab';
 import AddExpenseSheet from './components/AddExpenseSheet';
 import OnboardingScreen from './components/OnboardingScreen';
+import ProfileClaimScreen from './components/ProfileClaimScreen';
 import AuthScreen from './components/AuthScreen';
 import HouseholdSetup from './components/HouseholdSetup';
 import HouseholdCreatedScreen from './components/HouseholdCreatedScreen';
@@ -18,6 +19,7 @@ import DataAccessError from './components/DataAccessError';
 import FirebaseNotConfigured from './components/FirebaseNotConfigured';
 import ThemeToggle from './components/ThemeToggle';
 import SkeletonScreen, { SkeletonList } from './components/SkeletonLoader';
+import { myMember, canEditTx, isHouseholdOwner } from './utils/mockData';
 import { firebaseConfigured } from './firebase';
 import { useAppData } from './hooks/useAppData';
 import { useTheme } from './hooks/useTheme';
@@ -80,6 +82,9 @@ export default function App() {
   const enableRollover = data?.enableRollover ?? true;
   const personalState = app.personalState || EMPTY_PERSONAL;
 
+  // The profile this account owns, and the gate for editing anything.
+  const currentMember = myMember(members, app.authUser?.uid);
+
   const personalRef = useRef(personalState);
   personalRef.current = personalState;
 
@@ -87,7 +92,14 @@ export default function App() {
   // (the same reducer logic as before) and writes it; the snapshot listener
   // then repaints the UI. Handlers are redefined each render, so they always
   // close over the latest data.
+  // The list hides the controls, but the handlers check too: a stale sheet
+  // left open when a profile changes hands must not still write.
   const handleUpdateTransaction = (updatedTx) => {
+    const existing = transactions.find((t) => t.id === updatedTx.id);
+    if (!canEditTx(existing, members, app.authUser?.uid, app.household?.ownerUid)) {
+      setEditingTx(null);
+      return;
+    }
     app.updateData({
       transactions: transactions.map((t) => (t.id === updatedTx.id ? updatedTx : t))
     });
@@ -95,21 +107,31 @@ export default function App() {
   };
 
   const handleAddTransaction = (newTx) => {
-    app.updateData({ transactions: [newTx, ...transactions] });
+    // Stamped so an entry logged on behalf of someone without an account is
+    // still correctable by whoever actually typed it in.
+    const owned = { ...newTx, createdByUid: app.authUser?.uid || null };
+    app.updateData({ transactions: [owned, ...transactions] });
     if (newTx.type === 'income') {
       confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
     }
   };
 
   const handleExcelImportSuccess = (result) => {
+    // Stamped like a hand-typed entry: an import files rows under whichever
+    // member the sheet names, so without this the importer could not correct
+    // the rows they had just created for everybody else.
+    const uid = app.authUser?.uid || null;
+    const imported = result.transactions.map((t) => ({ ...t, createdByUid: uid }));
     app.updateData({
       categories: result.newCategories.length ? [...categories, ...result.newCategories] : categories,
       members: result.newMembers.length ? [...members, ...result.newMembers] : members,
-      transactions: [...result.transactions, ...transactions]
+      transactions: [...imported, ...transactions]
     });
   };
 
   const handleDeleteTransaction = (txId) => {
+    const existing = transactions.find((t) => t.id === txId);
+    if (!canEditTx(existing, members, app.authUser?.uid, app.household?.ownerUid)) return;
     app.updateData({ transactions: transactions.filter((t) => t.id !== txId) });
   };
 
@@ -159,11 +181,47 @@ export default function App() {
 
   // First real member also seeds the 'all' pseudo-member every filter assumes.
   const handleCompleteOnboarding = (member) => {
-    app.updateData({ members: [ALL_MEMBER, member] });
+    app.updateData({ members: [ALL_MEMBER, { ...member, ownerUid: app.authUser?.uid || null }] });
+  };
+
+  // Attaches this account to a profile already in the household, which is
+  // what carries that profile's existing entries across as editable.
+  const handleClaimProfile = (memberId) => {
+    const uid = app.authUser?.uid;
+    if (!uid) return;
+    app.updateData({
+      members: members.map((m) => (m.id === memberId && !m.ownerUid ? { ...m, ownerUid: uid } : m))
+    });
+  };
+
+  const handleCreateOwnProfile = (member) => {
+    const uid = app.authUser?.uid;
+    if (!uid) return;
+    app.updateData({ members: [...members, { ...member, ownerUid: uid }] });
+  };
+
+  const handleUpdateMember = (memberId, updates) => {
+    // Your own profile, or anyone's if you created the household — the same
+    // reach removal already grants, so that editing and removing a member do
+    // not disagree about who is in charge. An unclaimed profile (a child with
+    // no login) stays editable by the household.
+    const mine = myMember(members, app.authUser?.uid);
+    const target = members.find((m) => m.id === memberId);
+    const isOwner = isHouseholdOwner(app.authUser?.uid, app.household?.ownerUid);
+    const isMine = Boolean(mine && mine.id === memberId);
+    const unclaimed = Boolean(target && !target.ownerUid);
+    if (!isMine && !isOwner && !unclaimed) return;
+    app.updateData({ members: members.map((m) => (m.id === memberId ? { ...m, ...updates } : m)) });
   };
 
   const handleDeleteMember = (memberId) => {
     if (memberId === 'all') return;
+    // A profile someone else signed in as is not yours to remove — unless you
+    // created the household, or nobody could ever remove a member who left.
+    // Unclaimed profiles (a child with no account) stay removable by anybody.
+    const target = members.find((m) => m.id === memberId);
+    const isOwner = isHouseholdOwner(app.authUser?.uid, app.household?.ownerUid);
+    if (!isOwner && target?.ownerUid && target.ownerUid !== app.authUser?.uid) return;
     app.updateData({ members: members.filter((m) => m.id !== memberId) });
     if (activeMemberId === memberId) setActiveMemberId('all');
   };
@@ -223,6 +281,19 @@ export default function App() {
     }
     if (!app.household) return <FullScreenLoading />;
     if (!hasRealMembers) return <OnboardingScreen onComplete={handleCompleteOnboarding} />;
+    // Joining used to drop straight into the household, leaving the account
+    // tied to no profile and able to act as anybody in it.
+    if (!currentMember) {
+      return (
+        <ProfileClaimScreen
+          members={members}
+          householdName={app.household?.name}
+          onClaim={handleClaimProfile}
+          onCreate={handleCreateOwnProfile}
+          onLogout={app.logout}
+        />
+      );
+    }
 
     return (
       <>
@@ -273,6 +344,8 @@ export default function App() {
               onDeleteTx={handleDeleteTransaction}
               onEditTx={setEditingTx}
               onUpdateTx={handleUpdateTransaction}
+              currentUid={app.authUser?.uid}
+              householdOwnerUid={app.household?.ownerUid}
               onOpenAddModal={() => setShowAddModal(true)}
             />
           )}
@@ -370,6 +443,9 @@ export default function App() {
                 transactions={transactions}
                 onAddMember={handleAddMember}
                 onDeleteMember={handleDeleteMember}
+                onUpdateMember={handleUpdateMember}
+                currentUid={app.authUser?.uid}
+                householdOwnerUid={app.household?.ownerUid}
               />
               <BillRemindersTab
                 bills={bills}
