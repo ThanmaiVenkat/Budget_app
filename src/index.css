@@ -330,9 +330,11 @@ body {
   display: none;
 }
 
-/* Trim further as the frame itself shrinks to match a genuinely narrow
-   viewport (<390px). */
-@media (max-width: 389px) {
+/* The full header (currency, Hero label, month picker, three icons) needs
+   about 423px including its side padding. Below that the right-hand group
+   overflowed the screen on ordinary phones (390px wide was 11px short), so
+   the compact layout applies up to 422px. */
+@media (max-width: 422px) {
   .header-toggle-label {
     display: none;
   }
@@ -901,8 +903,10 @@ body {
     padding: 26px 34px 40px 34px;
   }
 
+  /* The fixed "Mobile Frame" toggle sits in the top-right corner, so the
+     header keeps clear of it rather than letting its icons slide underneath. */
   .mobile-full-wrapper .header-bar {
-    padding: 22px 34px 14px 34px;
+    padding: 22px 150px 14px 34px;
   }
 
   /* Written for a 390px frame, so it hides itself unconditionally; there is
