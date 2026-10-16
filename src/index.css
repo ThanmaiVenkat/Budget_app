@@ -10,7 +10,7 @@
    [data-theme="dark"] on <html> swaps in the warm-charcoal one.
 --------------------------------------------------------------------------- */
 :root {
-  --bg-shell: #F3E9DA;          /* outside the phone frame */
+  --bg-shell: #F3E9DA;          /* page background wherever the app does not fill the window */
   --bg-page: #FBF2E7;
   --bg-card: #FFFAF3;
   --bg-card-hover: #FBF1E4;
@@ -64,7 +64,6 @@
 
   --scrim: rgba(42, 28, 18, 0.45);
   --hairline: rgba(42, 28, 18, 0.06);
-  --frame-bezel: #E0D2BE;
 
   --font-family: 'Manrope', system-ui, -apple-system, sans-serif;
   --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
@@ -136,7 +135,6 @@
 
   --scrim: rgba(0, 0, 0, 0.7);
   --hairline: rgba(246, 234, 220, 0.06);
-  --frame-bezel: #2A211A;
 
   /* On a dark ground a tinted shadow is invisible; these go to near-black and
      lean on the card's own lighter fill to carry the lift. */
@@ -203,7 +201,6 @@
   
     --scrim: rgba(0, 0, 0, 0.7);
     --hairline: rgba(246, 234, 220, 0.06);
-    --frame-bezel: #2A211A;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.25);
     --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
@@ -246,22 +243,6 @@ body {
   padding: 0;
 }
 
-/* Phone Container Frame matching 390x828px design doc */
-.mobile-frame-wrapper {
-  width: 100%;
-  max-width: 390px;
-  height: 828px;
-  max-height: calc(100vh - 20px);
-  background: var(--bg-page);
-  border-radius: 46px;
-  border: 10px solid var(--frame-bezel, #E0D2BE);
-  box-shadow: 0 24px 60px -28px rgba(90, 58, 30, 0.35);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
 .mobile-full-wrapper {
   width: 100%;
   max-width: 420px;
@@ -273,19 +254,6 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-}
-
-/* Phone Notch matching design doc */
-.mobile-notch {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 26px;
-  background: var(--frame-bezel, #E0D2BE);
-  border-radius: 0 0 16px 16px;
-  z-index: 100;
 }
 
 /* Header Bar */
@@ -323,9 +291,7 @@ body {
   flex-shrink: 0;
 }
 
-/* The phone-frame simulator caps out at 390px wide regardless of the real
-   viewport, so this subtitle never actually has room and was pushing the
-   right-side icons past the frame edge even at the default width. */
+/* Phone screens never have room for this subtitle beside the header icons. */
 .header-subtitle {
   display: none;
 }
@@ -765,37 +731,6 @@ body {
   }
 }
 
-.frame-toggle-btn {
-  position: fixed;
-  top: 14px;
-  right: 14px;
-  z-index: 300;
-  background: var(--bg-card);
-  border: 1px solid var(--bg-card-border);
-  color: var(--text-main);
-  padding: 6px 12px;
-  border-radius: 999px;
-  font: 600 12px Manrope;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Desktop-only preview aid. It is position:fixed, so at phone widths it
-   overlays the header's own controls; the app already defaults to full-screen
-   below this breakpoint, so there is nothing here for it to toggle. Hidden on
-   touch devices at any width too — previewing a phone frame on a phone is
-   pointless, and a tablet or landscape handset clears 700px easily. This must
-   follow the base rule: both are single-class selectors, so source order is
-   what decides the `display` value. */
-@media (max-width: 699px), (pointer: coarse) {
-  .frame-toggle-btn {
-    display: none;
-  }
-}
-
 /* ---------------------------------------------------------------------------
    Desktop layout.
    The app is authored mobile-first and every tab renders a single column, so
@@ -814,18 +749,23 @@ body {
    these queries re-evaluate live. A browser too old to support them simply
    keeps the mobile layout, which is the safe direction to fail.
 
-   Every rule below is scoped to .mobile-full-wrapper. The phone-frame
-   simulator renders the same markup inside a 390px shell that never gets the
-   232px offset, so unscoped rules turned the nav into a sidebar laid straight
-   over the frame's own content.
+   Every rule below is scoped to .mobile-full-wrapper, so the rail only ever
+   applies to the app's own shell and never to a phone-width screen.
 --------------------------------------------------------------------------- */
-@media (min-width: 900px) and (pointer: fine) {
+/* A mouse-driven window fills the browser at any width it is given: the
+   phone column's 420px cap is for handsets and tablets, and on a laptop it
+   only left empty gutters. Touch devices keep the cap. */
+@media (min-width: 600px) and (pointer: fine) {
   .mobile-full-wrapper {
-    max-width: 1180px;
+    max-width: none;
+  }
+}
+
+@media (min-width: 900px) and (pointer: fine) {
+  /* The rail takes the left 232px and the content column keeps its own
+     readable width inside the rest. */
+  .mobile-full-wrapper {
     padding-left: 232px;
-    border-left: 1px solid var(--bg-card-border);
-    border-right: 1px solid var(--bg-card-border);
-    box-shadow: var(--shadow-lg);
   }
 
   .mobile-full-wrapper .tab {
@@ -903,26 +843,26 @@ body {
     padding: 26px 34px 40px 34px;
   }
 
-  /* The fixed "Mobile Frame" toggle sits in the top-right corner, so the
-     header keeps clear of it rather than letting its icons slide underneath. */
   .mobile-full-wrapper .header-bar {
-    padding: 22px 150px 14px 34px;
+    padding: 22px 34px 14px 34px;
   }
 
-  /* Written for a 390px frame, so it hides itself unconditionally; there is
-     room for it once the header spans a desktop width. */
+  /* Only shows once the header spans a desktop width. */
   .mobile-full-wrapper .header-subtitle {
     display: inline;
   }
 
-  .frame-toggle-btn:hover {
-    background: var(--bg-card-hover);
-  }
 }
 
 /* The member strip and content share the header's desktop gutter. */
 @media (min-width: 900px) and (pointer: fine) {
+  /* Same width, centring and gutter as the content column below it, so the
+     member chips line up with the cards rather than hugging the rail. */
   .mobile-full-wrapper .member-story-scroll {
+    max-width: 880px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
     padding-left: 34px;
     padding-right: 34px;
   }
