@@ -1,6 +1,6 @@
 import React, { useState, useRef, Suspense, lazy } from 'react';
 import confetti from 'canvas-confetti';
-import { Smartphone, Monitor, LogOut, Copy, Check } from 'lucide-react';
+import { LogOut, Copy, Check } from 'lucide-react';
 import HeaderBar from './components/HeaderBar';
 import FamilyMemberBar from './components/FamilyMemberBar';
 import BottomNav from './components/BottomNav';
@@ -62,15 +62,6 @@ export default function App() {
   // The transaction the sheet is editing, or null when it is adding one.
   const [editingTx, setEditingTx] = useState(null);
   const [showExcelModal, setShowExcelModal] = useState(false);
-  // Desktop opens in the real layout; the phone frame stays available behind
-  // the toggle for previewing the mobile design.
-  const [isFrameMode, setIsFrameMode] = useState(false);
-
-  const isStandalone =
-    typeof window !== 'undefined' &&
-    ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-      window.navigator.standalone === true);
-
   // Live household data, straight off the Firestore snapshot. Every device in
   // the household sees the same values, and a local write echoes back through
   // here near-instantly via the offline cache.
@@ -492,16 +483,11 @@ export default function App() {
   };
 
   return (
+    // The layout is chosen by the device, not by a toggle: the CSS switches to
+    // the laptop layout on a fine pointer at desktop width, and everything else
+    // gets the phone layout full-bleed.
     <div className="app-container">
-      {!isStandalone && (
-        <button className="frame-toggle-btn" onClick={() => setIsFrameMode(!isFrameMode)}>
-          {isFrameMode ? <Monitor size={14} /> : <Smartphone size={14} />}
-          <span>{isFrameMode ? 'Full Screen' : 'Mobile Frame'}</span>
-        </button>
-      )}
-
-      <div className={isFrameMode ? 'mobile-frame-wrapper' : 'mobile-full-wrapper'}>
-        {isFrameMode && <div className="mobile-notch" />}
+      <div className="mobile-full-wrapper">
         {renderInner()}
       </div>
     </div>
