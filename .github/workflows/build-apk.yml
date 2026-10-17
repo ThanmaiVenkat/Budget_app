@@ -60,8 +60,10 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # No setup-android step: GitHub's ubuntu-latest image already ships the
+      # Android SDK at ANDROID_HOME. setup-android@v3 runs `sdkmanager tools`,
+      # which fails on the image's current command-line tools, and that failure
+      # took down the whole APK build.
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
