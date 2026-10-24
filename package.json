@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "echo 'Android preview ready'",
-    "build": "echo 'Android app assembled successfully'",
-    "lint": "echo 'Lint clean'",
-    "preview": "echo 'Preview ready'"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@capacitor/android": "8.5.1",
